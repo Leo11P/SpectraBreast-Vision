@@ -4,12 +4,25 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "spectra"
-version = "0.1.0"
-description = "MASt3R-SfM + ArUco 3D reconstruction: images to metric point cloud with 2D/3D marker outputs."
+version = "0.2.0"
+description = "Unified pipeline: MASt3R-SfM 3D reconstruction (Vision) + HSI→Mesh registration."
 readme = "README.md"
 requires-python = ">=3.10"
 authors = [{ name = "SpectraBreast" }]
 dependencies = [
+    # ---- shared ----
+    "numpy>=1.26",
+    "scipy>=1.11",
+    "pyyaml>=6.0",
+    "pyaml>=25.0",
+    "pydantic>=2.8",
+    "typer>=0.12",
+    "rich>=13.0",
+    "tqdm>=4.66",
+    "trimesh>=4.0",
+    "rtree>=1.0",
+    "pillow>=10.0",
+    # ---- vision (MASt3R-SfM + ArUco) ----
     "asmk",
     "cython>=3.0",
     "einops>=0.8",
@@ -18,33 +31,34 @@ dependencies = [
     "huggingface-hub>=0.20",
     "jaxtyping>=0.3",
     "jupyter>=1.1.1",
-    "numpy>=1.26",
     "open3d>=0.19",
-    "opencv-python>=4.8",
-    "pillow>=10.0",
-    "pyaml>=25.0",
-    "pydantic>=2.8",
-    "pyyaml>=6.0",
+    "opencv-contrib-python>=4.8",   # contrib needed by registration for ArUco; superset of opencv-python
     "rerun-sdk>=0.30",
-    "rich>=13.0",
     "roma>=1.5",
     "safetensors>=0.4",
-    "scipy>=1.11",
     "textual>=0.60",
     "torch>=2.2",
     "torchvision>=0.17",
-    "tqdm>=4.66",
-    "trimesh>=4.0",
-    "typer>=0.12",
+    # ---- registration (HSI ENVI + Excel + GPU raycasting) ----
+    "openpyxl>=3.1",
 ]
+
+[project.optional-dependencies]
+# Optional GPU raycasting backend for registration (CUDA 12.x).
+# Install with:  uv pip install -e ".[gpu-raycast]"
+gpu-raycast = ["cupy-cuda12x>=12.0"]
 
 [project.scripts]
 spectra = "spectra.cli:main"
 
 [tool.setuptools]
-# Only ship the `spectra/` package; skip the top-level legacy scripts and the
-# third-party `vggt/` and `mast3r/` clones that live side-by-side in this repo.
-packages = ["spectra", "spectra.backends"]
+# Only ship our `spectra/` package; ignore vendored mast3r/ and friends at repo root.
+packages = [
+    "spectra",
+    "spectra.vision",
+    "spectra.vision.backends",
+    "spectra.registration",
+]
 
 [tool.uv.sources]
 asmk = { path = "mast3r/asmk", editable = true }
