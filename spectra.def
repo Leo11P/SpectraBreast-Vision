@@ -1,0 +1,224 @@
+# =============================================================================
+#  spectra.def  —  Singularity definition file for the Spectra pipeline
+#
+#  Build:
+#    singularity build spectra.sif spectra.def
+#
+#  Run (GPU):
+#    singularity exec --nv spectra.sif spectra full --config config.yaml
+#
+#  Notes:
+#    - Base image: nvidia/cuda 13.0 + cudnn9 + devel (Ubuntu 22.04)
+#    - PyTorch 2.10.0+cu130 from the official PyTorch wheel index
+#    - MASt3R cloned from github.com/naver/mast3r (with --recursive for dust3r)
+#    - asmk cloned from github.com/jenicek/asmk and installed as editable
+#    - Spectra cloned from github.com/Leo11P/SpectraBreast-Vision
+#    - All pip packages pinned to the versions in requirements.txt
+# =============================================================================
+
+Bootstrap: docker
+From: nvidia/cuda:13.0.1-cudnn9-devel-ubuntu22.04
+
+%labels
+    Maintainer  SpectraBreast
+    Version     0.2.0
+    CUDA        13.0
+    PyTorch     2.10.0+cu130
+
+%environment
+    # ---- locale / timezone (avoids interactive prompts) --------------------
+    export DEBIAN_FRONTEND=noninteractive
+    export TZ=Europe/Rome
+    export LANG=C.UTF-8
+    export LC_ALL=C.UTF-8
+
+    # ---- project layout ----------------------------------------------------
+    export SPECTRA_ROOT=/opt/SpectraBreast-Vision
+    export MAST3R_ROOT=/opt/mast3r
+    export ASMK_ROOT=/opt/asmk
+
+    # ---- Python path -------------------------------------------------------
+    # asmk is installed as editable; keep its src on PYTHONPATH as a fallback
+    export PYTHONPATH="${SPECTRA_ROOT}:${MAST3R_ROOT}:${ASMK_ROOT}:${PYTHONPATH}"
+
+    # ---- CUDA / GPU --------------------------------------------------------
+    export CUDA_HOME=/usr/local/cuda
+    export PATH="${CUDA_HOME}/bin:${PATH}"
+    export LD_LIBRARY_PATH="${CUDA_HOME}/lib64:${LD_LIBRARY_PATH}"
+
+    # ---- suppress Open3D headless warning ---------------------------------
+    export OPEN3D_HEADLESS_RENDERING=1
+
+%post
+    set -euo pipefail
+
+    # =========================================================================
+    # 0. System packages
+    # =========================================================================
+    export DEBIAN_FRONTEND=noninteractive
+    export TZ=Europe/Rome
+
+    apt-get update -qq && apt-get install -y --no-install-recommends \
+        build-essential \
+        ca-certificates \
+        cmake \
+        curl \
+        ffmpeg \
+        git \
+        git-lfs \
+        libgl1 \
+        libglib2.0-0 \
+        libgomp1 \
+        libsm6 \
+        libxext6 \
+        libxrender1 \
+        ninja-build \
+        python3.10 \
+        python3.10-dev \
+        python3.10-distutils \
+        python3-pip \
+        unzip \
+        wget \
+    && rm -rf /var/lib/apt/lists/*
+
+    # Make python3.10 the default python / pip
+    update-alternatives --install /usr/bin/python  python  /usr/bin/python3.10 1
+    update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.10 1
+    python -m pip install --upgrade pip setuptools wheel
+
+    # =========================================================================
+    # 1. PyTorch + torchvision (cu130 wheels — must come before everything else
+    #    so the CUDA-aware builds of later packages link against the right libs)
+    # =========================================================================
+    pip install --no-cache-dir \
+        torch==2.10.0+cu130 \
+        torchvision==0.25.0+cu130 \
+        --index-url https://download.pytorch.org/whl/cu130
+
+    # =========================================================================
+    # 2. Clone repositories
+    # =========================================================================
+
+    # --- MASt3R (includes dust3r as a submodule) ----------------------------
+    git clone --recursive https://github.com/naver/mast3r.git /opt/mast3r
+    cd /opt/mast3r
+    pip install --no-cache-dir -e ".[demo]" || pip install --no-cache-dir -e .
+
+    # --- asmk ---------------------------------------------------------------
+    git clone https://github.com/jenicek/asmk.git /opt/asmk
+    cd /opt/asmk
+    # asmk has a Cython extension; build it in-place
+    pip install --no-cache-dir cython numpy
+    python setup.py build_ext --inplace || true   # non-fatal: pure-Python fallback exists
+    pip install --no-cache-dir -e .
+
+    # --- Spectra (main repo) ------------------------------------------------
+    git clone https://github.com/Leo11P/SpectraBreast-Vision.git /opt/SpectraBreast-Vision
+    cd /opt/SpectraBreast-Vision
+
+    # =========================================================================
+    # 3. Install all remaining pinned dependencies from requirements.txt
+    #    (torch/torchvision already installed above → skip them here)
+    # =========================================================================
+
+    # Write a filtered requirements file: drop torch, torchvision, nvidia-*
+    # wheels (already satisfied by the pytorch index), and the local asmk editable.
+    python - <<'PYEOF'
+import re, pathlib
+
+skip_patterns = [
+    r"^torch==",
+    r"^torchvision==",
+    r"^nvidia-",
+    r"^cuda-",
+    r"^triton==",          # installed as torch dependency
+    r"^\s*-e\s+file://",   # local editable (asmk) — already installed above
+]
+
+src = pathlib.Path("/opt/SpectraBreast-Vision/requirements.txt")
+dst = pathlib.Path("/tmp/requirements_filtered.txt")
+
+if not src.exists():
+    # Fallback: use the copy embedded at build time (see %files)
+    src = pathlib.Path("/tmp/requirements_orig.txt")
+
+lines = src.read_text().splitlines()
+kept = []
+for line in lines:
+    stripped = line.strip()
+    if not stripped or stripped.startswith("#"):
+        kept.append(line)
+        continue
+    if any(re.match(p, stripped) for p in skip_patterns):
+        continue
+    kept.append(line)
+
+dst.write_text("\n".join(kept) + "\n")
+print(f"Kept {len(kept)} / {len(lines)} lines")
+PYEOF
+
+    pip install --no-cache-dir -r /tmp/requirements_filtered.txt
+
+    # =========================================================================
+    # 4. Install Spectra itself (editable, so `spectra` CLI is on PATH)
+    # =========================================================================
+    cd /opt/SpectraBreast-Vision
+    pip install --no-cache-dir -e .
+
+    # =========================================================================
+    # 5. Download MASt3R model weights (optional — comment out to skip)
+    #    Weights land in /opt/mast3r/checkpoints/ and are baked into the .sif.
+    #    Comment this block out if you prefer to mount them at runtime instead
+    #    (saves ~2 GB in the image and avoids hitting HuggingFace during build).
+    # =========================================================================
+    # mkdir -p /opt/mast3r/checkpoints
+    # wget -q -O /opt/mast3r/checkpoints/MASt3R_ViTLarge_BaseDecoder_512_catmlpdpt_metric.pth \
+    #     "https://download.europe.naverlabs.com/ComputerVision/MASt3R/MASt3R_ViTLarge_BaseDecoder_512_catmlpdpt_metric.pth"
+
+    # =========================================================================
+    # 6. Smoke-test (non-fatal — avoids breaking the build on headless nodes)
+    # =========================================================================
+    python -c "import torch; print('torch', torch.__version__, '| CUDA', torch.cuda.is_available())" || true
+    python -c "import spectra; print('spectra', spectra.__version__)" || true
+
+    # Clean up pip cache
+    pip cache purge
+    rm -rf /tmp/requirements_filtered.txt /root/.cache
+
+%runscript
+    # Default: run the spectra CLI, forwarding all arguments
+    exec spectra "$@"
+
+%help
+    Spectra unified pipeline container (MASt3R-SfM + HSI→Mesh registration).
+
+    Repos baked in at build time:
+      /opt/SpectraBreast-Vision   — main Spectra package
+      /opt/mast3r                 — MASt3R + dust3r
+      /opt/asmk                   — ASMK retrieval library
+
+    Typical usage
+    -------------
+    # Full pipeline on a single sample:
+    singularity exec --nv spectra.sif \
+        spectra full --config /data/config.yaml --sample SB019
+
+    # Vision stage only:
+    singularity exec --nv spectra.sif \
+        spectra vision --config /data/config.yaml
+
+    # Registration stage only:
+    singularity exec --nv spectra.sif \
+        spectra registration --config /data/config.yaml
+
+    # Interactive shell:
+    singularity shell --nv spectra.sif
+
+    Mount your data directory:
+    singularity exec --nv --bind /your/data:/data spectra.sif spectra full ...
+
+    MASt3R weights
+    --------------
+    If you commented out the weight-download block in %post, mount them at
+    runtime:
+      --bind /your/checkpoints:/opt/mast3r/checkpoints
