@@ -18,7 +18,7 @@
 # =============================================================================
 
 # Sample being processed. Used to build default input/output paths.
-sample_name: "SAMPLE1"
+sample_name: "RUBIK"
 
 # Roots that drive default path resolution for `spectra full`.
 # Both can be relative (resolved from cwd) or absolute.
@@ -36,13 +36,13 @@ vision:
   input:
     # When `null` (the default) and you run `spectra full`, paths are derived
     # automatically:
-    #   rgb_dir          = DATA/<sample>/input_vision/rgb
-    #   pose_dir         = DATA/<sample>/input_vision/poses          (if it exists)
-    #   camera_params_dir= DATA/<sample>/input_vision/camera_parameters (if it exists)
+    #   rgb_dir          = DATA/input_vision/<sample>/rgb
+    #   pose_dir         = DATA/input_vision/<sample>/poses          (if it exists)
+    #   camera_params_dir= DATA/input_vision/<sample>/camera_parameters (if it exists)
     # Override here when running `spectra vision` standalone.
-    rgb_dir:           DATA/input_vision/SAMPLE1_iphone_cp
-    pose_dir:          DATA/input_vision/SAMPLE1_iphone_cp
-    camera_params_dir: DATA/input_vision/SAMPLE1_iphone_cp
+    rgb_dir:           DATA/input_vision/RUBIK_iphone_cp
+    pose_dir:          DATA/input_vision/RUBIK_iphone_cp
+    camera_params_dir: DATA/input_vision/RUBIK_iphone_cp
 
   output:
     # When `null`, derived to:  RESULTS/<sample>/vision
@@ -144,20 +144,20 @@ registration:
   #   roi    : dual HSI — LiveView PNG with ArUcos + ROI cube without ArUcos
   #   batch  : scan data_root for all <sample>/input_registration/ subfolders
   #   sweep  : run the pipeline over multiple (res_reg, res_pc) pairs
-  mode: "single"
+  mode: "sweep"
 
   # Per-sample paths. When `null` and you run `spectra full` (or `spectra
   # registration` after `spectra vision`), they are auto-derived:
   #
-  #   hsi_hdr      = DATA/<sample>/input_registration/<sample>_raw.hdr
-  #   liveview_png = DATA/<sample>/input_registration/<sample>_raw.png   (ROI only)
-  #   mesh         = RESULTS/<sample>/vision/surface_mesh.ply
-  #   aruco_json   = RESULTS/<sample>/vision/aruco_markers_3d.json
-  #   output_dir   = RESULTS/<sample>/registration
+  #   hsi_hdr      = DATAinput_registration/<sample>/<sample>_raw.hdr
+  #   liveview_png = DATA/input_registration/<sample>/<sample>_raw.png   (ROI only)
+  #   mesh         = RESULTS/vision/<sample>/surface_mesh.ply
+  #   aruco_json   = RESULTS/vision/<sample>/aruco_markers_3d.json
+  #   output_dir   = RESULTS/registration/<sample>
   #
   # Override here when running `spectra registration` standalone with custom inputs.
   paths:
-    hsi_hdr:      DATA/input_registration/SAMPLE1/SB019_001/SB019_raw.hdr
+    hsi_hdr:      null #DATA/input_registration/SAMPLE1/SB019_001/SB019_raw.hdr
     mesh:         null
     aruco_json:   null
     liveview_png: null
@@ -192,12 +192,12 @@ registration:
     pc_chunk_size:    100000
 
   export:
-    save_pointcloud: true
+    save_pointcloud: false
     ply:             true
     npy:             true
     csv:             false
     csv_max_points:  500000
-    save_images:     true
+    save_images:     false
 
   # ------------------------------------------------------------------
   # mode == "batch"
@@ -214,7 +214,7 @@ registration:
   # mode == "sweep"
   # ------------------------------------------------------------------
   sweep:
-    roi_mode: false
+    roi_mode: true
     resolution_pairs:
       - [5.0, 0.5]
       - [2.0, 0.5]
