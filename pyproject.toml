@@ -10,7 +10,6 @@ readme = "README.md"
 requires-python = ">=3.10"
 authors = [{ name = "SpectraBreast" }]
 dependencies = [
-    # ---- shared ----
     "numpy>=1.26",
     "scipy>=1.11",
     "pyyaml>=6.0",
@@ -22,37 +21,28 @@ dependencies = [
     "trimesh>=4.0",
     "rtree>=1.0",
     "pillow>=10.0",
-    # ---- vision (MASt3R-SfM + ArUco) ----
-    "asmk",
-    "cython>=3.0",
     "einops>=0.8",
-    "faiss-gpu-cu12>=1.14.1.post1",
     "gradio>=6.0",
     "huggingface-hub>=0.20",
     "jaxtyping>=0.3",
-    "jupyter>=1.1.1",
     "open3d>=0.19",
-    "opencv-contrib-python>=4.8",   # contrib needed by registration for ArUco; superset of opencv-python
+    "opencv-contrib-python>=4.8",
     "rerun-sdk>=0.30",
     "roma>=1.5",
     "safetensors>=0.4",
     "textual>=0.60",
     "torch>=2.2",
     "torchvision>=0.17",
-    # ---- registration (HSI ENVI + Excel + GPU raycasting) ----
     "openpyxl>=3.1",
 ]
 
 [project.optional-dependencies]
-# Optional GPU raycasting backend for registration (CUDA 12.x).
-# Install with:  uv pip install -e ".[gpu-raycast]"
 gpu-raycast = ["cupy-cuda12x>=12.0"]
 
 [project.scripts]
 spectra = "spectra.cli:main"
 
 [tool.setuptools]
-# Only ship our `spectra/` package; ignore vendored mast3r/ and friends at repo root.
 packages = [
     "spectra",
     "spectra.vision",
@@ -61,4 +51,14 @@ packages = [
 ]
 
 [tool.uv.sources]
-asmk = { path = "mast3r/asmk", editable = true }
+torch = [
+  { index = "pytorch-cu130" }
+]
+torchvision = [
+  { index = "pytorch-cu130" }
+]
+
+[[tool.uv.index]]
+name = "pytorch-cu130"
+url = "https://download.pytorch.org/whl/cu130"
+explicit = true

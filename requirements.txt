@@ -4,7 +4,7 @@ aiofiles==24.1.0
 annotated-doc==0.0.4
 annotated-types==0.7.0
 anyio==4.12.1
--e file:///home/arota/spectra/mast3r/asmk
+-e file:///home/spectra/SpectraBreast-Vision/mast3r/asmk
 asttokens==3.0.1
 attrs==25.4.0
 blinker==1.9.0

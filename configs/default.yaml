@@ -40,9 +40,9 @@ vision:
     #   pose_dir         = DATA/<sample>/input_vision/poses          (if it exists)
     #   camera_params_dir= DATA/<sample>/input_vision/camera_parameters (if it exists)
     # Override here when running `spectra vision` standalone.
-    rgb_dir:           null
-    pose_dir:          null
-    camera_params_dir: null
+    rgb_dir:           DATA/input_vision/SAMPLE1_iphone_cp
+    pose_dir:          DATA/input_vision/SAMPLE1_iphone_cp
+    camera_params_dir: DATA/input_vision/SAMPLE1_iphone_cp
 
   output:
     # When `null`, derived to:  RESULTS/<sample>/vision
@@ -157,7 +157,7 @@ registration:
   #
   # Override here when running `spectra registration` standalone with custom inputs.
   paths:
-    hsi_hdr:      null
+    hsi_hdr:      DATA/input_registration/SAMPLE1/SB019_001/SB019_raw.hdr
     mesh:         null
     aruco_json:   null
     liveview_png: null

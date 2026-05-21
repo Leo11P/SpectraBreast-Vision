@@ -42,11 +42,11 @@ from .config import (
 # changes path conventions globally.
 
 def vision_input_dir(data_root: Path, sample: str) -> Path:
-    return Path(data_root) / sample / "input_vision"
+    return Path(data_root) / "input_vision" / sample
 
 
 def registration_input_dir(data_root: Path, sample: str) -> Path:
-    return Path(data_root) / sample / "input_registration"
+    return Path(data_root) / "input_registration" / sample
 
 
 def vision_output_dir(results_root: Path, sample: str) -> Path:

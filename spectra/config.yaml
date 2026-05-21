@@ -1,0 +1,133 @@
+# =============================================================================
+# SPECTRABREAST — CONFIGURAZIONE PIPELINE
+# =============================================================================
+# Modifica questo file per cambiare i parametri senza toccare il codice.
+# Tutti i path sono relativi alla root del progetto.
+
+# -----------------------------------------------------------------------------
+# PATHS — Input / Output
+# -----------------------------------------------------------------------------
+paths:
+  hsi_hdr:      "data/input/SB019/SB019_001/SB019_raw.hdr"   # file ENVI .hdr
+  mesh:         "data/input/SAMPLE1/surface_mesh.ply"         # mesh 3D (.ply o .obj)
+  aruco_json:   "data/input/SAMPLE1/aruco_markers_3d.json"    # marker ArUco in metri
+  output_dir:   "data/output/SAMPLE1_30-04_0.3"               # cartella risultati
+
+# -----------------------------------------------------------------------------
+# NOME CAMPIONE — prefisso per tutti i file di output
+# -----------------------------------------------------------------------------
+sample_name: "SB019"
+
+# -----------------------------------------------------------------------------
+# REGISTRAZIONE
+# -----------------------------------------------------------------------------
+registration:
+  hsi_extraction_method: "mean"   # "mean" | "visible_band" | "pca"
+  aruco_dict:            "4X4_50" # dizionario ArUco: "4X4_50" | "5X5_100" ecc.
+  marker_side_mm:        6.8      # lato fisico del marker ArUco in mm
+
+  # SubPixel refinement post-detection (Punto 3): ±0.5-1 px -> ±0.05-0.2 px
+  use_subpix:     true
+  subpix_winsize: 5               # semi-finestra (5 -> 11x11)
+
+# -----------------------------------------------------------------------------
+# RENDER — ray casting ortografico (PyTorch, fully vectorized)
+# -----------------------------------------------------------------------------
+render:
+  resolution_mm_per_px:     0.3   # mm/px point cloud: 5.0=veloce, 0.5=fine
+  resolution_reg_mm_per_px: 0.5   # mm/px registrazione (piu grossolano = piu inlier RANSAC)
+                                  # Imposta uguale a resolution_mm_per_px per un solo render
+  margin_mm:            10.0      # padding attorno alla bounding box della mesh
+  # num_rays:           null      # lascia commentato/null per logica equivalente al CPU legacy
+  ray_chunk_size:       16384     # raggi per blocco (piu alto = meno overhead)
+  face_chunk_size:      2048      # triangoli per blocco dopo culling XY
+  sort_rays_for_culling: true     # ordina raggi in XY per culling piu efficace
+
+# -----------------------------------------------------------------------------
+# POINT CLOUD SPETTRALE
+# -----------------------------------------------------------------------------
+pointcloud:
+  border_px:        2        # margine di sicurezza sul bordo HSI (px)
+  reflectance_norm: true     # normalizza ogni spettro in [0,1]
+  pc_chunk_size:    100000   # punti per chunk in modalita streaming (ridurre se RAM limitata)
+
+# -----------------------------------------------------------------------------
+# EXPORT
+# -----------------------------------------------------------------------------
+export:
+  # --- Point cloud ---
+  save_pointcloud: true  # false = salta costruzione e salvataggio point cloud (risparmia tempo/RAM)
+  ply:           true    # .ply  per CloudCompare / MeshLab  (ignorato se save_pointcloud: false)
+  npy:           true    # .npz  per Python (ricarica veloce) (ignorato se save_pointcloud: false)
+  csv:           false   # .csv  (file grande, disabilitato di default)
+  csv_max_points: 500000 # punti massimi nel CSV (campionamento casuale se superati)
+
+  # --- Immagini ---
+  save_images: true      # false = non salva nessuna immagine
+                         #   (render topview/depth, turbo depth, registration overlay, coverage map)
+
+# -----------------------------------------------------------------------------
+# BATCH — esecuzione su PIU' coppie (mesh + aruco_json) in un solo run
+# -----------------------------------------------------------------------------
+# Quando batch.enabled e' true, main.py IGNORA paths.mesh / paths.aruco_json
+# e scandisce input_dir alla ricerca di cartelle che matchano i pattern
+# definiti in sample_hsi_map. Per ogni cartella trovata cerca al suo interno
+# i file mesh_filename + aruco_filename ed esegue la pipeline completa,
+# salvando i risultati in output_dir/<nome_cartella_sample>/.
+#
+# Al termine produce un Excel riepilogo unico:
+#   <output_dir>/batch_summary.xlsx
+#
+# Batch e sweep sono mutuamente esclusivi: se entrambi sono true, batch vince.
+batch:
+  enabled: false                              # true = attiva batch
+  input_dir: "data/input"                     # cartella radice da scansionare
+  mesh_filename:  "surface_mesh.ply"          # file mesh atteso dentro ogni sample dir
+  aruco_filename: "aruco_markers_3d.json"     # file ArUco JSON atteso dentro ogni sample dir
+
+  # Pattern -> HSI .hdr da usare per quel sample.
+  # I pattern usano la sintassi fnmatch (wildcard *, ?).
+  # Path relativi vengono risolti rispetto alla root del progetto.
+  sample_hsi_map:
+    "SAMPLE1*": "data/input/SB019/SB019_001/SB019_raw.hdr"
+    "SAMPLE2*": "data/input/SB020/SB020_001/SB020_raw.hdr"
+
+#-----------------------------------------------------------------------------
+#SWEEP — esecuzione batch su piu' coppie (res_reg, res_pc)
+#-----------------------------------------------------------------------------
+#Quando sweep.enabled e' true, main.py IGNORA i valori scalari di
+#render.resolution_mm_per_px / render.resolution_reg_mm_per_px e
+#cicla su tutte le coppie in resolution_pairs.
+#Durante lo sweep NON viene salvato NULLA tranne l'Excel riepilogativo finale:
+#<output_dir>/<sample_name>_sweep_resolution_summary.xlsx
+#(i flag export.save_pointcloud / export.save_images vengono forzati a false).
+sweep:
+  enabled: false        # true = attiva sweep; false = pipeline singola normale
+  resolution_pairs:     # lista di coppie [res_reg_mm_per_px, res_pc_mm_per_px]
+  - [5.0, 0.3]
+  - [2.0, 0.3]
+  - [1.5, 0.3]
+  - [1.0, 0.3]
+  - [0.9, 0.3]
+  - [0.8, 0.3]
+  - [0.7, 0.3]
+  - [0.6, 0.3]
+  - [0.5, 0.3]
+  - [5.0, 0.4]
+  - [2.0, 0.4]
+  - [1.5, 0.4]
+  - [1.0, 0.4]
+  - [0.9, 0.4]
+  - [0.8, 0.4]
+  - [0.7, 0.4]
+  - [0.6, 0.4]
+  - [0.5, 0.4]
+  - [5.0, 0.5]
+  - [2.0, 0.5]
+  - [1.5, 0.5]
+  - [1.0, 0.5]
+  - [0.9, 0.5]
+  - [0.8, 0.5]
+  - [0.7, 0.5]
+  - [0.6, 0.5]
+  - [0.5, 0.5]
