@@ -1,0 +1,156 @@
+
+SETUP ###TO DO JUST THE FIRST TIME
+--------------------------------------------------------------------------------
+
+# folder
+cd ~/.path./SpectraBreast-Vision
+
+# Create and Activate the environment
+uv venv
+source .venv/bin/activate
+
+# Install the requirements
+uv pip install -r requirements.txt
+
+
+IT IS ENOUGH LIKE THIS IF MAST3R IS INSTALLED. OTHERWISE, DO THIS:
+
+# IN SpectraBreas-Vision
+git clone --recursive https://github.com/naver/mast3r
+cd mast3r
+conda create -n mast3r python=3.11 cmake=3.14.0
+conda activate mast3r 
+conda install pytorch torchvision pytorch-cuda=12.1 -c pytorch -c nvidia  # use the correct version of cuda for your system
+pip install -r requirements.txt
+pip install -r dust3r/requirements.txt
+pip install cython
+git clone https://github.com/jenicek/asmk
+cd asmk/cython/
+cythonize *.pyx
+cd ..
+pip install .  # or python3 setup.py build_ext --inplace
+cd ..
+
+# Download the model
+https://download.europe.naverlabs.com/ComputerVision/MASt3R/MASt3R_ViTLarge_BaseDecoder_512_catmlpdpt_metric.pth
+
+# Install mast3r into the environment
+uv pip install -e mast3r/ --no-deps
+uv pip install -e mast3r/asmk --no-deps
+
+# Add mast3r to PYTHONPATH permanently
+echo 'export PYTHONPATH="$HOME/SpectraBreast-Vision/mast3r:$HOME/SpectraBreast-Vision/mast3r/dust3r:$PYTHONPATH"' >> ~/.bashrc
+source ~/.bashrc
+
+->>>> SHOULD BE GOOD NOW
+
+
+
+
+CONFIGURATION (configs/default.yaml)
+--------------------------------------------------------------------------------
+
+#PARAMETERS TO CHANGE
+    sample_name: "SAMPLE1"   ---->> BE AWARE TO WRITE IT CORRECTLY 
+    registration: mode: "single"                # single | roi | batch | sweep
+
+#PATHS SHOULDE BE RETRIEVED AUTOMATICALLY VIA SAMPLE_NAME; EVENTUALLY, YOU CAN SET IT MANUALLY IN THE PATH SECTIONS OF THE FILE
+
+
+
+
+
+
+
+RUNNING THE PIPELINE
+--------------------------------------------------------------------------------
+
+# Activate the environment (if not already active)
+cd ~/SpectraBreast-Vision
+source .venv/bin/activate
+
+# Full end-to-end (vision + registration)
+spectra full --config configs/default.yaml
+
+# Vision only (3D reconstruction + ArUco)
+spectra vision --config configs/default.yaml
+
+# Registration only (HSI -> mesh, AFTER vision has already run)
+spectra registration --config configs/default.yaml
+
+# Process a different sample without editing the YAML
+spectra full --config configs/default.yaml --sample SAMPLE2_iphone
+
+# Change mode without editing the YAML
+spectra full --config configs/default.yaml -s registration.mode=roi
+
+## BE AWARE, IF YOU HAVE ALREADY DONE THE VISION PART ON A SAMPLE, THEN AUTOMATICALLY THE PIPELINE SKIP THIS STAGE BY DEFAULT !
+## YOU CAN FORCE IT BY 
+# Force re-running vision (even if already done)
+spectra full --config configs/default.yaml --force-vision
+
+# Validate config and paths without executing anything
+spectra full --config configs/default.yaml --dry-run
+
+
+
+
+
+
+
+OUTPUT — WHERE FILES ARE SAVED
+--------------------------------------------------------------------------------
+
+All outputs go to RESULTS/<sample_name>/
+
+RESULTS/
+└── SAMPLE1_iphone/
+    │
+    ├── vision/                              <- Vision stage outputs
+    │   ├── cloud.ply                        colored 3D point cloud (open with CloudCompare)
+    │   ├── cloud.npz                        3D point cloud in numpy format
+    │   ├── surface_mesh.ply                 3D surface mesh  <- used by Registration
+    │   ├── aruco_markers_3d.json            3D positions of ArUco markers  <- used by Registration
+    │   ├── surface.ply                      surface point cloud
+    │   ├── surface.npz                      surface in numpy format
+    │   ├── camera_poses_output_frame.npy    camera poses
+    │   ├── reconstruction_metadata.json     run metadata (timing, point counts, etc.)
+    │   ├── run.yaml                         config used for this run
+    │   ├── aruco_detections/
+    │   │   ├── json/                        per-image ArUco detections
+    │   │   └── annotated/                   images with ArUco markers drawn
+    │   └── rerun/
+    │       └── spectra.rrd                  Rerun recording for interactive 3D viewing
+    │
+    └── registration/                        <- Registration stage outputs
+        ├── spectral_pointcloud_SAMPLE1_iphone.ply          spectral point cloud (CloudCompare)
+        ├── spectral_pointcloud_SAMPLE1_iphone_xyz.bin      XYZ coordinates (numpy memmap)
+        ├── spectral_pointcloud_SAMPLE1_iphone_spectra.bin  spectra (numpy memmap)
+        ├── spectral_pointcloud_SAMPLE1_iphone_wavelengths.npy  wavelengths in nm
+        ├── SAMPLE1_iphone_registration_errors.xlsx         Excel report with 2D/3D errors
+        ├── SAMPLE1_iphone_registration.png                 HSI + render overlay with ArUco
+        ├── SAMPLE1_iphone_coverage.png                     HSI -> mesh coverage map
+        ├── SAMPLE1_iphone_render_pc_topview.png            orthographic top-view render
+        └── SAMPLE1_iphone_render_pc_turbo.png              TURBO colormap render
+
+For BATCH mode, additionally:
+    RESULTS/
+    └── _batch/
+        └── batch_summary.xlsx               summary of all processed samples
+
+For SWEEP mode, additionally:
+    RESULTS/SAMPLE1_iphone/registration/
+        └── SAMPLE1_iphone_sweep_resolution_summary.xlsx  comparison across resolutions
+
+
+
+
+
+
+ 3D VISUALIZATION
+--------------------------------------------------------------------------------
+
+# Open the Rerun recording
+rerun RESULTS/SAMPLE1_iphone/vision/rerun/spectra.rrd
+
+

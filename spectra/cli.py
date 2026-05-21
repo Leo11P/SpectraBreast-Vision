@@ -1,54 +1,54 @@
-"""Typer CLI: MASt3R-SfM reconstruction + ArUco 2D/3D, optional GT poses/intrinsics.
+"""Typer CLI for the unified Spectra pipeline.
 
-After ``pip install -e .`` from the repo root, invoke as ``spectra``.
-Equivalent: ``python -m spectra``.
+Top-level commands::
 
-Usage::
+    spectra vision        # MASt3R-SfM + ArUco reconstruction (legacy `recon`)
+    spectra registration  # HSI→mesh registration (single/roi/batch/sweep)
+    spectra full          # vision → registration end-to-end on a single sample
+    spectra detect        # standalone 2D ArUco detection (unchanged)
+    spectra viewer        # local 3D viewer (unchanged)
+    spectra calibrate-intrinsics  # checkerboard calibration (unchanged)
 
-    # Config-driven (see configs/default.yaml)
-    spectra run --config configs/default.yaml
-
-    # Minimal: images only, outputs under RESULTS/
-    spectra run --rgb-dir path/to/images
-
-    # With optional calibration (pose_*.txt per view, intrinsics.npy, …)
-    spectra run -c configs/default.yaml --pose-dir DATA/poses --camera-params-dir DATA/cam
-
-    # 2D ArUco detection only (no SfM)
-    spectra detect path/to/rgb /tmp/out
-
-    # Local 3D viewer (optional gradio)
-    spectra viewer -r RESULTS
+`vision` and `recon` are aliases. Vision-only YAML configs from the legacy
+repo (top-level fields without a `vision:` wrapper) are still accepted by
+the `vision` and `recon` commands; the unified loader is only used when the
+YAML has a `vision:` sub-section (which is the new default).
 """
 
 from __future__ import annotations
 
 import json
-import sys
 from pathlib import Path
 from typing import List, Optional
 
 import typer
+import yaml
 from rich import print
 
-from .aruco import ARUCO_DICTIONARIES, detect_folder
-from .calibration import calibrate_intrinsics
 from .config import (
-    ArucoConfig,
-    InputConfig,
-    Mast3rConfig,
-    OutputConfig,
-    ReconstructionConfig,
-    RerunConfig,
-    SurfaceConfig,
-    load_config,
+    UnifiedConfig,
+    VisionConfig,
+    load_unified_config,
+)
+from .vision.aruco import ARUCO_DICTIONARIES, detect_folder
+from .vision.calibration import calibrate_intrinsics
+from .vision.config import load_config as load_vision_only_config
+
+app = typer.Typer(
+    add_completion=False,
+    no_args_is_help=True,
+    help="Unified Spectra pipeline: 3D reconstruction (vision) + HSI registration.",
 )
 
 
+# =============================================================================
+# Shared helpers
+# =============================================================================
+
 def _parse_override(value: str) -> tuple[str, object]:
-    """Parse ``key.path=value``; value parsed with ``json.loads`` when possible."""
+    """Parse 'a.b.c=value' overrides. Value is JSON-parsed when possible."""
     if "=" not in value:
-        raise typer.BadParameter(f"Override {value!r} must be in the form 'a.b=VALUE'")
+        raise typer.BadParameter(f"Override {value!r} must be 'key.path=VALUE'")
     dotted_key, raw_value = value.split("=", 1)
     dotted_key = dotted_key.strip()
     raw_value = raw_value.strip()
@@ -59,228 +59,173 @@ def _parse_override(value: str) -> tuple[str, object]:
     return dotted_key, parsed
 
 
-def _build_config(
-    config: Optional[Path],
-    rgb_dir: Optional[Path],
-    pose_dir: Optional[Path],
-    camera_params_dir: Optional[Path],
-    out_dir: Optional[Path],
-    run_name: Optional[str],
-    marker_edge_length_m: Optional[float],
-    aruco_dictionary: Optional[str],
-    align_to_aruco: Optional[bool],
-    origin_marker_id: Optional[int],
-    grpc_port: Optional[int],
-    no_wait: bool,
+def _looks_unified(yaml_data: dict) -> bool:
+    """Heuristic: a 'vision:' top-level field means the YAML is unified."""
+    return isinstance(yaml_data, dict) and "vision" in yaml_data
+
+
+def _read_yaml(path: Path) -> dict:
+    with Path(path).open("r", encoding="utf-8") as f:
+        data = yaml.safe_load(f) or {}
+    if not isinstance(data, dict):
+        raise typer.BadParameter(f"YAML at {path} must be a mapping.")
+    return data
+
+
+def _load_for_vision_command(config: Path) -> UnifiedConfig:
+    """Accept both legacy vision-only YAML and unified YAML for `vision` / `recon`."""
+    data = _read_yaml(config)
+    if _looks_unified(data):
+        return load_unified_config(config)
+    # Legacy: wrap a vision-only config in a UnifiedConfig with default extras.
+    vcfg = load_vision_only_config(config)
+    return UnifiedConfig.model_validate({
+        "sample_name": vcfg.output.run_name or "SAMPLE1",
+        "vision": vcfg.model_dump(mode="python"),
+    })
+
+
+def _apply_cli_overrides(cfg: UnifiedConfig, overrides: List[str]) -> UnifiedConfig:
+    if not overrides:
+        return cfg
+    merged: dict[str, object] = {}
+    for ov in overrides:
+        key, value = _parse_override(ov)
+        merged[key] = value
+    return cfg.with_overrides(merged)
+
+
+# =============================================================================
+# vision (= recon)
+# =============================================================================
+
+def _execute_vision(
+    config: Path,
+    sample: Optional[str],
     overrides: List[str],
-) -> ReconstructionConfig:
-    if config is not None:
-        cfg = load_config(config)
-    else:
-        if rgb_dir is None:
-            raise typer.BadParameter("Pass --config or --rgb-dir with a folder of images.")
-        cfg = ReconstructionConfig(
-            input=InputConfig(rgb_dir=rgb_dir, pose_dir=pose_dir, camera_params_dir=camera_params_dir),
-            output=OutputConfig(),
-            aruco=ArucoConfig(),
-            surface=SurfaceConfig(),
-            mast3r=Mast3rConfig(),
-            rerun=RerunConfig(),
-        )
-
-    direct: dict[str, object] = {}
-    if rgb_dir is not None:
-        direct["input.rgb_dir"] = str(rgb_dir)
-    if pose_dir is not None:
-        direct["input.pose_dir"] = str(pose_dir)
-    if camera_params_dir is not None:
-        direct["input.camera_params_dir"] = str(camera_params_dir)
-    if out_dir is not None:
-        direct["output.root"] = str(out_dir)
-    if run_name is not None:
-        direct["output.run_name"] = run_name
-    if marker_edge_length_m is not None:
-        direct["aruco.marker_edge_length_m"] = float(marker_edge_length_m)
-    if aruco_dictionary is not None:
-        direct["aruco.dictionary"] = aruco_dictionary
-    if align_to_aruco is not None:
-        direct["aruco.align_to_aruco"] = bool(align_to_aruco)
-    if origin_marker_id is not None:
-        direct["aruco.origin_marker_id"] = int(origin_marker_id)
-    if grpc_port is not None:
-        direct["rerun.grpc_port"] = int(grpc_port)
-    if no_wait:
-        direct["rerun.no_wait"] = True
-
-    if direct:
-        cfg = cfg.with_overrides(direct)
-
-    if overrides:
-        merged: dict[str, object] = {}
-        for ov in overrides:
-            key, value = _parse_override(ov)
-            merged[key] = value
-        cfg = cfg.with_overrides(merged)
-    return cfg
-
-
-def _execute_run(
-    config: Optional[Path],
-    rgb_dir: Optional[Path],
-    pose_dir: Optional[Path],
-    camera_params_dir: Optional[Path],
-    out_dir: Optional[Path],
-    run_name: Optional[str],
-    marker_edge_length_m: Optional[float],
-    aruco_dictionary: Optional[str],
-    align_to_aruco: Optional[bool],
-    origin_marker_id: Optional[int],
-    grpc_port: Optional[int],
-    no_wait: bool,
-    overrides: List[str],
+    dry_run: bool,
 ) -> None:
-    cfg = _build_config(
-        config=config,
-        rgb_dir=rgb_dir,
-        pose_dir=pose_dir,
-        camera_params_dir=camera_params_dir,
-        out_dir=out_dir,
-        run_name=run_name,
-        marker_edge_length_m=marker_edge_length_m,
-        aruco_dictionary=aruco_dictionary,
-        align_to_aruco=align_to_aruco,
-        origin_marker_id=origin_marker_id,
-        grpc_port=grpc_port,
-        no_wait=no_wait,
-        overrides=overrides,
-    )
-    from .pipeline import run_reconstruction
+    cfg = _load_for_vision_command(config)
+    if sample:
+        cfg = cfg.with_overrides({"sample_name": sample})
+    cfg = _apply_cli_overrides(cfg, overrides)
 
-    result = run_reconstruction(cfg)
-    print(f"[green]Run directory:[/green] {result.run_dir}")
+    from .orchestrator import run_vision_stage, resolve_unified_paths
+
+    cfg = resolve_unified_paths(cfg)
+    if dry_run:
+        print("[bold]Dry-run — vision config resolved:[/bold]")
+        print(cfg.vision.model_dump(mode="python"))
+        return
+    result = run_vision_stage(cfg)
+    print(f"[green]Vision finished:[/green] {result['run_dir']}")
 
 
-app = typer.Typer(
-    add_completion=False,
-    no_args_is_help=True,
-    help="MASt3R-SfM + ArUco: images → point cloud, markers in 2D/3D.",
-)
+@app.command("vision")
+def vision_cmd(
+    config: Path = typer.Option(..., "--config", "-c", exists=True, readable=True,
+                                help="YAML config (unified or vision-only)."),
+    sample: Optional[str] = typer.Option(None, "--sample",
+                                          help="Override sample_name for this run."),
+    set_override: List[str] = typer.Option([], "--set", "-s",
+                                            help="Dotted override: --set vision.aruco.marker_edge_length_m=0.03"),
+    dry_run: bool = typer.Option(False, "--dry-run",
+                                  help="Resolve paths and print the config without running."),
+) -> None:
+    """Run only the MASt3R-SfM + ArUco vision stage."""
+    _execute_vision(config, sample, set_override, dry_run)
 
 
-@app.command("recon")
+@app.command("recon", hidden=True)
 def recon_cmd(
-    config: Optional[Path] = typer.Option(
-        None,
-        "--config",
-        "-c",
-        exists=True,
-        readable=True,
-        help="YAML config (recommended: configs/default.yaml).",
-    ),
-    rgb_dir: Optional[Path] = typer.Option(None, "--rgb-dir", help="Input images folder."),
-    pose_dir: Optional[Path] = typer.Option(
-        None, "--pose-dir", help="Optional GT poses (pose_*.txt per view)."
-    ),
-    camera_params_dir: Optional[Path] = typer.Option(
-        None, "--camera-params-dir", help="Optional intrinsics.npy / camera2ee.npy directory."
-    ),
-    out_dir: Optional[Path] = typer.Option(None, "--out", "-o", help="Output root (default from config or RESULTS)."),
-    run_name: Optional[str] = typer.Option(None, "--run-name", help="Subfolder name under output root."),
-    marker_edge_length_m: Optional[float] = typer.Option(
-        None, "--marker-m", help="ArUco physical edge length (meters), overrides config."
-    ),
-    aruco_dictionary: Optional[str] = typer.Option(None, "--dict", help="OpenCV ArUco dictionary, e.g. 4x4_50."),
-    align_to_aruco: Optional[bool] = typer.Option(
-        None, "--align/--no-align", help="Sim3 align dense cloud to ArUco (default: config).",
-    ),
-    origin_marker_id: Optional[int] = typer.Option(
-        None, "--origin-id", help="If set, this marker defines the XY origin."
-    ),
-    grpc_port: Optional[int] = typer.Option(None, "--grpc-port", help="Rerun gRPC port."),
-    no_wait: bool = typer.Option(False, "--no-wait", help="Do not block after Rerun logging."),
-    set_override: List[str] = typer.Option(
-        [],
-        "--set",
-        "-s",
-        help="YAML override: --set aruco.marker_edge_length_m=0.09",
-    ),
-) -> None:
-    """Run MASt3R-SfM and export fused cloud + ArUco 2D/3D."""
-    _execute_run(
-        config=config,
-        rgb_dir=rgb_dir,
-        pose_dir=pose_dir,
-        camera_params_dir=camera_params_dir,
-        out_dir=out_dir,
-        run_name=run_name,
-        marker_edge_length_m=marker_edge_length_m,
-        aruco_dictionary=aruco_dictionary,
-        align_to_aruco=align_to_aruco,
-        origin_marker_id=origin_marker_id,
-        grpc_port=grpc_port,
-        no_wait=no_wait,
-        overrides=set_override,
-    )
-
-
-@app.command("reconstruct", hidden=True)
-def reconstruct_cmd(
-    config: Optional[Path] = typer.Option(
-        None,
-        "--config",
-        "-c",
-        exists=True,
-        readable=True,
-    ),
-    rgb_dir: Optional[Path] = typer.Option(None, "--rgb-dir"),
-    pose_dir: Optional[Path] = typer.Option(None, "--pose-dir"),
-    camera_params_dir: Optional[Path] = typer.Option(None, "--camera-params-dir"),
-    out_dir: Optional[Path] = typer.Option(
-        None, "--out", "--out-dir", "-o", help="Output root; --out-dir is a legacy alias.",
-    ),
-    run_name: Optional[str] = typer.Option(None, "--run-name"),
-    marker_edge_length_m: Optional[float] = typer.Option(None, "--marker-edge-length-m"),
-    aruco_dictionary: Optional[str] = typer.Option(None, "--aruco-dictionary"),
-    align_to_aruco: Optional[bool] = typer.Option(None, "--align-to-aruco/--no-align-to-aruco"),
-    origin_marker_id: Optional[int] = typer.Option(None, "--origin-marker-id"),
-    grpc_port: Optional[int] = typer.Option(None, "--grpc-port"),
-    no_wait: bool = False,
+    config: Path = typer.Option(..., "--config", "-c", exists=True, readable=True),
+    sample: Optional[str] = typer.Option(None, "--sample"),
     set_override: List[str] = typer.Option([], "--set", "-s"),
+    dry_run: bool = typer.Option(False, "--dry-run"),
 ) -> None:
-    """Alias for ``spectra run`` (deprecated name)."""
-    _execute_run(
-        config=config,
-        rgb_dir=rgb_dir,
-        pose_dir=pose_dir,
-        camera_params_dir=camera_params_dir,
-        out_dir=out_dir,
-        run_name=run_name,
-        marker_edge_length_m=marker_edge_length_m,
-        aruco_dictionary=aruco_dictionary,
-        align_to_aruco=align_to_aruco,
-        origin_marker_id=origin_marker_id,
-        grpc_port=grpc_port,
-        no_wait=no_wait,
-        overrides=set_override,
-    )
+    """Deprecated alias for `spectra vision`."""
+    _execute_vision(config, sample, set_override, dry_run)
 
+
+# =============================================================================
+# registration
+# =============================================================================
+
+@app.command("registration")
+def registration_cmd(
+    config: Path = typer.Option(..., "--config", "-c", exists=True, readable=True,
+                                help="Unified YAML config (must have a `registration:` section)."),
+    sample: Optional[str] = typer.Option(None, "--sample",
+                                          help="Override sample_name (also used as output filename prefix)."),
+    mode: Optional[str] = typer.Option(None, "--mode",
+                                        help="Override registration.mode (single|roi|batch|sweep)."),
+    set_override: List[str] = typer.Option([], "--set", "-s",
+                                            help="Dotted override: --set registration.render.resolution_mm_per_px=1.0"),
+    force_cpu: bool = typer.Option(False, "--cpu",
+                                    help="Force CPU raycasting even if a GPU is available."),
+    dry_run: bool = typer.Option(False, "--dry-run",
+                                  help="Validate paths and print the resolved config, no execution."),
+) -> None:
+    """Run only the registration stage (mode read from YAML or `--mode`)."""
+    cfg = load_unified_config(config)
+
+    if sample:
+        cfg = cfg.with_overrides({"sample_name": sample})
+    if mode:
+        if mode not in ("single", "roi", "batch", "sweep"):
+            raise typer.BadParameter(f"Invalid --mode {mode!r}; use single|roi|batch|sweep.")
+        cfg = cfg.with_overrides({"registration.mode": mode})
+    cfg = _apply_cli_overrides(cfg, set_override)
+
+    from .orchestrator import run_registration_stage
+
+    run_registration_stage(cfg, force_cpu=force_cpu, dry_run=dry_run)
+
+
+# =============================================================================
+# full
+# =============================================================================
+
+@app.command("full")
+def full_cmd(
+    config: Path = typer.Option(..., "--config", "-c", exists=True, readable=True,
+                                help="Unified YAML config with both `vision:` and `registration:`."),
+    sample: Optional[str] = typer.Option(None, "--sample",
+                                          help="Override sample_name. Required if YAML uses placeholder."),
+    set_override: List[str] = typer.Option([], "--set", "-s",
+                                            help="Dotted override (e.g. --set registration.mode=roi)"),
+    force_cpu: bool = typer.Option(False, "--cpu", help="Force CPU raycasting in registration."),
+    force_vision: bool = typer.Option(False, "--force-vision",
+                                       help="Re-run vision even if its outputs already exist."),
+    dry_run: bool = typer.Option(False, "--dry-run",
+                                  help="Resolve config + paths and print plan, no execution."),
+) -> None:
+    """Run vision (skipped if already done) and then registration on one sample."""
+    cfg = load_unified_config(config)
+    if sample:
+        cfg = cfg.with_overrides({"sample_name": sample})
+    cfg = _apply_cli_overrides(cfg, set_override)
+
+    from .orchestrator import run_full
+
+    run_full(cfg, force_cpu=force_cpu, force_vision=force_vision, dry_run=dry_run)
+
+
+# =============================================================================
+# detect / viewer / calibrate — kept as-is from Vision
+# =============================================================================
 
 @app.command("detect")
 def detect_cmd(
-    input_folder: Path = typer.Argument(..., exists=True, file_okay=False, help="Folder of RGB images."),
-    output_folder: Path = typer.Argument(
-        ..., help="Receives json/ and annotated/ (parent is created as needed).",
-    ),
-    dictionary: str = typer.Option(
-        "4x4_50",
-        "--dict",
-        help=f"ArUco dictionary. One of: {sorted(ARUCO_DICTIONARIES.keys())}",
-    ),
-    draw_scale: float = typer.Option(
-        2.0, "--draw-scale", help="Annotation line thickness / text size multiplier."
-    ),
+    input_folder: Path = typer.Argument(..., exists=True, file_okay=False,
+                                          help="Folder of RGB images."),
+    output_folder: Path = typer.Argument(...,
+                                          help="Receives json/ and annotated/."),
+    dictionary: str = typer.Option("4x4_50", "--dict",
+                                    help=f"ArUco dictionary. One of: {sorted(ARUCO_DICTIONARIES.keys())}"),
+    draw_scale: float = typer.Option(2.0, "--draw-scale"),
 ) -> None:
-    """Detect ArUco markers in images (2D only; no 3D / no SfM)."""
+    """Detect ArUco markers in images (2D only)."""
     results = detect_folder(
         rgb_dir=input_folder,
         out_dir=output_folder,
@@ -290,87 +235,42 @@ def detect_cmd(
     if not results:
         print(f"[yellow]No images found in:[/yellow] {input_folder}")
         return
-
     for stem, detections in results.items():
         print(f"{stem}: [green]{len(detections)}[/green] marker(s)")
     print(f"JSON: [green]{output_folder / 'json'}[/green]")
     print(f"Annotated: [green]{output_folder / 'annotated'}[/green]")
 
 
-@app.command("tui", hidden=True)
-def tui_cmd(
-    config: Optional[Path] = typer.Option(
-        None,
-        "--config",
-        "-c",
-    ),
-    data_root: Path = typer.Option(Path("DATA"), "--data-root"),
-) -> None:
-    try:
-        from .tui import run_tui
-    except ImportError as exc:
-        print(f"[red]TUI import failed:[/red] {exc}")
-        print("[yellow]Install textual>=0.60.[/yellow]")
-        raise typer.Exit(code=1)
-    run_tui(config_path=config, data_root=data_root)
-
-
 @app.command("viewer")
 def viewer_cmd(
-    results_dir: Path = typer.Option(
-        Path("RESULTS"),
-        "--results-dir",
-        "-r",
-    ),
+    results_dir: Path = typer.Option(Path("RESULTS"), "--results-dir", "-r"),
     host: str = typer.Option("127.0.0.1", "--host"),
     port: int = typer.Option(7860, "--port"),
     share: bool = typer.Option(False, "--share/--no-share"),
     no_browser: bool = typer.Option(False, "--no-browser"),
 ) -> None:
+    """Local 3D viewer for runs under `results_dir`."""
     try:
-        from .viewer import run_viewer
+        from .vision.viewer import run_viewer
     except ImportError as exc:
         print(f"[red]Viewer import failed:[/red] {exc}")
         print("[yellow]Install gradio and trimesh.[/yellow]")
         raise typer.Exit(code=1)
     run_viewer(
-        results_dir=results_dir,
-        host=host,
-        port=port,
-        share=share,
-        inbrowser=not no_browser,
+        results_dir=results_dir, host=host, port=port,
+        share=share, inbrowser=not no_browser,
     )
 
 
 @app.command("calibrate-intrinsics")
 def calibrate_intrinsics_cmd(
-    image_dir: Path = typer.Option(
-        Path("checkerboard"),
-        "--image-dir",
-        help="Folder containing checkerboard images.",
-    ),
-    output_dir: Path = typer.Option(
-        Path("intrinsics"),
-        "--output-dir",
-        help="Directory where intrinsics.npy and distortions.npy are saved.",
-    ),
-    checkerboard_cols: int = typer.Option(
-        10,
-        "--checkerboard-cols",
-        help="Checkerboard inner corners along X (columns).",
-    ),
-    checkerboard_rows: int = typer.Option(
-        7,
-        "--checkerboard-rows",
-        help="Checkerboard inner corners along Y (rows).",
-    ),
-    square_size_m: float = typer.Option(
-        0.024,
-        "--square-size-m",
-        help="Physical checkerboard square size in meters.",
-    ),
+    image_dir: Path = typer.Option(Path("checkerboard"), "--image-dir"),
+    output_dir: Path = typer.Option(Path("intrinsics"), "--output-dir"),
+    checkerboard_cols: int = typer.Option(10, "--checkerboard-cols"),
+    checkerboard_rows: int = typer.Option(7, "--checkerboard-rows"),
+    square_size_m: float = typer.Option(0.024, "--square-size-m"),
 ) -> None:
-    """Calibrate camera intrinsics from checkerboard images."""
+    """Camera-intrinsic calibration from checkerboard images."""
     try:
         mtx, dist = calibrate_intrinsics(
             image_dir=image_dir,
@@ -381,14 +281,15 @@ def calibrate_intrinsics_cmd(
     except ValueError as exc:
         print(f"[red]Calibration failed:[/red] {exc}")
         raise typer.Exit(code=1)
-
     print(f"[green]Saved:[/green] {output_dir / 'intrinsics.npy'}")
     print(f"[green]Saved:[/green] {output_dir / 'distortions.npy'}")
-    print("Camera Matrix:")
-    print(mtx)
-    print("Distortion Coefficients:")
-    print(dist)
+    print("Camera Matrix:"); print(mtx)
+    print("Distortion Coefficients:"); print(dist)
 
+
+# =============================================================================
+# Entry point
+# =============================================================================
 
 def main(argv: Optional[list[str]] = None) -> None:
     if argv is None:

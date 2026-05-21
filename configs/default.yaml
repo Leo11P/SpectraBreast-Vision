@@ -1,0 +1,222 @@
+# =============================================================================
+# SPECTRA — UNIFIED CONFIG (vision + registration)
+# =============================================================================
+# Layout convention (paths under `data_root` / `results_root`):
+#
+#   DATA/<sample>/
+#     input_vision/{rgb,poses,camera_parameters}        # vision inputs
+#     input_registration/<sample>_raw.hdr               # registration inputs
+#     input_registration/<sample>_raw.png               # (only for ROI mode)
+#
+#   RESULTS/<sample>/
+#     vision/        # surface_mesh.ply, aruco_markers_3d.json, cloud.ply, ...
+#     registration/  # spectral PLY, NPZ, Excel report, registration PNGs, ...
+#
+# Anything in vision.input.* / registration.paths.* can also be set as an
+# ABSOLUTE path; relative paths are resolved against cwd as in the original
+# scripts.
+# =============================================================================
+
+# Sample being processed. Used to build default input/output paths.
+sample_name: "RUBIK"
+
+# Roots that drive default path resolution for `spectra full`.
+# Both can be relative (resolved from cwd) or absolute.
+data_root:    "DATA"
+results_root: "RESULTS"
+
+# Which stage(s) to run when invoking `spectra full`. The standalone
+# sub-commands `spectra vision` and `spectra registration` ignore this.
+stages: ["vision", "registration"]
+
+# =============================================================================
+# VISION (MASt3R-SfM + ArUco). Mirrors configs/recon.yaml from the legacy repo.
+# =============================================================================
+vision:
+  input:
+    # When `null` (the default) and you run `spectra full`, paths are derived
+    # automatically:
+    #   rgb_dir          = DATA/input_vision/<sample>/rgb
+    #   pose_dir         = DATA/input_vision/<sample>/poses          (if it exists)
+    #   camera_params_dir= DATA/input_vision/<sample>/camera_parameters (if it exists)
+    # Override here when running `spectra vision` standalone.
+    rgb_dir:           DATA/input_vision/RUBIK_iphone_cp
+    pose_dir:          DATA/input_vision/RUBIK_iphone_cp
+    camera_params_dir: DATA/input_vision/RUBIK_iphone_cp
+
+  output:
+    # When `null`, derived to:  RESULTS/<sample>/vision
+    root:                        null
+    run_name:                    null
+    update_most_recent_symlink:  true
+    z_axis_points_down:          true
+
+  aruco:
+    dictionary:             4x4_50
+    marker_edge_length_m:   0.068
+    origin_marker_id:       null
+    min_views_per_marker:   2
+    align_to_aruco:         true
+    max_sim3_scale_deviation_when_poses_known: 0.05
+    detection_draw_scale:   2.0
+    bundle_adjustment:      false
+    ba_max_iters:           1000
+    ba_lr:                  0.005
+    ba_huber_delta_px:      2.0
+    ba_cam_prior_sigma_m:   0.10
+    ba_cam_prior_sigma_deg: 5.0
+    reject_views_by_alignment_error: false
+    max_view_alignment_reproj_rmse_px: 15.0
+    min_kept_views: 2
+    reject_views_with_no_markers: false
+
+  surface:
+    grid_step:      0.0
+    fill_iters:     2
+    smooth_iters:   1
+    min_neighbors:  3
+    max_resolution: 2048
+    conf_threshold_percentile: 50.0
+
+  mast3r:
+    model_name:               naver/MASt3R_ViTLarge_BaseDecoder_512_catmlpdpt_metric
+    pipeline_variant:         sfm
+    scene_graph:              auto
+    retrieval_model:          null
+    sfm_subsample:            4
+    sfm_lr1:                  0.07
+    sfm_niter1:               300
+    sfm_lr2:                  0.01
+    sfm_niter2:               300
+    sfm_opt_depth:            true
+    sfm_shared_intrinsics:    true
+    sfm_matching_conf_thr:    5.0
+    sfm_min_conf_thr:         1.5
+    sfm_clean_depth:          true
+    image_size:               512
+    neighbor_window:          2
+    desc_conf_thr:            0.1
+    dense_conf_thr:           12.0
+    voxel_size:               0.0015
+    max_points:               2000000
+    pixel_tol:                1.5
+    max_matches_per_pair:     50000
+    pose_refine_iters:        1
+    pose_refine_lr:           0.0
+    pose_refine_lr_min:       0.00001
+    pose_prior_sigma_deg:     1.0
+    pose_prior_sigma_m:       0.01
+    pose_prior_weight:        0.06
+    pose_refine_log_every:    25
+    pose_refine_max_drot_deg: 8.0
+    pose_refine_max_dt_m:     0.06
+    dense_refine_iters:       1
+    dense_refine_lr:          0.0
+    confidence_percentile:    99.0
+
+  rerun:
+    enabled: true
+    grpc_port: 9876
+    no_wait: true
+    log_cloud_rgb: true
+    log_cloud_confidence: false
+    log_cameras: false
+    log_camera_aruco_images: false
+    log_camera_confidence_images: false
+    log_aruco_3d: true
+    log_surface_mesh: false
+    log_surface_cloud_open3d_web: false
+    open3d_web_visualizer_port: 8888
+    open3d_web_show_ui: false
+    pointcloud_resample_factor: 0.25
+    save_rrd: true
+    save_rbl: true
+    rerun_subdir: rerun
+    rrd_basename: spectra.rrd
+    rbl_basename: spectra.rbl
+
+# =============================================================================
+# REGISTRATION (HSI → mesh). Mirrors config.yaml from the legacy repo.
+# =============================================================================
+registration:
+  # Execution mode.
+  #   single : pipeline standard (HSI with visible ArUcos) on one sample
+  #   roi    : dual HSI — LiveView PNG with ArUcos + ROI cube without ArUcos
+  #   batch  : scan data_root for all <sample>/input_registration/ subfolders
+  #   sweep  : run the pipeline over multiple (res_reg, res_pc) pairs
+  mode: "sweep"
+
+  # Per-sample paths. When `null` and you run `spectra full` (or `spectra
+  # registration` after `spectra vision`), they are auto-derived:
+  #
+  #   hsi_hdr      = DATAinput_registration/<sample>/<sample>_raw.hdr
+  #   liveview_png = DATA/input_registration/<sample>/<sample>_raw.png   (ROI only)
+  #   mesh         = RESULTS/vision/<sample>/surface_mesh.ply
+  #   aruco_json   = RESULTS/vision/<sample>/aruco_markers_3d.json
+  #   output_dir   = RESULTS/registration/<sample>
+  #
+  # Override here when running `spectra registration` standalone with custom inputs.
+  paths:
+    hsi_hdr:      null #DATA/input_registration/SAMPLE1/SB019_001/SB019_raw.hdr
+    mesh:         null
+    aruco_json:   null
+    liveview_png: null
+    output_dir:   null
+
+  detection:
+    hsi_extraction_method: "mean"     # "mean" | "visible_band" | "pca"
+    aruco_dict:            "4X4_50"
+    marker_side_mm:        6.8
+    use_subpix:            true
+    subpix_winsize:        5
+
+  roi:
+    method:         "sift"
+    min_matches:    20
+    ransac_thresh:  3.0
+    lowe_ratio:     0.75
+    fallback_orb:   true
+    save_match_viz: true
+
+  render:
+    resolution_mm_per_px:     5.0
+    resolution_reg_mm_per_px: 0.5
+    margin_mm:                10.0
+    ray_chunk_size:           16384
+    face_chunk_size:          2048
+    sort_rays_for_culling:    true
+
+  pointcloud:
+    border_px:        2
+    reflectance_norm: true
+    pc_chunk_size:    100000
+
+  export:
+    save_pointcloud: false
+    ply:             true
+    npy:             true
+    csv:             false
+    csv_max_points:  500000
+    save_images:     false
+
+  # ------------------------------------------------------------------
+  # mode == "batch"
+  # Scans `data_root` for every <sample>/input_registration/<sample>_raw.hdr.
+  # mesh + aruco are taken from RESULTS/<sample>/vision/.
+  # Final aggregate Excel is written to RESULTS/_batch/batch_summary.xlsx.
+  # ------------------------------------------------------------------
+  batch:
+    roi_mode:        false   # true → look for <sample>_raw.png next to the .hdr
+    # Optional regex filter on sample folder names (e.g. "^SB\\d+").
+    sample_regex:    null
+
+  # ------------------------------------------------------------------
+  # mode == "sweep"
+  # ------------------------------------------------------------------
+  sweep:
+    roi_mode: true
+    resolution_pairs:
+      - [5.0, 0.5]
+      - [2.0, 0.5]
+      - [1.0, 0.5]
+      - [0.5, 0.5]
