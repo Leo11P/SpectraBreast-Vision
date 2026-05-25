@@ -365,7 +365,7 @@ def run_reconstruction(cfg: ReconstructionConfig) -> ReconstructionResult:
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-_   log_step("Step 1/6 - Preparing run folder and loading inputs")
+    _log_step("Step 1/6 - Preparing run folder and loading inputs")
     _timer.begin("Step 1/6 - Preparing run folder and loading inputs")
     run_dir, run_name = prepare_run_dir(cfg.output.root, cfg.output.run_name)
     print(f"Run directory: [green]{run_dir}[/green]")

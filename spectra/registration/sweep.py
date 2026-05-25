@@ -270,7 +270,7 @@ def _empty_row(res_reg: float, res_pc: float, status: str, roi_mode: bool = Fals
         "3D_PC_bilinear_mean_mm":    nan, "3D_PC_bilinear_median_mm":  nan,
         "3D_PC_bicubic_mean_mm":     nan, "3D_PC_bicubic_median_mm":   nan,
         "roi_inliers": 0, "roi_matches": 0, "roi_reproj_px": nan,
-        "render_total_s": float("nan"), "pipeline_s": 0.0,, "status": status,
+        "render_total_s": float("nan"), "pipeline_s": 0.0, "status": status,
     }
 
 
