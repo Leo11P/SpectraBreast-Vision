@@ -28,6 +28,7 @@ import time
 import traceback
 from pathlib import Path
 from typing import Any, Optional
+from .runner import read_vision_timings
 
 import numpy as np
 
@@ -261,6 +262,12 @@ def _run_single_sample(
         m_pc_bic, md_pc_bic = m_rb_bic, md_rb_bic
         n_pc_bil, n_pc_bic = n_rb_bil, n_rb_bic
 
+        # Tempo vision (se la vision ha scritto timings.json)
+    vision_dir = Path(output_dir).parent / "vision"
+    vt = read_vision_timings(vision_dir)
+    vision_total_s = float(vt["total_seconds"]) if vt and "total_seconds" in vt else float("nan")
+    grand_total_s = (vision_total_s + elapsed_total) if not np.isnan(vision_total_s) else float("nan")
+
     return {
         "sample":                    sample_name,
         "roi_mode":                  "yes" if roi_mode else "no",
@@ -287,12 +294,14 @@ def _run_single_sample(
         "elapsed_render_s":          round(elapsed_render,   2),
         "elapsed_pipeline_s":        round(elapsed_pipeline, 2),
         "elapsed_total_s":           round(elapsed_total,    2),
+        "vision_total_s":            vision_total_s,
+        "grand_total_s":             grand_total_s,
         "status":                    "ok",
     }
 
 
 def _empty_row(sample: str, res_reg: float, res_pc: float,
-               status: str, roi_mode: bool = False) -> dict:
+               status: str, roi_mode: bool = False, "vision_total_s": nan, "grand_total_s": nan,) -> dict:
     nan = float("nan")
     return {
         "sample": sample, "roi_mode": "yes" if roi_mode else "no",
@@ -368,9 +377,6 @@ def _write_batch_summary_xlsx(rows: list[dict], output_path: str) -> None:
         ("roi_inliers",               "ROI inliers",                  roi_fill),
         ("roi_matches",               "ROI matches",                  roi_fill),
         ("roi_reproj_px",             "ROI reproj (px)",              roi_fill),
-        ("elapsed_render_s",          "Render (s)",                   meta_fill),
-        ("elapsed_pipeline_s",        "Pipeline (s)",                 meta_fill),
-        ("elapsed_total_s",           "Total (s)",                    meta_fill),
         ("status",                    "Status",                       meta_fill),
     ]
 
@@ -400,10 +406,64 @@ def _write_batch_summary_xlsx(rows: list[dict], output_path: str) -> None:
         ws.column_dimensions[get_column_letter(ci)].width = max(max_len + 3, 12)
 
     ws.freeze_panes = ws.cell(row=HEADER_ROW + 1, column=2)
+    _write_batch_timings_sheet(wb, rows)
 
     os.makedirs(os.path.dirname(os.path.abspath(output_path)), exist_ok=True)
     wb.save(output_path)
     print(f"\n[batch] Aggregate Excel saved → {output_path}")
+
+
+def _write_batch_timings_sheet(wb, rows: list[dict]) -> None:
+    """Aggiunge la sheet 'Timings' (una riga per sample) al workbook batch."""
+    from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
+    from openpyxl.utils import get_column_letter
+
+    ws = wb.create_sheet("Timings")
+    hdr_font  = Font(bold=True, color="FFFFFF", size=11)
+    hdr_fill  = PatternFill("solid", start_color="305496")
+    hdr_align = Alignment(horizontal="center", vertical="center", wrap_text=True)
+    thin      = Side(border_style="thin", color="BFBFBF")
+    border    = Border(left=thin, right=thin, top=thin, bottom=thin)
+    center    = Alignment(horizontal="center", vertical="center")
+    norm_font = Font(name="Calibri", size=10)
+
+    ws.cell(row=1, column=1, value="Timings — mode: BATCH").font = \
+        Font(bold=True, size=14, color="1F4E78")
+    ws.cell(row=2, column=1,
+            value="Per-sample timings. Vision = launch→registration start "
+                  "(from vision/timings.json); Reg total = render + pipeline.").font = \
+        Font(italic=True, color="595959")
+
+    columns = [
+        ("sample",             "Sample"),
+        ("vision_total_s",     "Vision total\n(s)"),
+        ("elapsed_render_s",   "GPU render\n(s)"),
+        ("elapsed_pipeline_s", "Reg + export\n(s)"),
+        ("elapsed_total_s",    "Reg total\n(s)"),
+        ("grand_total_s",      "Total\n(vision+reg) (s)"),
+        ("status",             "Status"),
+    ]
+    HEADER_ROW = 4
+    for ci, (_, label) in enumerate(columns, start=1):
+        c = ws.cell(row=HEADER_ROW, column=ci, value=label)
+        c.font = hdr_font; c.fill = hdr_fill; c.alignment = hdr_align; c.border = border
+    ws.row_dimensions[HEADER_ROW].height = 36
+
+    def _fmt(v):
+        return "N/A" if isinstance(v, float) and np.isnan(v) else v
+
+    for r_i, row in enumerate(rows, start=HEADER_ROW + 1):
+        for ci, (key, _) in enumerate(columns, start=1):
+            val = row.get(key, "")
+            c = ws.cell(row=r_i, column=ci, value=_fmt(val))
+            c.alignment = center; c.border = border; c.font = norm_font
+            if isinstance(val, float) and not np.isnan(val) and key.endswith("_s"):
+                c.number_format = "0.0000"
+
+    for ci, (_, label) in enumerate(columns, start=1):
+        max_len = max(len(line) for line in label.split("\n"))
+        ws.column_dimensions[get_column_letter(ci)].width = max(max_len + 3, 14)
+    ws.freeze_panes = ws.cell(row=HEADER_ROW + 1, column=2)
 
 
 # =============================================================================

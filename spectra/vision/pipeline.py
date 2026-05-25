@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import importlib
 import json
+
 import os
 import time
 from dataclasses import dataclass, field, replace
@@ -357,12 +358,15 @@ def _slice_raw_reconstruction(raw: RawReconstruction, keep_idx: np.ndarray) -> R
 def run_reconstruction(cfg: ReconstructionConfig) -> ReconstructionResult:
     """Execute the full ArUco-stabilized reconstruction pipeline."""
     t0 = time.time()
+    _timer = _StepTimer()
+    _timer.start()
     if hasattr(torch, "set_float32_matmul_precision"):
         torch.set_float32_matmul_precision("high")
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     _log_step("Step 1/6 - Preparing run folder and loading inputs")
+    _timer.begin("Step 1/6 - Preparing run folder and loading inputs")
     run_dir, run_name = prepare_run_dir(cfg.output.root, cfg.output.run_name)
     print(f"Run directory: [green]{run_dir}[/green]")
 
@@ -400,6 +404,7 @@ def run_reconstruction(cfg: ReconstructionConfig) -> ReconstructionResult:
         init_rerun("Spectra_Reconstruction", int(cfg.rerun.grpc_port), rrd_path=rrd_path)
 
     _log_step("Step 2/6 - Detecting ArUco markers")
+    _timer.begin("Step 2/6 - Detect ArUco markers")
     detections_per_view, annotated_rgb_per_view = _detect_aruco_on_all(
         image_paths=backend_inputs.image_paths,
         run_dir=run_dir,
@@ -410,6 +415,7 @@ def run_reconstruction(cfg: ReconstructionConfig) -> ReconstructionResult:
     print(f"Detected [green]{num_detections}[/green] markers across {num_views} views.")
 
     _log_step("Step 3/6 - Running MASt3R-SfM")
+    _timer.begin("Step 3/6 - MASt3R-SfM backend")
     raw = _run_mast3r_backend(cfg, backend_inputs)
     print(
         f"Backend produced [green]{raw.fused_points.shape[0]:,}[/green] fused points; "
@@ -430,6 +436,7 @@ def run_reconstruction(cfg: ReconstructionConfig) -> ReconstructionResult:
     poses_known = backend_inputs.T_world_cam_gt is not None and backend_inputs.K_orig_gt is not None
 
     use_ba = bool(cfg.aruco.bundle_adjustment) and (num_detections > 0)
+    _timer.begin("Step 4/6 - ArUco alignment / bundle adjustment")
     if cfg.aruco.align_to_aruco and num_detections > 0:
         if use_ba:
             _log_step(
@@ -670,6 +677,7 @@ def run_reconstruction(cfg: ReconstructionConfig) -> ReconstructionResult:
             }
 
     _log_step("Step 5/6 - Reconstructing single-surface height field")
+    _timer.begin("Step 5/6 - Surface reconstruction")
     surface = reconstruct_surface(
         fused_points=aligned_cloud,
         fused_colors=aligned_colors,
@@ -700,6 +708,7 @@ def run_reconstruction(cfg: ReconstructionConfig) -> ReconstructionResult:
         print("[dim]Output frame: world +Z points down (Z negated).[/dim]")
 
     _log_step("Step 6/6 - Writing outputs and logging to Rerun")
+    _timer.begin("Step 6/6 - Write outputs + Rerun")
     _write_outputs(
         run_dir=run_dir,
         cfg=cfg,
@@ -745,6 +754,15 @@ def run_reconstruction(cfg: ReconstructionConfig) -> ReconstructionResult:
     if cfg.output.update_most_recent_symlink:
         update_most_recent_symlink(cfg.output.root, run_dir)
 
+    _timer.finish()
+    try:
+        (run_dir / "timings.json").write_text(
+            json.dumps(_timer.to_dict(), indent=2), encoding="utf-8"
+        )
+        print(f"[dim]Vision timings saved → {run_dir / 'timings.json'}[/dim]")
+    except OSError as exc:
+        print(f"[yellow]Could not write vision timings.json: {exc}[/yellow]")
+
     print(f"[green]Done in {time.time() - t0:.1f} s. Outputs: {run_dir}[/green]")
 
     return ReconstructionResult(
@@ -769,6 +787,50 @@ def run_reconstruction(cfg: ReconstructionConfig) -> ReconstructionResult:
         },
     )
 
+
+class _StepTimer:
+
+    def __init__(self) -> None:
+        self._t_start = 0.0
+        self._t_end = 0.0
+        self._current_label = None
+        self._current_t0 = 0.0
+        self._phases: List[Dict[str, Any]] = []
+
+    def start(self) -> None:
+        self._t_start = time.time()
+
+    def begin(self, label: str) -> None:
+        now = time.time()
+        if self._current_label is not None:
+            self._phases.append(
+                {"label": self._current_label, "seconds": now - self._current_t0}
+            )
+        self._current_label = label
+        self._current_t0 = now
+
+    def finish(self) -> None:
+        now = time.time()
+        if self._current_label is not None:
+            self._phases.append(
+                {"label": self._current_label, "seconds": now - self._current_t0}
+            )
+            self._current_label = None
+        self._t_end = now
+
+    @property
+    def total_seconds(self) -> float:
+        end = self._t_end if self._t_end else time.time()
+        return end - self._t_start
+
+    def to_dict(self) -> Dict[str, Any]:
+        return {
+            "total_seconds": round(self.total_seconds, 4),
+            "phases": [
+                {"label": p["label"], "seconds": round(p["seconds"], 4)}
+                for p in self._phases
+            ],
+        }
 
 def _write_outputs(
     run_dir: Path,
