@@ -34,6 +34,28 @@ import cv2
 
 from ..config import RegistrationConfig
 
+import json
+from typing import Dict
+
+
+def read_vision_timings(vision_dir: Path) -> Optional[Dict[str, Any]]:
+    """Rilegge <vision_dir>/timings.json. None se assente/illeggibile.
+
+    vision_dir = RESULTS/<sample>/vision
+    """
+    path = Path(vision_dir) / "timings.json"
+    if not path.is_file():
+        return None
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return None
+    return data if isinstance(data, dict) else None
+
+
+def _vision_dir_for(results_root, sample_name) -> Path:
+    return Path(results_root) / str(sample_name) / "vision"
+
 # Render GPU is optional (torch / cupy may be absent).
 try:
     import torch
@@ -247,6 +269,7 @@ def run_registration(
         aruco_dict_cv=aruco_dict_cv,
         device_str=device_str,
         use_gpu_render=use_gpu_render,
+        results_root=results_root,
     )
 
 
@@ -256,6 +279,7 @@ def _run_single_or_roi(
     aruco_dict_cv: int,
     device_str: Optional[str],
     use_gpu_render: bool,
+    results_root: Optional[Path] = None,
 ) -> dict[str, Any]:
     """Single / ROI path — mirrors the second half of legacy main.py."""
     from .pipeline import load_mesh, save_render, save_turbo_render
@@ -272,6 +296,8 @@ def _run_single_or_roi(
     precomputed_render = None
     precomputed_render_reg = None
 
+    _t_render_total = 0.0   # somma render pc (+ reg se dual)
+
     # Pre-render on GPU once, so single+roi pipelines reuse them.
     if use_gpu_render and render_orthographic_topview_gpu is not None:
         mesh = load_mesh(str(cfg.paths.mesh), scale_m_to_mm=True)
@@ -284,7 +310,9 @@ def _run_single_or_roi(
             margin_mm=cfg.render.margin_mm,
             device=device_str,
         )
-        print(f"[Render PC] Completed in {time.time() - t0:.1f}s")
+        _dt = time.time() - t0
+        _t_render_total += _dt
+        print(f"[Render PC] Completed in {_dt:.1f}s")
         if save_images:
             r_rgb, d_map, xyz_map, _, _ = precomputed_render
             save_render(r_rgb, d_map, output_dir=output_dir,
@@ -303,7 +331,9 @@ def _run_single_or_roi(
                 margin_mm=cfg.render.margin_mm,
                 device=device_str,
             )
-            print(f"[Render REG] Completed in {time.time() - t0:.1f}s")
+            _dt = time.time() - t0
+            _t_render_total += _dt
+            print(f"[Render REG] Completed in {_dt:.1f}s")
             if save_images:
                 r_rgb, d_map, xyz_map, _, _ = precomputed_render_reg
                 save_render(r_rgb, d_map, output_dir=output_dir,
@@ -349,7 +379,8 @@ def _run_single_or_roi(
         precomputed_render       = precomputed_render,
         precomputed_render_reg   = precomputed_render_reg,
     )
-    elapsed = time.time() - t0
+    elapsed = time.time() - t0          # = registration + export (timer post-render)
+    _reg_total = _t_render_total + elapsed   # render GPU + pipeline/export
 
     print("\n" + "=" * 68)
     print("REGISTRATION COMPLETED")
@@ -357,20 +388,108 @@ def _run_single_or_roi(
     print(f"  Total time     : {elapsed:.1f}s  ({elapsed/60:.1f} min)")
     n_pts = result.get("n_valid", 0)
     n_bands = result.get("bands", 0)
-    if save_pointcloud:
-        print(f"  Cloud points   : {n_pts:,}")
-        print(f"  Spectral bands : {n_bands}")
-    if result.get("wavelengths"):
-        wl = result["wavelengths"]
-        print(f"  Wavelengths    : {wl[0]:.1f} — {wl[-1]:.1f} nm")
-    if result.get("is_roi_mode"):
-        info = result["roi_align_info"]
-        print(f"  ROI→PNG match  : {info['n_inliers']}/{info['n_good_matches']} "
-              f"inliers, reproj={info['reproj_error_mean_px']:.3f} px")
+    ...
     print(f"  Output         : {output_dir}")
     print("=" * 68)
 
+    # --- Timings nella sheet Excel ---------------------------------------
+    excel_path = str(Path(output_dir) / f"{sample_name}_registration_errors.xlsx")
+    timings = {
+        "render_total_s": round(_t_render_total, 4),
+        "pipeline_s": round(elapsed, 4),
+        "reg_total_s": round(_reg_total, 4),
+    }
+    result["_timings"] = timings   # esposto per l'orchestrator (totale vision+reg)
+    try:
+        _append_single_timings_sheet(
+            excel_path=excel_path,
+            sample_name=sample_name,
+            timings=timings,
+            vision_dir = _vision_dir_for(results_root, sample_name) if results_root else None
+        )
+    except Exception as exc:
+        print(f"[yellow]Could not append Timings sheet: {exc}[/yellow]")
+
     return result
+
+
+
+
+def _append_single_timings_sheet(
+    *,
+    excel_path: str,
+    sample_name: str,
+    timings: Dict[str, Any],
+    vision_dir: Optional[Path],
+) -> None:
+    """Apre l'Excel di registration e aggiunge/sostituisce la sheet 'Timings'."""
+    from openpyxl import load_workbook
+    from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
+
+    if not Path(excel_path).is_file():
+        print(f"[yellow]Timings: Excel not found ({excel_path}); skip.[/yellow]")
+        return
+
+    vt = read_vision_timings(vision_dir) if vision_dir else None
+    vis_total = vt.get("total_seconds") if vt else None
+    grand_total = (vis_total + timings["reg_total_s"]) if vis_total is not None else None
+
+    wb = load_workbook(excel_path)
+    if "Timings" in wb.sheetnames:
+        del wb["Timings"]
+    ws = wb.create_sheet("Timings")
+
+    hdr_font = Font(bold=True, color="FFFFFF", size=11)
+    hdr_fill = PatternFill("solid", start_color="305496")
+    thin = Side(border_style="thin", color="BFBFBF")
+    border = Border(left=thin, right=thin, top=thin, bottom=thin)
+    norm = Font(name="Calibri", size=10); bold = Font(name="Calibri", size=10, bold=True)
+    left = Alignment(horizontal="left", vertical="center")
+    center = Alignment(horizontal="center", vertical="center")
+    vis_fill = PatternFill("solid", start_color="E2EFDA")
+    reg_fill = PatternFill("solid", start_color="D9E1F2")
+    tot_fill = PatternFill("solid", start_color="FFE699")
+
+    ws.cell(row=1, column=1, value="Timings — mode: SINGLE").font = \
+        Font(bold=True, size=14, color="1F4E78")
+
+    ri = [3]  # mutabile per closure
+    def section(name):
+        c1 = ws.cell(row=ri[0], column=1, value=name); c1.font = hdr_font; c1.fill = hdr_fill; c1.border = border
+        c2 = ws.cell(row=ri[0], column=2, value="seconds"); c2.font = hdr_font; c2.fill = hdr_fill; c2.border = border
+        ri[0] += 1
+    def kv(label, val, fill, b=False):
+        c1 = ws.cell(row=ri[0], column=1, value=label); c1.font = bold if b else norm; c1.alignment = left; c1.border = border; c1.fill = fill
+        c2 = ws.cell(row=ri[0], column=2, value=("N/A" if val is None else val)); c2.font = bold if b else norm; c2.alignment = center; c2.border = border; c2.fill = fill
+        if isinstance(val, (int, float)): c2.number_format = "0.0000"
+        ri[0] += 1
+
+    section("GLOBAL TOTALS")
+    kv("Total (code start → end)", round(grand_total, 4) if grand_total is not None else None, tot_fill, True)
+    kv("Vision total (launch → registration start)", vis_total, vis_fill, True)
+    kv("Registration total (render + pipeline)", timings["reg_total_s"], reg_fill, True)
+    ri[0] += 1
+
+    section("VISION SUB-PHASES")
+    if vt and vt.get("phases"):
+        for p in vt["phases"]:
+            kv(p["label"], p["seconds"], vis_fill)
+    else:
+        kv("Vision phases", None, vis_fill)
+    ri[0] += 1
+
+    section("REGISTRATION")
+    kv("GPU render total (pc + reg)", timings["render_total_s"], reg_fill)
+    kv("Registration + export", timings["pipeline_s"], reg_fill)
+    kv("Registration total", timings["reg_total_s"], reg_fill, True)
+
+    ws.column_dimensions["A"].width = 44
+    ws.column_dimensions["B"].width = 18
+    wb.save(excel_path)
+    print(f"[dim]Timings sheet added → {excel_path}[/dim]")
+
+
+
 
 
 __all__ = ["run_registration"]

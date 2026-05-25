@@ -23,12 +23,14 @@ import traceback
 from pathlib import Path
 from typing import Optional
 
+
+
 import numpy as np
 
 from ..config import RegistrationConfig
 from .pipeline import load_mesh
 from .pipeline_roi import run_full_pipeline_roi
-
+from .runner import read_vision_timings, _vision_dir_for
 
 _3D_ERROR_KEYS = [
     "3D_REG_bilinear_mean_mm",
@@ -97,10 +99,11 @@ def _precompute_renders(
     margin_mm: float,
     torch_device: Optional[str],
     render_fn,
-) -> dict[float, tuple]:
+) -> tuple[dict[float, tuple], dict[float, float]]:
     if render_fn is None:
         raise RuntimeError("render_fn is None — cannot pre-compute renders.")
     cache: dict[float, tuple] = {}
+    render_times: dict[float, float] = {}
     n = len(unique_resolutions)
     print(f"\n[sweep][cache] Pre-computing {n} unique renders...")
     t0_total = time.time()
@@ -113,10 +116,11 @@ def _precompute_renders(
             margin_mm=margin_mm,
             device=torch_device,
         )
-        print(f"[sweep][cache]   done in {time.time() - t0:.1f}s")
+        dt = time.time() - t0
+        render_times[_quantize_res(res)] = dt
+        print(f"[sweep][cache]   done in {dt:.1f}s")
     print(f"[sweep][cache] All {n} renders ready in {time.time() - t0_total:.1f}s")
-    return cache
-
+    return cache, render_times
 
 def _get_render(cache: dict[float, tuple], res: float) -> tuple:
     key = _quantize_res(res)
@@ -127,6 +131,14 @@ def _get_render(cache: dict[float, tuple], res: float) -> tuple:
             return v
     raise KeyError(f"Render for res={res} mm/px not in cache (keys: {sorted(cache)})")
 
+def _get_render_time(times: dict[float, float], res: float) -> float:
+    key = _quantize_res(res)
+    if key in times:
+        return times[key]
+    for k, v in times.items():
+        if abs(k - key) < _RES_TOL:
+            return v
+    return float("nan")
 
 # =============================================================================
 # Single pair run
@@ -144,6 +156,7 @@ def _run_single_pair(
     render_cache: Optional[dict[float, tuple]],
     save_pointcloud_override: bool = False,
     save_images_override: bool = False,
+    render_total_s: float = float("nan"),
 ) -> dict:
     liveview_png_path = (
         str(cfg.paths.liveview_png)
@@ -239,7 +252,9 @@ def _run_single_pair(
         "roi_inliers":   roi_info["n_inliers"]            if roi_info else 0,
         "roi_matches":   roi_info["n_good_matches"]       if roi_info else 0,
         "roi_reproj_px": roi_info["reproj_error_mean_px"] if roi_info else float("nan"),
-        "elapsed_s":     round(time.time() - t0, 2),
+        "render_total_s": round(float(render_total_s), 4)
+                          if not np.isnan(render_total_s) else float("nan"),
+        "pipeline_s":     round(time.time() - t0, 4),
         "status":        "ok",
     }
 
@@ -255,7 +270,7 @@ def _empty_row(res_reg: float, res_pc: float, status: str, roi_mode: bool = Fals
         "3D_PC_bilinear_mean_mm":    nan, "3D_PC_bilinear_median_mm":  nan,
         "3D_PC_bicubic_mean_mm":     nan, "3D_PC_bicubic_median_mm":   nan,
         "roi_inliers": 0, "roi_matches": 0, "roi_reproj_px": nan,
-        "elapsed_s": 0.0, "status": status,
+        "render_total_s": float("nan"), "pipeline_s": 0.0,, "status": status,
     }
 
 
@@ -326,7 +341,6 @@ def _write_summary_xlsx(rows: list[dict], output_path: str, sample_name: str,
         ("roi_inliers",               "ROI inliers"),
         ("roi_matches",               "ROI matches"),
         ("roi_reproj_px",             "ROI reproj (px)"),
-        ("elapsed_s",                 "Elapsed (s)"),
         ("status",                    "Status"),
     ]
 
@@ -362,6 +376,78 @@ def _write_summary_xlsx(rows: list[dict], output_path: str, sample_name: str,
     os.makedirs(os.path.dirname(os.path.abspath(output_path)), exist_ok=True)
     wb.save(output_path)
     print(f"\n[sweep] Excel summary saved → {output_path}")
+
+
+def _write_sweep_timings_sheet(wb, rows: list[dict], vision_timings: Optional[dict]) -> None:
+    """Aggiunge la sheet 'Timings': blocco vision + tabella per coppia (render/pipeline)."""
+    from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
+    from openpyxl.utils import get_column_letter
+
+    ws = wb.create_sheet("Timings")
+    hdr_font = Font(bold=True, color="FFFFFF", size=11)
+    hdr_fill = PatternFill("solid", start_color="305496")
+    hdr_align = Alignment(horizontal="center", vertical="center", wrap_text=True)
+    thin = Side(border_style="thin", color="BFBFBF")
+    border = Border(left=thin, right=thin, top=thin, bottom=thin)
+    norm = Font(name="Calibri", size=10); bold = Font(name="Calibri", size=10, bold=True)
+    left = Alignment(horizontal="left", vertical="center")
+    center = Alignment(horizontal="center", vertical="center")
+    vis_fill = PatternFill("solid", start_color="E2EFDA")
+    reg_fill = PatternFill("solid", start_color="D9E1F2")
+
+    ws.cell(row=1, column=1, value="Timings — mode: SWEEP").font = \
+        Font(bold=True, size=14, color="1F4E78")
+
+    ri = 3
+    # Blocco VISION
+    c1 = ws.cell(row=ri, column=1, value="VISION"); c1.font = hdr_font; c1.fill = hdr_fill; c1.border = border
+    c2 = ws.cell(row=ri, column=2, value="seconds"); c2.font = hdr_font; c2.fill = hdr_fill; c2.border = border
+    ri += 1
+    def kv(label, val, b=False):
+        nonlocal ri
+        a = ws.cell(row=ri, column=1, value=label); a.font = bold if b else norm; a.alignment = left; a.border = border; a.fill = vis_fill
+        bb = ws.cell(row=ri, column=2, value=("N/A" if val is None else val)); bb.font = bold if b else norm; bb.alignment = center; bb.border = border; bb.fill = vis_fill
+        if isinstance(val, (int, float)): bb.number_format = "0.0000"
+        ri += 1
+    if vision_timings:
+        kv("Vision total (launch → registration start)", vision_timings.get("total_seconds"), True)
+        for p in vision_timings.get("phases", []):
+            kv(p["label"], p["seconds"])
+    else:
+        kv("Vision total (launch → registration start)", None, True)
+        kv("Vision phases", None)
+    ri += 1
+
+    # Tabella per coppia
+    h = ws.cell(row=ri, column=1, value="REGISTRATION (per resolution pair)")
+    h.font = hdr_font; h.fill = hdr_fill; h.border = border
+    ri += 1
+    columns = [
+        ("res_reg_mm_pix", "res_reg\n(mm/px)"),
+        ("res_pc_mm_pix",  "res_pc\n(mm/px)"),
+        ("render_total_s", "Render total\n(pc+reg) (s)"),
+        ("pipeline_s",     "Pipeline\n(reg+export) (s)"),
+        ("status",         "Status"),
+    ]
+    header_row = ri
+    for ci, (_, label) in enumerate(columns, start=1):
+        c = ws.cell(row=header_row, column=ci, value=label)
+        c.font = hdr_font; c.fill = hdr_fill; c.alignment = hdr_align; c.border = border
+    ws.row_dimensions[header_row].height = 32
+    ri += 1
+    def _fmt(v): return "N/A" if isinstance(v, float) and np.isnan(v) else v
+    for row in rows:
+        for ci, (key, _) in enumerate(columns, start=1):
+            val = row.get(key, "")
+            c = ws.cell(row=ri, column=ci, value=_fmt(val))
+            c.alignment = center; c.border = border; c.font = norm; c.fill = reg_fill
+            if isinstance(val, float) and not np.isnan(val) and key.endswith("_s"):
+                c.number_format = "0.0000"
+        ri += 1
+
+    ws.column_dimensions["A"].width = 30
+    for ci in range(2, len(columns) + 1):
+        ws.column_dimensions[get_column_letter(ci)].width = 16
 
 
 # =============================================================================
@@ -404,11 +490,12 @@ def run_sweep(
 
     # Pre-compute renders if GPU available
     render_cache: Optional[dict[float, tuple]] = None
+    render_times: dict[float, float] = {}
     if use_torch_render and render_fn is not None:
         mesh = load_mesh(str(cfg.paths.mesh), scale_m_to_mm=True)
         unique_res = _collect_unique_resolutions(pairs)
         print(f"\n[sweep] Unique resolutions: {[str(r) for r in unique_res]}")
-        render_cache = _precompute_renders(
+        render_cache, render_times = _precompute_renders(
             mesh=mesh,
             unique_resolutions=unique_res,
             margin_mm=cfg.render.margin_mm,
@@ -423,6 +510,14 @@ def run_sweep(
     for i, (res_reg, res_pc) in enumerate(pairs):
         tag = f"reg{str(res_reg).replace('.', 'p')}_pc{str(res_pc).replace('.', 'p')}"
         tmp_dir = os.path.join(sweep_tmp, f"run{i+1:02d}_{tag}")
+        dual_pair = abs(res_reg - res_pc) > 1e-6
+        rt_pc = _get_render_time(render_times, res_pc)
+        rt_reg = _get_render_time(render_times, res_reg)
+        if dual_pair:
+            render_total_s = np.nansum([rt_pc, rt_reg]) if not (
+                np.isnan(rt_pc) and np.isnan(rt_reg)) else float("nan")
+        else:
+            render_total_s = rt_pc
         try:
             row = _run_single_pair(
                 cfg=cfg, sample_name=sample_name, aruco_dict_cv=aruco_dict_cv,
@@ -430,6 +525,7 @@ def run_sweep(
                 torch_device=torch_device, use_torch_render=use_torch_render,
                 tmp_dir=tmp_dir, render_cache=render_cache,
                 save_pointcloud_override=False, save_images_override=False,
+                render_total_s=render_total_s,
             )
         except Exception as e:
             print(f"\n[sweep] ERROR on ({res_reg}, {res_pc}): {e}")
@@ -470,6 +566,20 @@ def run_sweep(
 
     out_path = os.path.join(base_out, f"{sample_name}_sweep_resolution_summary.xlsx")
     _write_summary_xlsx(rows, out_path, sample_name=sample_name, best_row_idx=best_idx)
+
+    # Sheet Timings (vision + per-coppia). Vision letta da ../vision/timings.json.
+    vision_dir = Path(base_out).parent / "vision"
+    vision_timings = read_vision_timings(vision_dir)
+    try:
+        from openpyxl import load_workbook
+        wb = load_workbook(out_path)
+        if "Timings" in wb.sheetnames:
+            del wb["Timings"]
+        _write_sweep_timings_sheet(wb, rows, vision_timings)
+        wb.save(out_path)
+        print(f"[sweep] Timings sheet added → {out_path}")
+    except Exception as exc:
+        print(f"[sweep] Could not add Timings sheet: {exc}")
 
     n_ok = sum(1 for r in rows if r["status"] == "ok")
     print("\n" + "=" * 68)
