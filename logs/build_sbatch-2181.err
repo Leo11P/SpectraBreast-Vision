@@ -1,0 +1,32 @@
+INFO:    Starting build...
+INFO:    Fetching OCI image...
+INFO:    Extracting OCI image...
+INFO:    Inserting Singularity configuration...
+INFO:    Copying . to /opt/SpectraBreast-Vision
+INFO:    Copying requirements.txt to /tmp/requirements_orig.txt
+INFO:    Running post scriptlet
++ set -eu
++ export DEBIAN_FRONTEND=noninteractive
++ export TZ=Europe/Rome
++ apt-get update -qq
++ apt-get install -y --no-install-recommends build-essential ca-certificates cmake curl ffmpeg git git-lfs libgl1 libglib2.0-0 libgomp1 libsm6 libxext6 libxrender1 ninja-build python3.10 python3.10-dev python3.10-distutils python3-pip unzip wget
+debconf: delaying package configuration, since apt-utils is not installed
++ rm -rf /var/lib/apt/lists/archive.ubuntu.com_ubuntu_dists_jammy-backports_InRelease /var/lib/apt/lists/archive.ubuntu.com_ubuntu_dists_jammy-backports_main_binary-amd64_Packages.lz4 /var/lib/apt/lists/archive.ubuntu.com_ubuntu_dists_jammy-backports_universe_binary-amd64_Packages.lz4 /var/lib/apt/lists/archive.ubuntu.com_ubuntu_dists_jammy-updates_InRelease /var/lib/apt/lists/archive.ubuntu.com_ubuntu_dists_jammy-updates_main_binary-amd64_Packages.lz4 /var/lib/apt/lists/archive.ubuntu.com_ubuntu_dists_jammy-updates_multiverse_binary-amd64_Packages.lz4 /var/lib/apt/lists/archive.ubuntu.com_ubuntu_dists_jammy-updates_restricted_binary-amd64_Packages.lz4 /var/lib/apt/lists/archive.ubuntu.com_ubuntu_dists_jammy-updates_universe_binary-amd64_Packages.lz4 /var/lib/apt/lists/archive.ubuntu.com_ubuntu_dists_jammy_InRelease /var/lib/apt/lists/archive.ubuntu.com_ubuntu_dists_jammy_main_binary-amd64_Packages.lz4 /var/lib/apt/lists/archive.ubuntu.com_ubuntu_dists_jammy_multiverse_binary-amd64_Packages.lz4 /var/lib/apt/lists/archive.ubuntu.com_ubuntu_dists_jammy_restricted_binary-amd64_Packages.lz4 /var/lib/apt/lists/archive.ubuntu.com_ubuntu_dists_jammy_universe_binary-amd64_Packages.lz4 /var/lib/apt/lists/auxfiles /var/lib/apt/lists/developer.download.nvidia.com_compute_cuda_repos_ubuntu2204_x86%5f64_InRelease /var/lib/apt/lists/developer.download.nvidia.com_compute_cuda_repos_ubuntu2204_x86%5f64_Packages.lz4 /var/lib/apt/lists/lock /var/lib/apt/lists/partial /var/lib/apt/lists/security.ubuntu.com_ubuntu_dists_jammy-security_InRelease /var/lib/apt/lists/security.ubuntu.com_ubuntu_dists_jammy-security_main_binary-amd64_Packages.lz4 /var/lib/apt/lists/security.ubuntu.com_ubuntu_dists_jammy-security_multiverse_binary-amd64_Packages.lz4 /var/lib/apt/lists/security.ubuntu.com_ubuntu_dists_jammy-security_restricted_binary-amd64_Packages.lz4 /var/lib/apt/lists/security.ubuntu.com_ubuntu_dists_jammy-security_universe_binary-amd64_Packages.lz4
++ update-alternatives --install /usr/bin/python python /usr/bin/python3.10 1
++ update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.10 1
++ python -m pip install --upgrade pip setuptools wheel
+WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv
++ pip install --no-cache-dir torch==2.10.0+cu130 torchvision==0.25.0+cu130 --index-url https://download.pytorch.org/whl/cu130
+WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager, possibly rendering your system unusable. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv. Use the --root-user-action option if you know what you are doing and want to suppress this warning.
++ git clone --recursive https://github.com/naver/mast3r.git /opt/mast3r
+Cloning into '/opt/mast3r'...
+Submodule 'dust3r' (https://github.com/naver/dust3r) registered for path 'dust3r'
+Cloning into '/opt/mast3r/dust3r'...
+Submodule 'croco' (https://github.com/naver/croco) registered for path 'dust3r/croco'
+Cloning into '/opt/mast3r/dust3r/croco'...
++ cd /opt/mast3r
++ pip install --no-cache-dir -e .[demo]
+ERROR: file:///opt/mast3r does not appear to be a Python project: neither 'setup.py' nor 'pyproject.toml' found.
++ pip install --no-cache-dir -e .
+ERROR: file:///opt/mast3r does not appear to be a Python project: neither 'setup.py' nor 'pyproject.toml' found.
+FATAL:   While performing build: while running engine: exit status 1

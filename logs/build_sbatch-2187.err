@@ -1,0 +1,55 @@
+INFO:    Starting build...
+INFO:    Fetching OCI image...
+INFO:    Extracting OCI image...
+INFO:    Inserting Singularity configuration...
+INFO:    Copying . to /opt/SpectraBreast-Vision
+INFO:    Copying requirements.txt to /tmp/requirements_orig.txt
+INFO:    Running post scriptlet
++ set -eu
++ export DEBIAN_FRONTEND=noninteractive
++ export TZ=Europe/Rome
++ apt-get update -qq
++ apt-get install -y --no-install-recommends build-essential ca-certificates cmake curl ffmpeg git git-lfs libgl1 libglib2.0-0 libgomp1 libsm6 libxext6 libxrender1 ninja-build python3.10 python3.10-dev python3.10-distutils python3-pip unzip wget
+debconf: delaying package configuration, since apt-utils is not installed
++ rm -rf /var/lib/apt/lists/archive.ubuntu.com_ubuntu_dists_jammy-backports_InRelease /var/lib/apt/lists/archive.ubuntu.com_ubuntu_dists_jammy-backports_main_binary-amd64_Packages.lz4 /var/lib/apt/lists/archive.ubuntu.com_ubuntu_dists_jammy-backports_universe_binary-amd64_Packages.lz4 /var/lib/apt/lists/archive.ubuntu.com_ubuntu_dists_jammy-updates_InRelease /var/lib/apt/lists/archive.ubuntu.com_ubuntu_dists_jammy-updates_main_binary-amd64_Packages.lz4 /var/lib/apt/lists/archive.ubuntu.com_ubuntu_dists_jammy-updates_multiverse_binary-amd64_Packages.lz4 /var/lib/apt/lists/archive.ubuntu.com_ubuntu_dists_jammy-updates_restricted_binary-amd64_Packages.lz4 /var/lib/apt/lists/archive.ubuntu.com_ubuntu_dists_jammy-updates_universe_binary-amd64_Packages.lz4 /var/lib/apt/lists/archive.ubuntu.com_ubuntu_dists_jammy_InRelease /var/lib/apt/lists/archive.ubuntu.com_ubuntu_dists_jammy_main_binary-amd64_Packages.lz4 /var/lib/apt/lists/archive.ubuntu.com_ubuntu_dists_jammy_multiverse_binary-amd64_Packages.lz4 /var/lib/apt/lists/archive.ubuntu.com_ubuntu_dists_jammy_restricted_binary-amd64_Packages.lz4 /var/lib/apt/lists/archive.ubuntu.com_ubuntu_dists_jammy_universe_binary-amd64_Packages.lz4 /var/lib/apt/lists/auxfiles /var/lib/apt/lists/developer.download.nvidia.com_compute_cuda_repos_ubuntu2204_x86%5f64_InRelease /var/lib/apt/lists/developer.download.nvidia.com_compute_cuda_repos_ubuntu2204_x86%5f64_Packages.lz4 /var/lib/apt/lists/lock /var/lib/apt/lists/partial /var/lib/apt/lists/security.ubuntu.com_ubuntu_dists_jammy-security_InRelease /var/lib/apt/lists/security.ubuntu.com_ubuntu_dists_jammy-security_main_binary-amd64_Packages.lz4 /var/lib/apt/lists/security.ubuntu.com_ubuntu_dists_jammy-security_multiverse_binary-amd64_Packages.lz4 /var/lib/apt/lists/security.ubuntu.com_ubuntu_dists_jammy-security_restricted_binary-amd64_Packages.lz4 /var/lib/apt/lists/security.ubuntu.com_ubuntu_dists_jammy-security_universe_binary-amd64_Packages.lz4
++ update-alternatives --install /usr/bin/python python /usr/bin/python3.10 1
++ update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.10 1
++ python -m pip install --upgrade pip setuptools wheel
+WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv
++ pip install --no-cache-dir torch==2.10.0+cu130 torchvision==0.25.0+cu130 --index-url https://download.pytorch.org/whl/cu130
+WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager, possibly rendering your system unusable. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv. Use the --root-user-action option if you know what you are doing and want to suppress this warning.
++ git clone --recursive https://github.com/naver/mast3r.git /opt/mast3r
+Cloning into '/opt/mast3r'...
+Submodule 'dust3r' (https://github.com/naver/dust3r) registered for path 'dust3r'
+Cloning into '/opt/mast3r/dust3r'...
+Submodule 'croco' (https://github.com/naver/croco) registered for path 'dust3r/croco'
+Cloning into '/opt/mast3r/dust3r/croco'...
++ pip install --no-cache-dir -r /opt/mast3r/requirements.txt
+WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager, possibly rendering your system unusable. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv. Use the --root-user-action option if you know what you are doing and want to suppress this warning.
++ pip install --no-cache-dir -r /opt/mast3r/dust3r/requirements.txt
+WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager, possibly rendering your system unusable. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv. Use the --root-user-action option if you know what you are doing and want to suppress this warning.
++ git clone https://github.com/jenicek/asmk.git /opt/asmk
+Cloning into '/opt/asmk'...
++ cd /opt/asmk
++ pip install --no-cache-dir cython numpy
+WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager, possibly rendering your system unusable. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv. Use the --root-user-action option if you know what you are doing and want to suppress this warning.
++ python setup.py build_ext --inplace
++ pip install --no-cache-dir -e .
+WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager, possibly rendering your system unusable. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv. Use the --root-user-action option if you know what you are doing and want to suppress this warning.
++ cd /opt/SpectraBreast-Vision
++ pip install --no-cache-dir numpy scipy pyyaml pyaml pydantic typer rich tqdm trimesh rtree pillow einops huggingface-hub jaxtyping opencv-contrib-python roma safetensors openpyxl scikit-learn
+WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager, possibly rendering your system unusable. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv. Use the --root-user-action option if you know what you are doing and want to suppress this warning.
++ cd /opt/SpectraBreast-Vision
++ pip install --no-cache-dir -e .
+WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager, possibly rendering your system unusable. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv. Use the --root-user-action option if you know what you are doing and want to suppress this warning.
++ mkdir -p /opt/mast3r/checkpoints
++ python -c import torch; print('torch', torch.__version__, '| CUDA', torch.cuda.is_available())
++ python -c import spectra; print('spectra', spectra.__version__)
++ pip cache purge
++ rm -rf /tmp/requirements_filtered.txt /tmp/requirements_orig.txt /root/.cache
+INFO:    Adding help info
+INFO:    Adding labels
+INFO:    Adding environment to container
+INFO:    Adding runscript
+INFO:    Creating SIF file...
+[2026-05-27T12:39:36.013] error: *** JOB 2187 ON gn01 CANCELLED AT 2026-05-27T12:39:36 DUE TO TIME LIMIT ***

@@ -18,7 +18,7 @@
 # =============================================================================
 
 # Sample being processed. Used to build default input/output paths.
-sample_name: "RUBIK"
+sample_name: "SAMPLE1"
 
 # Roots that drive default path resolution for `spectra full`.
 # Both can be relative (resolved from cwd) or absolute.
@@ -40,9 +40,9 @@ vision:
     #   pose_dir         = DATA/input_vision/<sample>/poses          (if it exists)
     #   camera_params_dir= DATA/input_vision/<sample>/camera_parameters (if it exists)
     # Override here when running `spectra vision` standalone.
-    rgb_dir:           DATA/input_vision/RUBIK_iphone_cp
-    pose_dir:          DATA/input_vision/RUBIK_iphone_cp
-    camera_params_dir: DATA/input_vision/RUBIK_iphone_cp
+    rgb_dir:           DATA/input_vision/SAMPLE1
+    pose_dir:          DATA/input_vision/SAMPLE1
+    camera_params_dir: DATA/input_vision/SAMPLE1
 
   output:
     # When `null`, derived to:  RESULTS/<sample>/vision
@@ -115,7 +115,7 @@ vision:
     confidence_percentile:    99.0
 
   rerun:
-    enabled: true
+    enabled: false
     grpc_port: 9876
     no_wait: true
     log_cloud_rgb: true
@@ -157,7 +157,7 @@ registration:
   #
   # Override here when running `spectra registration` standalone with custom inputs.
   paths:
-    hsi_hdr:      null #DATA/input_registration/SAMPLE1/SB019_001/SB019_raw.hdr
+    hsi_hdr:      null
     mesh:         null
     aruco_json:   null
     liveview_png: null

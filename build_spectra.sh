@@ -3,9 +3,10 @@
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=2
-#SBATCH --mem=16g
+#SBATCH --mem=64g
 #SBATCH --partition=jobs
-#SBATCH --qos=build
+#SBATCH --qos=nogpu
+#SBATCH --time=06:00:00
 #SBATCH --output=./logs/build_sbatch-%j.out
 #SBATCH --error=./logs/build_sbatch-%j.err
 

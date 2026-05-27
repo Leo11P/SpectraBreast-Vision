@@ -1,0 +1,8 @@
+==============================================
+  Spectra container build
+  Job ID  : 2180
+  Node    : mufasa2.e4-cluster.lan
+  Start   : Tue May 26 04:08:32 PM CEST 2026
+==============================================
+Loading amd/singularity
+  Loading requirement: amd/go/go-1.25.3

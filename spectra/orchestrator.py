@@ -96,7 +96,7 @@ def resolve_unified_paths(cfg: UnifiedConfig) -> UnifiedConfig:
     # ------- vision.input -------------------------------------------------
     v_in = cfg.vision.input
     if _is_unset(v_in.rgb_dir):
-        overrides["vision.input.rgb_dir"] = str(vision_input_dir(cfg.data_root, sample) / "rgb")
+        overrides["vision.input.rgb_dir"] = str(vision_input_dir(cfg.data_root, sample))
     # pose_dir / camera_params_dir auto-fill only if the folders exist.
     if _is_unset(v_in.pose_dir):
         candidate = vision_input_dir(cfg.data_root, sample) / "poses"
