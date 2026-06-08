@@ -3,7 +3,7 @@
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=8
-#SBATCH --mem=64G
+#SBATCH --mem=64g
 #SBATCH --partition=jobs
 #SBATCH --qos=gpu
 #SBATCH --gres=gpu:3g.20gb:1
@@ -18,11 +18,11 @@ module load amd/singularity
 
 # Monta DATA e RESULTS dal tuo home dentro il container
 singularity exec --nv \
-    --bind /home/<tuo_username>/SpectraBreast-Vision/DATA:/data/DATA \
-    --bind /home/<tuo_username>/SpectraBreast-Vision/RESULTS:/data/RESULTS \
-    --bind /home/<tuo_username>/SpectraBreast-Vision/configs:/data/configs \
-    --bind /home/<tuo_username>/mast3r_checkpoints:/opt/mast3r/checkpoints \
-    spectra.sif \
+    --bind /home/lpassoni/SpectraBreast-Vision/DATA:/data/DATA \
+    --bind /home/lpassoni/SpectraBreast-Vision/RESULTS:/data/RESULTS \
+    --bind /home/lpassoni/SpectraBreast-Vision/configs:/data/configs \
+    --bind /home/lpassoni/mast3r_checkpoints:/opt/mast3r/checkpoints \
+    spectra.sif 
     spectra full \
         --config /data/configs/default.yaml \
         --sample SAMPLE1 \
