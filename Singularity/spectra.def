@@ -9,18 +9,18 @@
 #        --bind /home/<user>/SpectraBreast-Vision/DATA:/data/DATA \
 #        --bind /home/<user>/SpectraBreast-Vision/RESULTS:/data/RESULTS \
 #        --bind /home/<user>/SpectraBreast-Vision/configs:/data/configs \
-#        --bind /home/<user>/mast3r_checkpoints:/opt/mast3r/checkpoints \
+#        --bind /home/<user>/vggt_checkpoints:/opt/vggt/checkpoints \
 #        spectra.sif \
 #        spectra full --config /data/configs/default.yaml -s rerun.enabled=false
 #
 #  Notes:
 #    - Base image: nvidia/cuda 13.0 + cudnn9 + devel (Ubuntu 22.04)
 #    - PyTorch 2.10.0+cu130 from the official PyTorch wheel index
-#    - MASt3R cloned from github.com/naver/mast3r (with --recursive for dust3r)
-#    - asmk cloned from github.com/jenicek/asmk and installed as editable
+#    - VGGT cloned from github.com/facebookresearch/vggt-omega and pip -e installed
 #    - Spectra: copied from the local repo via %files (no internet needed)
 #    - All pip packages pinned to the versions in requirements.txt
-#    - MASt3R weights are NOT baked in: mount them at runtime with --bind
+#    - VGGT weights: auto-downloaded from HuggingFace on first run, or mount a
+#      local cache at runtime with --bind (see below)
 #    - rerun.enabled must be set to false for batch/non-interactive jobs
 # =============================================================================
 
@@ -53,12 +53,11 @@ From: nvidia/cuda:13.0.0-cudnn-devel-ubuntu22.04
 
     # ---- project layout ----------------------------------------------------
     export SPECTRA_ROOT=/opt/SpectraBreast-Vision
-    export MAST3R_ROOT=/opt/mast3r
-    export ASMK_ROOT=/opt/asmk
+    export VGGT_ROOT=/opt/vggt-omega
 
     # ---- Python path -------------------------------------------------------
-    # asmk is installed as editable; keep its src on PYTHONPATH as a fallback
-    export PYTHONPATH="${SPECTRA_ROOT}:${MAST3R_ROOT}:${ASMK_ROOT}:${PYTHONPATH}"
+    # vggt-omega is installed as editable; keep its src on PYTHONPATH as a fallback
+    export PYTHONPATH="${SPECTRA_ROOT}:${VGGT_ROOT}:${PYTHONPATH}"
 
     # ---- CUDA / GPU --------------------------------------------------------
     export CUDA_HOME=/usr/local/cuda
@@ -119,25 +118,18 @@ From: nvidia/cuda:13.0.0-cudnn-devel-ubuntu22.04
         --index-url https://download.pytorch.org/whl/cu130
 
     # =========================================================================
-    # 2. Clone external repositories (mast3r and asmk)
-    #    These are NOT in the local repo so still need internet access.
+    # 2. Clone the VGGT back-end (vggt-omega)
+    #    NOT in the local repo, so it still needs internet access at build.
     #    The Spectra repo itself is already at /opt/SpectraBreast-Vision
     #    (copied via %files above — no git clone needed).
     # =========================================================================
 
-    # --- MASt3R (includes dust3r as a submodule) ----------------------------
-    # --- MASt3R ---
-    git clone --recursive https://github.com/naver/mast3r.git /opt/mast3r
-    pip install --no-cache-dir -r /opt/mast3r/requirements.txt
-    pip install --no-cache-dir -r /opt/mast3r/dust3r/requirements.txt
-
-    # --- asmk ---------------------------------------------------------------
-    git clone https://github.com/jenicek/asmk.git /opt/asmk
-    cd /opt/asmk
-    # asmk has a Cython extension; build it in-place
-    pip install --no-cache-dir cython numpy
-    python setup.py build_ext --inplace || true   # non-fatal: pure-Python fallback exists
-    pip install --no-cache-dir -e .
+    # --- VGGT (facebookresearch/vggt-omega) ---------------------------------
+    git clone https://github.com/facebookresearch/vggt-omega.git /opt/vggt-omega
+    if [ -f /opt/vggt-omega/requirements.txt ]; then
+        pip install --no-cache-dir -r /opt/vggt-omega/requirements.txt
+    fi
+    pip install --no-cache-dir -e /opt/vggt-omega
 
     # =========================================================================
     # 3. Install remaining dependencies directly from pyproject.toml
@@ -160,13 +152,15 @@ From: nvidia/cuda:13.0.0-cudnn-devel-ubuntu22.04
     pip install --no-cache-dir -e .
 
     # =========================================================================
-    # 5. MASt3R model weights — NOT downloaded here.
-    #    Mount them at runtime with:
-    #      --bind /home/<user>/mast3r_checkpoints:/opt/mast3r/checkpoints
-    #    This keeps the .sif ~2 GB smaller and avoids hitting HuggingFace
-    #    during the build (which can time-out on the build QOS).
+    # 5. VGGT model weights — NOT downloaded here.
+    #    On first run VGGT fetches weights from HuggingFace into HF_HOME. To
+    #    avoid hitting HuggingFace at runtime (or during the build, which can
+    #    time-out on the build QOS), pre-download them to a host folder and
+    #    mount it at runtime with:
+    #      --bind /home/<user>/vggt_checkpoints:/opt/vggt/checkpoints
+    #      -s vggt.checkpoint_path=/opt/vggt/checkpoints/<weights>.pt   (omega)
     # =========================================================================
-    mkdir -p /opt/mast3r/checkpoints
+    mkdir -p /opt/vggt/checkpoints
 
     # =========================================================================
     # 6. Smoke-test (non-fatal — avoids breaking the build on headless nodes)
@@ -186,15 +180,15 @@ From: nvidia/cuda:13.0.0-cudnn-devel-ubuntu22.04
     exec spectra "$@"
 
 %help
-    Spectra unified pipeline container (MASt3R-SfM + HSI→Mesh registration).
+    Spectra unified pipeline container (VGGT + HSI→Mesh registration).
 
     Repos baked in at build time:
       /opt/SpectraBreast-Vision   — main Spectra package (copied from local repo)
-      /opt/mast3r                 — MASt3R + dust3r (cloned from GitHub)
-      /opt/asmk                   — ASMK retrieval library (cloned from GitHub)
+      /opt/vggt-omega             — VGGT back-end (cloned from GitHub)
 
-    MASt3R weights are NOT baked in — mount them at runtime:
-      --bind /home/<user>/mast3r_checkpoints:/opt/mast3r/checkpoints
+    VGGT weights are NOT baked in — they auto-download from HuggingFace on first
+    run, or mount a pre-downloaded cache at runtime:
+      --bind /home/<user>/vggt_checkpoints:/opt/vggt/checkpoints
 
     Typical usage on Mufasa (inside run_spectra.sh sbatch script)
     -------------------------------------------------------------
@@ -203,7 +197,7 @@ From: nvidia/cuda:13.0.0-cudnn-devel-ubuntu22.04
         --bind /home/<user>/SpectraBreast-Vision/DATA:/data/DATA \
         --bind /home/<user>/SpectraBreast-Vision/RESULTS:/data/RESULTS \
         --bind /home/<user>/SpectraBreast-Vision/configs:/data/configs \
-        --bind /home/<user>/mast3r_checkpoints:/opt/mast3r/checkpoints \
+        --bind /home/<user>/vggt_checkpoints:/opt/vggt/checkpoints \
         spectra.sif \
         spectra full --config /data/configs/default.yaml \
             --sample RUBIK \
@@ -223,5 +217,5 @@ From: nvidia/cuda:13.0.0-cudnn-devel-ubuntu22.04
     singularity shell --nv \
         --bind /home/<user>/SpectraBreast-Vision/DATA:/data/DATA \
         --bind /home/<user>/SpectraBreast-Vision/RESULTS:/data/RESULTS \
-        --bind /home/<user>/mast3r_checkpoints:/opt/mast3r/checkpoints \
+        --bind /home/<user>/vggt_checkpoints:/opt/vggt/checkpoints \
         spectra.sif

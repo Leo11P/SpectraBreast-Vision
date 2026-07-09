@@ -21,7 +21,7 @@ singularity exec --nv \
     --bind /home/lpassoni/SpectraBreast-Vision/DATA:/data/DATA \
     --bind /home/lpassoni/SpectraBreast-Vision/RESULTS:/data/RESULTS \
     --bind /home/lpassoni/SpectraBreast-Vision/configs:/data/configs \
-    --bind /home/lpassoni/mast3r_checkpoints:/opt/mast3r/checkpoints \
+    --bind /home/lpassoni/vggt_checkpoints:/opt/vggt/checkpoints \
     spectra.sif 
     spectra full \
         --config /data/configs/default.yaml \

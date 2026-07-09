@@ -70,13 +70,14 @@ surface:
   min_neighbors: 3
   max_resolution: 2048
 
-mast3r:
-  model_name: naver/MASt3R_ViTLarge_BaseDecoder_512_catmlpdpt_metric
-  pipeline_variant: sfm
-  image_size: 512
-  neighbor_window: 2
-  desc_conf_thr: 0.1
-  dense_conf_thr: 12.0
+vggt:
+  impl: omega
+  model_name: facebook/VGGT-Omega
+  checkpoint_path: null
+  image_resolution: 512
+  patch_size: 16
+  point_source: depth
+  conf_percentile: 50.0
   voxel_size: 0.0015
   max_points: 2000000
 
@@ -253,9 +254,9 @@ class ReconstructionTUI(App[None]):
     def action_validate(self) -> None:
         cfg = self._parse_config()
         if cfg is not None:
-            self.status_text = "Config OK (MASt3R-SfM)."
+            self.status_text = "Config OK (VGGT)."
             self._log(
-                f"[green]Config OK:[/green] MASt3R-SfM, rgb_dir={cfg.input.rgb_dir}"
+                f"[green]Config OK:[/green] VGGT, rgb_dir={cfg.input.rgb_dir}"
             )
 
     def action_run(self) -> None:
@@ -265,8 +266,8 @@ class ReconstructionTUI(App[None]):
         cfg = self._parse_config()
         if cfg is None:
             return
-        self.status_text = f"Running MASt3R-SfM on {cfg.input.rgb_dir}..."
-        self._log("[bold cyan]Starting run:[/bold cyan] MASt3R-SfM")
+        self.status_text = f"Running VGGT on {cfg.input.rgb_dir}..."
+        self._log("[bold cyan]Starting run:[/bold cyan] VGGT")
         self._worker_thread = threading.Thread(
             target=self._run_worker, args=(cfg,), daemon=True
         )

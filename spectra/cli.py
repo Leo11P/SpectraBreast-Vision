@@ -2,7 +2,7 @@
 
 Top-level commands::
 
-    spectra vision        # MASt3R-SfM + ArUco reconstruction (legacy `recon`)
+    spectra vision        # VGGT + ArUco reconstruction (legacy `recon`)
     spectra registration  # HSI→mesh registration (single/roi/batch/sweep)
     spectra full          # vision → registration end-to-end on a single sample
     spectra detect        # standalone 2D ArUco detection (unchanged)
@@ -132,7 +132,7 @@ def vision_cmd(
     dry_run: bool = typer.Option(False, "--dry-run",
                                   help="Resolve paths and print the config without running."),
 ) -> None:
-    """Run only the MASt3R-SfM + ArUco vision stage."""
+    """Run only the VGGT + ArUco vision stage."""
     _execute_vision(config, sample, set_override, dry_run)
 
 

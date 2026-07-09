@@ -30,7 +30,7 @@ results_root: "RESULTS"
 stages: ["vision", "registration"]
 
 # =============================================================================
-# VISION (MASt3R-SfM + ArUco). Mirrors configs/recon.yaml from the legacy repo.
+# VISION (VGGT + ArUco). Mirrors configs/recon.yaml from the legacy repo.
 # =============================================================================
 vision:
   input:
@@ -78,41 +78,22 @@ vision:
     max_resolution: 2048
     conf_threshold_percentile: 50.0
 
-  mast3r:
-    model_name:               naver/MASt3R_ViTLarge_BaseDecoder_512_catmlpdpt_metric
-    pipeline_variant:         sfm
-    scene_graph:              auto
-    retrieval_model:          null
-    sfm_subsample:            4
-    sfm_lr1:                  0.07
-    sfm_niter1:               300
-    sfm_lr2:                  0.01
-    sfm_niter2:               300
-    sfm_opt_depth:            true
-    sfm_shared_intrinsics:    true
-    sfm_matching_conf_thr:    5.0
-    sfm_min_conf_thr:         1.5
-    sfm_clean_depth:          true
-    image_size:               512
-    neighbor_window:          2
-    desc_conf_thr:            0.1
-    dense_conf_thr:           12.0
-    voxel_size:               0.0015
-    max_points:               2000000
-    pixel_tol:                1.5
-    max_matches_per_pair:     50000
-    pose_refine_iters:        1
-    pose_refine_lr:           0.0
-    pose_refine_lr_min:       0.00001
-    pose_prior_sigma_deg:     1.0
-    pose_prior_sigma_m:       0.01
-    pose_prior_weight:        0.06
-    pose_refine_log_every:    25
-    pose_refine_max_drot_deg: 8.0
-    pose_refine_max_dt_m:     0.06
-    dense_refine_iters:       1
-    dense_refine_lr:          0.0
-    confidence_percentile:    99.0
+  vggt:
+    impl:                  omega        # 'omega' (vggt-omega) | 'vggt' (original)
+    model_name:            facebook/VGGT-Omega   # HF id; for impl=vggt use facebook/VGGT-1B
+    checkpoint_path:       null         # local .pt (load_state_dict) instead of from_pretrained
+    image_resolution:      512          # omega: 256/512 ; original vggt: 518
+    preprocess_mode:       crop         # 'crop' | 'pad' (crop keeps exact intrinsics remap)
+    patch_size:            16           # omega: 16 ; original vggt: 14
+    dtype:                 bf16         # bf16 | fp16 | fp32
+    point_source:          depth        # 'depth' (unproject; both impls) | 'world' (vggt head)
+    use_gt_intrinsics:     true         # use GT K for reprojection when available
+    conf_threshold:        null         # absolute conf cut; overrides conf_percentile
+    conf_percentile:       50.0         # per-view: drop points below this conf percentile
+    voxel_size:            0.0015
+    max_points:            2000000
+    max_frames:            null         # optional frame cap (memory guard)
+    confidence_percentile: 99.0         # Rerun confidence colour-map percentile
 
   rerun:
     enabled: false

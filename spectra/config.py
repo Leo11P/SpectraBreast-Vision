@@ -2,7 +2,7 @@
 
 This module exposes three top-level dataclasses:
 
-- :class:`VisionConfig`        — MASt3R-SfM + ArUco 3D reconstruction (legacy
+- :class:`VisionConfig`        — VGGT + ArUco 3D reconstruction (legacy
                                  ``ReconstructionConfig``, kept as an alias for
                                  backward compatibility).
 - :class:`RegistrationConfig`  — HSI→mesh registration + spectral point cloud.
@@ -46,7 +46,7 @@ from .vision.aruco import ARUCO_DICTIONARIES as _ARUCO_VISION_DICTS
 from .vision.config import (
     ArucoConfig,
     InputConfig,
-    Mast3rConfig,
+    VggtConfig,
     OutputConfig,
     ReconstructionConfig as VisionConfig,   # public alias
     RerunConfig,
@@ -336,7 +336,7 @@ __all__ = [
     # Vision (legacy + alias)
     "ArucoConfig",
     "InputConfig",
-    "Mast3rConfig",
+    "VggtConfig",
     "OutputConfig",
     "RerunConfig",
     "SurfaceConfig",

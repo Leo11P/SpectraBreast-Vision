@@ -15,7 +15,9 @@ uv run spectra --help
 
 This project is now fully managed by `uv`:
 
-- Dependencies are declared in `pyproject.toml` (including local editable `mast3r/asmk` via `tool.uv.sources`).
+- Dependencies are declared in `pyproject.toml`. The VGGT reconstruction back-end
+  ([facebookresearch/vggt-omega](https://github.com/facebookresearch/vggt-omega))
+  is cloned into the repo and pip-installed editable — see `Setup_env.sh`.
 - The CLI entrypoint is declared in `project.scripts`.
 - You can run commands without manual activation via `uv run ...`.
 
@@ -51,7 +53,7 @@ uv run spectra detect DATA/s/rgb /tmp/aruco_out
 uv run spectra calibrate-intrinsics --image-dir checkerboard --output-dir intrinsics
 
 # Arbitrary YAML field
-uv run spectra recon -c configs/default.yaml -s mast3r.voxel_size=0.002
+uv run spectra recon -c configs/default.yaml -s vggt.voxel_size=0.002
 ```
 
 
@@ -60,7 +62,8 @@ Notes:
 - `uv run spectra`, `uv run python -m spectra`, and `uv run python -m spectra.cli` expose the same command tree (`run`, `detect`, `viewer`, hidden aliases).
 - `spectra viewer` / `spectra tui` are the CLI wrappers around `spectra.viewer.run_viewer` and `spectra.tui.run_tui`.
 - `spectra calibrate-intrinsics` wraps `spectra.calibration.calibrate_intrinsics`.
-- `mast3r_pipeline.py` is backward compatibility only; prefer `spectra recon`.
+- The reconstruction back-end is VGGT (feed-forward pose + depth); it replaces the
+  former MASt3R-SfM back-end. Select the variant via `vggt.impl` (`omega` | `vggt`).
 
 ## Input layout
 

@@ -221,10 +221,10 @@ def _write_aruco_markers_3d(
     path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
 
 
-def _run_mast3r_backend(cfg: ReconstructionConfig, inputs) -> RawReconstruction:
-    from .backends.mast3r_backend import run_mast3r
+def _run_backend(cfg: ReconstructionConfig, inputs) -> RawReconstruction:
+    from .backends.vggt_backend import run_vggt
 
-    return run_mast3r(cfg, inputs)
+    return run_vggt(cfg, inputs)
 
 
 def _refuse_with_ba_delta(
@@ -271,7 +271,7 @@ def _refuse_with_ba_delta(
 
     if voxel_size > 0.0 and fused_points.shape[0] > 0:
         # Simple confidence-weighted voxel downsample (kept local to avoid a
-        # backends -> pipeline cycle; mirrors the MASt3R back-end's helper).
+        # backends -> pipeline cycle; mirrors the VGGT back-end's helper).
         keys = np.floor(fused_points / float(voxel_size)).astype(np.int64)
         _, inv = np.unique(keys, axis=0, return_inverse=True)
         inv = np.asarray(inv).reshape(-1)  # numpy>=2.0 may return shape [N,1] for axis=0
@@ -384,7 +384,7 @@ def run_reconstruction(cfg: ReconstructionConfig) -> ReconstructionResult:
     )
 
     # Bake EXIF Orientation into pixel buffers once, then reuse those paths
-    # everywhere downstream. MASt3R and the ArUco
+    # everywhere downstream. VGGT and the ArUco
     # detector all open files via cv2 / PIL / torchvision, which ignore EXIF
     # by default — so mixing upright and rotated/mirrored raw buffers (as
     # iPhone JPEGs do within a single batch) would otherwise feed backends
@@ -414,9 +414,9 @@ def run_reconstruction(cfg: ReconstructionConfig) -> ReconstructionResult:
     num_detections = sum(len(d) for d in detections_per_view)
     print(f"Detected [green]{num_detections}[/green] markers across {num_views} views.")
 
-    _log_step("Step 3/6 - Running MASt3R-SfM")
-    _timer.begin("Step 3/6 - MASt3R-SfM backend")
-    raw = _run_mast3r_backend(cfg, backend_inputs)
+    _log_step("Step 3/6 - Running VGGT")
+    _timer.begin("Step 3/6 - VGGT backend")
+    raw = _run_backend(cfg, backend_inputs)
     print(
         f"Backend produced [green]{raw.fused_points.shape[0]:,}[/green] fused points; "
         f"frame = [green]{raw.frame_description}[/green]"
@@ -483,7 +483,7 @@ def run_reconstruction(cfg: ReconstructionConfig) -> ReconstructionResult:
             # places the ArUco plane at Z=0. Step (1) is the key invariant that
             # makes every detected ArUco corner reproject to the stable 3D corner.
             if ba is not None and ba.marker_corners_m:
-                voxel_size = float(cfg.mast3r.voxel_size)
+                voxel_size = float(cfg.vggt.voxel_size)
                 (
                     refined_point_maps,
                     refused_points,
@@ -737,7 +737,7 @@ def run_reconstruction(cfg: ReconstructionConfig) -> ReconstructionResult:
             aruco_alignment=aruco_alignment,
             aligned_markers_in_output_frame=aligned_markers_in_output_frame,
             annotated_rgb_per_view=annotated_rgb_per_view,
-            confidence_percentile=cfg.mast3r.confidence_percentile,
+            confidence_percentile=cfg.vggt.confidence_percentile,
             rerun_cfg=cfg.rerun,
         )
         if not cfg.rerun.no_wait:

@@ -46,7 +46,7 @@ def canonicalize_images_with_exif(
     ``PIL.Image.open`` all ignore that tag by default, so without this step
     downstream code sees raw buffers that may be upside-down or mirrored.
 
-    Mixed orientations break dense-prediction MASt3R (and similar) models whose
+    Mixed orientations break dense-prediction models like VGGT (and similar) whose
     pose heads assume upright, non-mirrored images. Applying EXIF upfront
     guarantees every consumer (back-end, ArUco detector, Rerun, TUI) works in
     the same image frame.

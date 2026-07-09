@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "spectra"
 version = "0.2.0"
-description = "Unified pipeline: MASt3R-SfM 3D reconstruction (Vision) + HSI→Mesh registration."
+description = "Unified pipeline: VGGT 3D reconstruction (Vision) + HSI→Mesh registration."
 readme = "README.md"
 requires-python = ">=3.10"
 authors = [{ name = "SpectraBreast" }]

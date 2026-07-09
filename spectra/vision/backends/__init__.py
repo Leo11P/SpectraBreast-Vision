@@ -1,4 +1,4 @@
-"""Reconstruction back-end (MASt3R) and shared dataclasses."""
+"""Reconstruction back-end (VGGT) and shared dataclasses."""
 
 from __future__ import annotations
 

@@ -1,4 +1,4 @@
-# MASt3R-SfM + ArUco: load with `spectra run --config configs/default.yaml`
+# VGGT + ArUco: load with `spectra run --config configs/default.yaml`
 # Input: folder of images. Optional: `pose_dir`, `camera_params_dir` (or both null for SfM-only).
 # Output: fused `cloud.ply`, ArUco 2D under `aruco_detections/`, 3D in `aruco_markers_3d.json` when aligned.
 
@@ -40,40 +40,21 @@ surface:
   max_resolution: 2048
   conf_threshold_percentile: 50.0
 
-mast3r:
-  model_name: naver/MASt3R_ViTLarge_BaseDecoder_512_catmlpdpt_metric
-  pipeline_variant: sfm
-  scene_graph: auto
-  retrieval_model: null
-  sfm_subsample: 4
-  sfm_lr1: 0.07
-  sfm_niter1: 300
-  sfm_lr2: 0.01
-  sfm_niter2: 300
-  sfm_opt_depth: true
-  sfm_shared_intrinsics: true
-  sfm_matching_conf_thr: 5.0
-  sfm_min_conf_thr: 1.5
-  sfm_clean_depth: true
-  image_size: 512
-  neighbor_window: 2
-  desc_conf_thr: 0.1
-  dense_conf_thr: 12.0
+vggt:
+  impl: omega
+  model_name: facebook/VGGT-Omega
+  checkpoint_path: null
+  image_resolution: 512
+  preprocess_mode: crop
+  patch_size: 16
+  dtype: bf16
+  point_source: depth
+  use_gt_intrinsics: true
+  conf_threshold: null
+  conf_percentile: 50.0
   voxel_size: 0.0015
   max_points: 2000000
-  pixel_tol: 1.5
-  max_matches_per_pair: 50000
-  pose_refine_iters: 1
-  pose_refine_lr: 0.0
-  pose_refine_lr_min: 0.00001
-  pose_prior_sigma_deg: 1.0
-  pose_prior_sigma_m: 0.01
-  pose_prior_weight: 0.06
-  pose_refine_log_every: 25
-  pose_refine_max_drot_deg: 8.0
-  pose_refine_max_dt_m: 0.06
-  dense_refine_iters: 1
-  dense_refine_lr: 0.0
+  max_frames: null
   confidence_percentile: 99.0
 
 rerun:

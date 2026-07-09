@@ -1,4 +1,4 @@
-"""MASt3R-SfM reconstruction with ArUco-stabilized metric alignment.
+"""VGGT reconstruction with ArUco-stabilized metric alignment.
 
 - `run_reconstruction(cfg)` — images → dense cloud, ArUco 2D/3D, surface, exports.
 - `ReconstructionConfig` / `load_config` — YAML configuration.
@@ -22,7 +22,7 @@ from .calibration import calibrate_intrinsics
 from .config import (
     ArucoConfig,
     InputConfig,
-    Mast3rConfig,
+    VggtConfig,
     OutputConfig,
     ReconstructionConfig,
     SurfaceConfig,
@@ -44,7 +44,7 @@ __all__ = [
     "ArucoDetector",
     "InputConfig",
     "MarkerDetection",
-    "Mast3rConfig",
+    "VggtConfig",
     "OutputConfig",
     "ReconstructionConfig",
     "ReconstructionResult",

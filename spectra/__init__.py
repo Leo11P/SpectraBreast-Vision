@@ -1,4 +1,4 @@
-"""Spectra: unified pipeline (MASt3R-SfM + ArUco vision + HSI→mesh registration).
+"""Spectra: unified pipeline (VGGT + ArUco vision + HSI→mesh registration).
 
 Public API
 ==========
@@ -26,7 +26,7 @@ from __future__ import annotations
 from .config import (
     ArucoConfig,
     InputConfig,
-    Mast3rConfig,
+    VggtConfig,
     OutputConfig,
     ReconstructionConfig,
     RegistrationConfig,
@@ -98,7 +98,7 @@ __all__ = [
     "ArucoDetector",
     "InputConfig",
     "MarkerDetection",
-    "Mast3rConfig",
+    "VggtConfig",
     "OutputConfig",
     "ReconstructionConfig",
     "ReconstructionResult",

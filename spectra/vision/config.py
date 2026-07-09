@@ -11,7 +11,8 @@ Typical usage::
     cfg = load_config("configs/default.yaml")
     cfg = cfg.with_overrides({"aruco.marker_edge_length_m": 0.03})
 
-The pipeline is **MASt3R-SfM** only (images → dense cloud + ArUco 2D/3D). Optional
+The reconstruction back-end is **VGGT** (feed-forward: images → dense cloud +
+per-view depth/pose), stabilized to a metric ArUco frame. Optional
 ``pose_dir`` and ``camera_params_dir`` are supported when available.
 
 CLI overrides use dotted paths, e.g. ``--set aruco.marker_edge_length_m=0.03``.
@@ -228,64 +229,121 @@ class SurfaceConfig(BaseModel):
     )
 
 
-class Mast3rConfig(BaseModel):
+class VggtConfig(BaseModel):
+    """Configuration for the VGGT feed-forward reconstruction back-end.
+
+    VGGT (Visual Geometry Grounded Transformer,
+    ``facebookresearch/vggt-omega``) predicts camera extrinsics + intrinsics
+    and dense depth for a set of images in a single forward pass; the world
+    frame is anchored to camera 0. Metric scale and gravity alignment are
+    recovered downstream by the ArUco Sim3 / bundle-adjustment stage, exactly
+    as for the old MASt3R-SfM path.
+    """
+
     model_config = ConfigDict(extra="forbid")
 
+    impl: Literal["omega", "vggt"] = Field(
+        default="omega",
+        description=(
+            "Which library API to drive: 'omega' = facebookresearch/vggt-omega "
+            "(stronger, scales to hundreds of frames), 'vggt' = the original "
+            "facebookresearch/vggt (stable, documented). The back-end selects "
+            "the matching import paths and pose-decoder helper for each."
+        ),
+    )
     model_name: str = Field(
-        default="naver/MASt3R_ViTLarge_BaseDecoder_512_catmlpdpt_metric"
-    )
-    pipeline_variant: Literal["dense", "sfm"] = Field(
-        default="sfm",
+        default="facebook/VGGT-Omega",
         description=(
-            "'dense' uses the DUSt3R modular global alignment path. "
-            "'sfm' runs MASt3R-SfM (make_pairs + sparse_global_alignment)."
+            "HuggingFace model id passed to ``from_pretrained`` when no "
+            "``checkpoint_path`` is given. For impl='vggt' use "
+            "'facebook/VGGT-1B'."
         ),
     )
-    scene_graph: str = Field(
-        default="auto",
-        description=(
-            "MASt3R-SfM scene graph. 'auto' picks 'complete' for <40 images, "
-            "else 'swin-5'. Explicit examples: 'complete', 'swin-5', "
-            "'logwin-3', 'retrieval-20-1'."
-        ),
-    )
-    retrieval_model: str | None = Field(
+    checkpoint_path: str | None = Field(
         default=None,
         description=(
-            "Optional retrieval checkpoint for retrieval-based MASt3R-SfM "
-            "pairing; required when scene_graph contains 'retrieval'."
+            "Optional local ``.pt`` checkpoint. When set, the model is built "
+            "and ``load_state_dict`` is called instead of ``from_pretrained`` "
+            "(the documented omega loading path)."
         ),
     )
-    sfm_subsample: int = Field(default=4, ge=1)
-    sfm_lr1: float = Field(default=0.07, gt=0.0)
-    sfm_niter1: int = Field(default=300, ge=0)
-    sfm_lr2: float = Field(default=0.01, gt=0.0)
-    sfm_niter2: int = Field(default=300, ge=0)
-    sfm_opt_depth: bool = Field(default=True)
-    sfm_shared_intrinsics: bool = Field(default=True)
-    sfm_matching_conf_thr: float = Field(default=5.0, ge=0.0)
-    sfm_min_conf_thr: float = Field(default=1.5, ge=0.0)
-    sfm_clean_depth: bool = Field(default=True)
-    image_size: int = Field(default=512, ge=64)
-    neighbor_window: int = Field(default=2, ge=1)
-    desc_conf_thr: float = Field(default=0.1, ge=0.0)
-    dense_conf_thr: float = Field(default=12.0, ge=0.0)
+    image_resolution: int = Field(
+        default=512,
+        ge=64,
+        description=(
+            "Long/locked-edge network resolution. vggt-omega supports 256/512; "
+            "the original vggt uses 518. Must match the checkpoint."
+        ),
+    )
+    preprocess_mode: Literal["crop", "pad"] = Field(
+        default="crop",
+        description=(
+            "Image preprocessing. 'crop' locks width to `image_resolution` and "
+            "centre-crops height (aspect preserved, exact intrinsics remap). "
+            "'pad' letterboxes to a square; only 'crop' supports the "
+            "network→original intrinsics remap used when GT intrinsics are absent."
+        ),
+    )
+    patch_size: int = Field(
+        default=16,
+        ge=1,
+        description=(
+            "Backbone patch size; network dims are rounded to a multiple of it. "
+            "vggt-omega uses 16, the original vggt uses 14."
+        ),
+    )
+    dtype: Literal["bf16", "fp16", "fp32"] = Field(
+        default="bf16",
+        description="Autocast dtype for the forward pass (bf16 on Ampere+).",
+    )
+    point_source: Literal["depth", "world"] = Field(
+        default="depth",
+        description=(
+            "'depth' unprojects the predicted depth with the predicted "
+            "extrinsics/intrinsics (recommended; works for both impls). "
+            "'world' uses the direct world-points head (original vggt only)."
+        ),
+    )
+    use_gt_intrinsics: bool = Field(
+        default=True,
+        description=(
+            "When GT intrinsics (camera_parameters/intrinsics.npy) are present, "
+            "use them for K_per_view_orig (real calibration → best for ArUco "
+            "reprojection). Otherwise map VGGT's predicted network intrinsics "
+            "back to original pixels."
+        ),
+    )
+    conf_threshold: float | None = Field(
+        default=None,
+        description=(
+            "Absolute per-pixel confidence threshold for keeping points. When "
+            "set, overrides `conf_percentile`."
+        ),
+    )
+    conf_percentile: float = Field(
+        default=50.0,
+        ge=0.0,
+        le=100.0,
+        description=(
+            "Per-view confidence percentile below which points are dropped "
+            "(50 keeps the top half). Ignored when `conf_threshold` is set."
+        ),
+    )
     voxel_size: float = Field(default=0.0015, ge=0.0)
     max_points: int = Field(default=2_000_000, ge=1)
-    pixel_tol: float = Field(default=1.5, ge=0.0)
-    max_matches_per_pair: int = Field(default=50_000, ge=1)
-    pose_refine_iters: int = Field(default=1, ge=0)
-    pose_refine_lr: float = Field(default=0.0, ge=0.0)
-    pose_refine_lr_min: float = Field(default=1e-5, ge=0.0)
-    pose_prior_sigma_deg: float = Field(default=1.0, gt=0.0)
-    pose_prior_sigma_m: float = Field(default=0.01, gt=0.0)
-    pose_prior_weight: float = Field(default=0.06, ge=0.0)
-    pose_refine_log_every: int = Field(default=25, ge=1)
-    pose_refine_max_drot_deg: float = Field(default=8.0, ge=0.0)
-    pose_refine_max_dt_m: float = Field(default=0.06, ge=0.0)
-    dense_refine_iters: int = Field(default=1, ge=0)
-    dense_refine_lr: float = Field(default=0.0, ge=0.0)
-    confidence_percentile: float = Field(default=99.0, ge=0.0, le=100.0)
+    max_frames: int | None = Field(
+        default=None,
+        description=(
+            "Optional cap on the number of input frames (memory guard). When "
+            "set and exceeded, the frames are uniformly subsampled to this count."
+        ),
+    )
+    confidence_percentile: float = Field(
+        default=99.0,
+        ge=0.0,
+        le=100.0,
+        description="Percentile used when colour-mapping confidence for Rerun.",
+    )
 
 
 class RerunConfig(BaseModel):
@@ -367,7 +425,7 @@ class ReconstructionConfig(BaseModel):
     output: OutputConfig = Field(default_factory=OutputConfig)
     aruco: ArucoConfig = Field(default_factory=ArucoConfig)
     surface: SurfaceConfig = Field(default_factory=SurfaceConfig)
-    mast3r: Mast3rConfig = Field(default_factory=Mast3rConfig)
+    vggt: VggtConfig = Field(default_factory=VggtConfig)
     rerun: RerunConfig = Field(default_factory=RerunConfig)
 
     @model_validator(mode="after")
@@ -393,7 +451,7 @@ class ReconstructionConfig(BaseModel):
 
             cfg.with_overrides({
                 "aruco.marker_edge_length_m": 0.03,
-                "mast3r.voxel_size": 0.002,
+                "vggt.voxel_size": 0.002,
             })
         """
         base = copy.deepcopy(self.model_dump(mode="python"))
@@ -457,7 +515,7 @@ def save_config_json(cfg: ReconstructionConfig, path: str | Path) -> Path:
 __all__ = [
     "ArucoConfig",
     "InputConfig",
-    "Mast3rConfig",
+    "VggtConfig",
     "OutputConfig",
     "ReconstructionConfig",
     "RerunConfig",

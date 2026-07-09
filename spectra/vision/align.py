@@ -1,7 +1,7 @@
 """Multi-view triangulation of ArUco corners, plane fit, and Sim3 alignment.
 
 This module ties the 2D ArUco detections from ``spectra.aruco`` to the 3D
-reconstruction produced by the MASt3R back-end. The high-level
+reconstruction produced by the VGGT back-end. The high-level
 pipeline is:
 
 1. `triangulate_markers(...)` — linear DLT triangulation per corner across

@@ -1,6 +1,6 @@
 #!/bin/bash
 # setup_env.sh — da eseguire UNA VOLTA sul nodo di login di Mufasa (NON via sbatch)
-# Crea il virtual environment uv usando mast3r e asmk gia' clonati DENTRO la repo.
+# Crea il virtual environment uv usando vggt-omega gia' clonato DENTRO la repo.
 #
 # Uso:
 #   cd ~/SpectraBreast-Vision
@@ -45,32 +45,27 @@ else
     echo "[1/4] uv gia' presente: $(uv --version)"
 fi
 
-# --- 2. Verifica che mast3r e asmk siano gia' clonati DENTRO la repo ---------
-# (li hai gia' clonati: questo script NON li riclona, li usa dove sono)
-MAST3R_DIR="${REPO_DIR}/mast3r"
-ASMK_DIR="${REPO_DIR}/asmk"
+# --- 2. Verifica che vggt-omega sia gia' clonato DENTRO la repo --------------
+# (clonalo con:  git clone https://github.com/facebookresearch/vggt-omega.git)
+# questo script NON lo riclona, lo usa dove si trova.
+VGGT_DIR="${REPO_DIR}/vggt-omega"
 
-if [ ! -d "${MAST3R_DIR}" ]; then
-    echo "ERRORE: ${MAST3R_DIR} non trovato. Clona mast3r dentro la repo prima di procedere."
+if [ ! -d "${VGGT_DIR}" ]; then
+    echo "ERRORE: ${VGGT_DIR} non trovato. Clona vggt-omega dentro la repo prima di procedere:"
+    echo "        git clone https://github.com/facebookresearch/vggt-omega.git"
     exit 1
 fi
-if [ ! -d "${ASMK_DIR}" ]; then
-    echo "ERRORE: ${ASMK_DIR} non trovato. Clona asmk dentro la repo prima di procedere."
-    exit 1
-fi
-echo "[2/4] mast3r e asmk trovati dentro la repo."
+echo "[2/4] vggt-omega trovato dentro la repo."
 
 # --- 3. uv sync (crea .venv e installa le dipendenze del pyproject) ----------
 echo "[3/4] uv sync (scarica PyTorch cu130, puo' volerci qualche minuto)..."
 uv sync
 
-# Installa le dipendenze di mast3r/dust3r e asmk dentro lo stesso .venv,
-# leggendole dai cloni gia' presenti nella repo.
-uv run pip install --no-cache-dir -r "${MAST3R_DIR}/requirements.txt"
-if [ -f "${MAST3R_DIR}/dust3r/requirements.txt" ]; then
-    uv run pip install --no-cache-dir -r "${MAST3R_DIR}/dust3r/requirements.txt"
+# Installa vggt-omega (editable) e le sue dipendenze nello stesso .venv.
+if [ -f "${VGGT_DIR}/requirements.txt" ]; then
+    uv run pip install --no-cache-dir -r "${VGGT_DIR}/requirements.txt"
 fi
-uv run pip install --no-cache-dir -e "${ASMK_DIR}"
+uv run pip install --no-cache-dir -e "${VGGT_DIR}"
 
 # --- 4. Smoke test -----------------------------------------------------------
 echo "[4/4] Smoke test..."
