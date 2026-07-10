@@ -1,0 +1,12 @@
+==============================================
+  Spectra run (uv, no Singularity)
+  Job ID  : 2907
+  Node    : mufasa2.e4-cluster.lan
+  Start   : Fri Jul 10 10:57:57 AM CEST 2026
+==============================================
+  Repo    : /home/lpassoni/Vggt/SpectraBreast-Vision
+  Python  : Python 3.12.13
+  Torch   : 2.12.0+cu130
+  CUDA ok : True
+  TMPDIR  : /home/lpassoni/.cache/tmp
+==============================================

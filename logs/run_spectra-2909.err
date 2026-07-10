@@ -1,0 +1,68 @@
+Traceback (most recent call last):
+  File "/home/lpassoni/Vggt/SpectraBreast-Vision/spectra/registration/sweep.py", line 522, in run_sweep
+    row = _run_single_pair(
+          ^^^^^^^^^^^^^^^^^
+  File "/home/lpassoni/Vggt/SpectraBreast-Vision/spectra/registration/sweep.py", line 181, in _run_single_pair
+    result = run_full_pipeline_roi(
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/lpassoni/Vggt/SpectraBreast-Vision/spectra/registration/pipeline_roi.py", line 163, in run_full_pipeline_roi
+    result = run_full_pipeline(
+             ^^^^^^^^^^^^^^^^^^
+  File "/home/lpassoni/Vggt/SpectraBreast-Vision/spectra/registration/pipeline.py", line 1747, in run_full_pipeline
+    cube, meta = load_envi(hsi_hdr_path)
+                 ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/lpassoni/Vggt/SpectraBreast-Vision/spectra/registration/pipeline.py", line 106, in load_envi
+    cube = raw.reshape((bands, rows, cols)).transpose(1, 2, 0)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ValueError: cannot reshape array of size 69476334 into shape (290,1024,1280)
+Traceback (most recent call last):
+  File "/home/lpassoni/Vggt/SpectraBreast-Vision/spectra/registration/sweep.py", line 522, in run_sweep
+    row = _run_single_pair(
+          ^^^^^^^^^^^^^^^^^
+  File "/home/lpassoni/Vggt/SpectraBreast-Vision/spectra/registration/sweep.py", line 181, in _run_single_pair
+    result = run_full_pipeline_roi(
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/lpassoni/Vggt/SpectraBreast-Vision/spectra/registration/pipeline_roi.py", line 163, in run_full_pipeline_roi
+    result = run_full_pipeline(
+             ^^^^^^^^^^^^^^^^^^
+  File "/home/lpassoni/Vggt/SpectraBreast-Vision/spectra/registration/pipeline.py", line 1747, in run_full_pipeline
+    cube, meta = load_envi(hsi_hdr_path)
+                 ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/lpassoni/Vggt/SpectraBreast-Vision/spectra/registration/pipeline.py", line 106, in load_envi
+    cube = raw.reshape((bands, rows, cols)).transpose(1, 2, 0)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ValueError: cannot reshape array of size 69476334 into shape (290,1024,1280)
+Traceback (most recent call last):
+  File "/home/lpassoni/Vggt/SpectraBreast-Vision/spectra/registration/sweep.py", line 522, in run_sweep
+    row = _run_single_pair(
+          ^^^^^^^^^^^^^^^^^
+  File "/home/lpassoni/Vggt/SpectraBreast-Vision/spectra/registration/sweep.py", line 181, in _run_single_pair
+    result = run_full_pipeline_roi(
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/lpassoni/Vggt/SpectraBreast-Vision/spectra/registration/pipeline_roi.py", line 163, in run_full_pipeline_roi
+    result = run_full_pipeline(
+             ^^^^^^^^^^^^^^^^^^
+  File "/home/lpassoni/Vggt/SpectraBreast-Vision/spectra/registration/pipeline.py", line 1747, in run_full_pipeline
+    cube, meta = load_envi(hsi_hdr_path)
+                 ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/lpassoni/Vggt/SpectraBreast-Vision/spectra/registration/pipeline.py", line 106, in load_envi
+    cube = raw.reshape((bands, rows, cols)).transpose(1, 2, 0)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ValueError: cannot reshape array of size 69476334 into shape (290,1024,1280)
+Traceback (most recent call last):
+  File "/home/lpassoni/Vggt/SpectraBreast-Vision/spectra/registration/sweep.py", line 522, in run_sweep
+    row = _run_single_pair(
+          ^^^^^^^^^^^^^^^^^
+  File "/home/lpassoni/Vggt/SpectraBreast-Vision/spectra/registration/sweep.py", line 181, in _run_single_pair
+    result = run_full_pipeline_roi(
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/lpassoni/Vggt/SpectraBreast-Vision/spectra/registration/pipeline_roi.py", line 163, in run_full_pipeline_roi
+    result = run_full_pipeline(
+             ^^^^^^^^^^^^^^^^^^
+  File "/home/lpassoni/Vggt/SpectraBreast-Vision/spectra/registration/pipeline.py", line 1747, in run_full_pipeline
+    cube, meta = load_envi(hsi_hdr_path)
+                 ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/lpassoni/Vggt/SpectraBreast-Vision/spectra/registration/pipeline.py", line 106, in load_envi
+    cube = raw.reshape((bands, rows, cols)).transpose(1, 2, 0)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ValueError: cannot reshape array of size 69476334 into shape (290,1024,1280)

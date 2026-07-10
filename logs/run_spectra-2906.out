@@ -1,0 +1,47 @@
+==============================================
+  Spectra run (uv, no Singularity)
+  Job ID  : 2906
+  Node    : mufasa2.e4-cluster.lan
+  Start   : Fri Jul 10 10:47:35 AM CEST 2026
+==============================================
+  Repo    : /home/lpassoni/Vggt/SpectraBreast-Vision
+  Python  : Python 3.12.13
+  Torch   : 2.12.0+cu130
+  CUDA ok : True
+  TMPDIR  : /home/lpassoni/.cache/tmp
+==============================================
+
+====================================================================
+  SPECTRA FULL — sample='SAMPLE2'
+  data_root    : DATA
+  results_root : RESULTS
+  stages       : ['vision', 'registration']
+  reg mode     : sweep
+====================================================================
+
+[orchestrator] Vision stage for sample='SAMPLE2'
+Step 1/6 - Preparing run folder and loading inputs
+Run directory: RESULTS/SAMPLE2/vision_07
+Loaded 26 images (no GT poses) (no GT intrinsics)
+Step 2/6 - Detecting ArUco markers
+Detected 98 markers across 26 views.
+Step 3/6 - Running VGGT
+Backend produced 718,514 fused points; frame = vggt
+Step 4/6 - Triangulating ArUco markers and building Sim3
+ArUco geometric QC: best-fit plane RMS 0.24 mm; corners reprojected with output 
+cameras → RMSE 42.636 px (max 139.288, p95 84.295, n=392)
+ArUco alignment applied: markers=4, scale=1.568743 (applied=1.568743), 
+MAD=0.011546
+Step 5/6 - Reconstructing single-surface height field
+Surface: 485,867 vertices, 753,252 triangles, grid 935x837 @ step 0.001569
+Output frame: world +Z points down (Z negated).
+Step 6/6 - Writing outputs and logging to Rerun
+Checking if we should log the surface cloud to Open3D
+Vision timings saved → RESULTS/SAMPLE2/vision_07/timings.json
+Done in 81.2 s. Outputs: RESULTS/SAMPLE2/vision_07
+[orchestrator] Vision finished in 81.2s — run_dir=RESULTS/SAMPLE2/vision_07
+
+[orchestrator] Registration stage for sample='SAMPLE2' (mode='sweep')
+[Validate] MISSING — HSI .hdr not found: DATA/input_registration/SAMPLE2/SAMPLE2_raw.hdr
+[Validate] MISSING — Mesh not found: RESULTS/SAMPLE2/vision/surface_mesh.ply
+[Validate] MISSING — ArUco JSON not found: RESULTS/SAMPLE2/vision/aruco_markers_3d.json

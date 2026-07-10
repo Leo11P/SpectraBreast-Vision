@@ -82,6 +82,11 @@ class VggtImageGeometry:
         vv = (vv + self.crop_top) / self.scale_y
         return uu, vv
 
+    def valid_mask(self) -> np.ndarray:
+        """All network pixels are real content for the 'crop' preprocessing
+        (there is no batch padding in the original vggt path)."""
+        return np.ones((self.network_height, self.network_width), dtype=bool)
+
 
 def _compute_crop_geometry(
     original_width: int,
@@ -111,6 +116,170 @@ def _compute_crop_geometry(
         crop_left=0.0,
         crop_top=crop_top,
     )
+
+
+# =============================================================================
+# Image geometry for vggt-omega preprocessing ('balanced' / 'max_size')
+# =============================================================================
+#
+# vggt_omega.utils.load_fn.load_and_preprocess_images does NOT do a fixed-width
+# uniform resize + height crop like the original vggt. Instead (see that
+# module's source):
+#   1. centre-crops extreme aspect ratios into [0.5, 2.0]  (_crop_to_supported_aspect_ratio)
+#   2. resizes (possibly non-isotropically) to a target_h/target_w computed in
+#      units of patch_size, via _balanced_target_shape / _max_size_target_shape
+#   3. if the batch ends up with heterogeneous shapes, centre-pads every image
+#      (constant white, value=1.0) to the max shape in the batch
+#
+# The geometry below replicates that pipeline (using vggt_omega's own private
+# helpers, so it stays in sync with upstream) and inverts it, giving both an
+# original<->network pixel mapping (for colour sampling) and a validity mask
+# that excludes the batch-padding border (so padding never enters the fused
+# point cloud / intrinsics remap).
+
+
+@dataclass(frozen=True)
+class VggtOmegaImageGeometry:
+    """Maps between original-resolution pixels and vggt-omega's network
+    tensor, including the aspect-ratio crop, non-isotropic resize, and
+    centred batch padding described above."""
+
+    original_height: int
+    original_width: int
+    network_height: int
+    network_width: int
+    # Crop applied by _crop_to_supported_aspect_ratio, in ORIGINAL pixels.
+    crop_left: float
+    crop_top: float
+    crop_width: float
+    crop_height: float
+    # Where the *actual* (unpadded) resized content sits inside the
+    # network_height x network_width canvas, after batch padding.
+    content_top: int
+    content_left: int
+    content_height: int
+    content_width: int
+
+    @property
+    def scale_x(self) -> float:
+        # original-crop-pixels per network-content-pixel
+        return self.crop_width / float(self.content_width)
+
+    @property
+    def scale_y(self) -> float:
+        return self.crop_height / float(self.content_height)
+
+    def network_to_original_intrinsics(self, K_net: np.ndarray) -> np.ndarray:
+        """Pull a network-frame intrinsic matrix back into original pixels.
+
+        u_orig = scale_x * u_net + (crop_left - scale_x * content_left)
+        v_orig = scale_y * v_net + (crop_top  - scale_y * content_top)
+        """
+        A = np.array(
+            [
+                [self.scale_x, 0.0, self.crop_left - self.scale_x * self.content_left],
+                [0.0, self.scale_y, self.crop_top - self.scale_y * self.content_top],
+                [0.0, 0.0, 1.0],
+            ],
+            dtype=np.float32,
+        )
+        return A @ K_net.astype(np.float32)
+
+    def network_grid_to_original(self) -> tuple[np.ndarray, np.ndarray]:
+        """Return (uu, vv) original-pixel coords for every network pixel.
+
+        Uses the same simple affine convention as ``VggtImageGeometry``
+        (no extra half-pixel correction), so colour sampling and the
+        intrinsics remap above stay consistent with each other.
+        """
+        uu, vv = np.meshgrid(
+            np.arange(self.network_width, dtype=np.float32),
+            np.arange(self.network_height, dtype=np.float32),
+        )
+        uu_orig = self.scale_x * (uu - self.content_left) + self.crop_left
+        vv_orig = self.scale_y * (vv - self.content_top) + self.crop_top
+        return uu_orig, vv_orig
+
+    def valid_mask(self) -> np.ndarray:
+        """True where the network pixel is real (resized) content, False
+        where it falls in the batch-padding border added by vggt_omega."""
+        rows = np.arange(self.network_height)
+        cols = np.arange(self.network_width)
+        rr, cc = np.meshgrid(rows, cols, indexing="ij")
+        return (
+            (rr >= self.content_top)
+            & (rr < self.content_top + self.content_height)
+            & (cc >= self.content_left)
+            & (cc < self.content_left + self.content_width)
+        )
+
+
+def _compute_omega_geometries(
+    orig_rgb_list: List[np.ndarray], vcfg: VggtConfig
+) -> List[VggtOmegaImageGeometry]:
+    """Reconstruct, per image, the exact geometry vggt_omega's
+    load_and_preprocess_images produced (crop -> resize -> batch pad).
+
+    Imports vggt_omega's own private helpers rather than re-deriving the
+    algorithm, so this stays correct if upstream tweaks rounding behaviour.
+    """
+    from vggt_omega.utils.load_fn import (  # type: ignore
+        _balanced_target_shape,
+        _crop_to_supported_aspect_ratio,
+        _max_size_target_shape,
+    )
+
+    omega_mode = "balanced" if vcfg.preprocess_mode == "crop" else "max_size"
+
+    per_view = []
+    for rgb in orig_rgb_list:
+        h0, w0 = int(rgb.shape[0]), int(rgb.shape[1])
+        cropped = _crop_to_supported_aspect_ratio(Image.fromarray(rgb))
+        crop_w, crop_h = cropped.size
+        crop_left = (w0 - crop_w) / 2.0
+        crop_top = (h0 - crop_h) / 2.0
+        aspect_ratio = crop_h / max(crop_w, 1)
+        if omega_mode == "balanced":
+            target_h, target_w = _balanced_target_shape(aspect_ratio, vcfg.image_resolution, vcfg.patch_size)
+        else:
+            target_h, target_w = _max_size_target_shape(aspect_ratio, vcfg.image_resolution, vcfg.patch_size)
+        per_view.append(
+            dict(
+                original_width=w0,
+                original_height=h0,
+                crop_left=crop_left,
+                crop_top=crop_top,
+                crop_width=float(crop_w),
+                crop_height=float(crop_h),
+                target_h=target_h,
+                target_w=target_w,
+            )
+        )
+
+    max_h = max(v["target_h"] for v in per_view)
+    max_w = max(v["target_w"] for v in per_view)
+
+    geometries: List[VggtOmegaImageGeometry] = []
+    for v in per_view:
+        pad_h = max_h - v["target_h"]
+        pad_w = max_w - v["target_w"]
+        geometries.append(
+            VggtOmegaImageGeometry(
+                original_width=v["original_width"],
+                original_height=v["original_height"],
+                network_height=max_h,
+                network_width=max_w,
+                crop_left=v["crop_left"],
+                crop_top=v["crop_top"],
+                crop_width=v["crop_width"],
+                crop_height=v["crop_height"],
+                content_top=pad_h // 2,
+                content_left=pad_w // 2,
+                content_height=v["target_h"],
+                content_width=v["target_w"],
+            )
+        )
+    return geometries
 
 
 # =============================================================================
@@ -248,9 +417,10 @@ def _load_model_and_preprocess(vcfg: VggtConfig, filelist: List[str], device: to
                     "vggt-omega weights: set vggt.checkpoint_path to a local .pt "
                     "checkpoint (VGGTOmega has no from_pretrained)."
                 )
-       # vggt-omega usa un vocabolario diverso ("balanced"/"max_size") rispetto
-        # al nostro crop/pad (che guida invece la logica di remap delle intrinsics
-        # sotto, riga ~384). Traduciamo prima di chiamare la libreria omega.
+
+        # vggt-omega uses a different vocabulary ("balanced"/"max_size") than
+        # our crop/pad config field (which drives the intrinsics-remap logic
+        # in run_vggt below). Translate before calling into the omega lib.
         _omega_mode = "balanced" if vcfg.preprocess_mode == "crop" else "max_size"
         try:
             images = load_and_preprocess_images(
@@ -385,22 +555,31 @@ def run_vggt(cfg: ReconstructionConfig, inputs: BackendInputs) -> RawReconstruct
 
     # --- Per-view geometry + original RGB ----------------------------------
     have_gt_intrinsics = vcfg.use_gt_intrinsics and inputs.K_orig_gt is not None
-    if vcfg.preprocess_mode != "crop" and not have_gt_intrinsics:
+    if vcfg.impl != "omega" and vcfg.preprocess_mode != "crop" and not have_gt_intrinsics:
         raise RuntimeError(
             "vggt.preprocess_mode='pad' has no network→original intrinsics remap; "
             "either use preprocess_mode='crop' or provide GT intrinsics."
         )
 
     orig_rgb = [_read_image_rgb(p) for p in image_paths]  # [H0,W0,3] uint8
-    geometries = [
-        _compute_crop_geometry(
-            original_width=rgb.shape[1],
-            original_height=rgb.shape[0],
-            resolution=vcfg.image_resolution,
-            patch_size=vcfg.patch_size,
-        )
-        for rgb in orig_rgb
-    ]
+
+    if vcfg.impl == "omega":
+        # omega's preprocessing (asymmetric crop + non-isotropic resize +
+        # batch padding) differs from the original vggt's fixed-width crop,
+        # so it needs a dedicated geometry that replicates that algorithm
+        # exactly (see _compute_omega_geometries above).
+        geometries = _compute_omega_geometries(orig_rgb, vcfg)
+    else:
+        geometries = [
+            _compute_crop_geometry(
+                original_width=rgb.shape[1],
+                original_height=rgb.shape[0],
+                resolution=vcfg.image_resolution,
+                patch_size=vcfg.patch_size,
+            )
+            for rgb in orig_rgb
+        ]
+
     for i, geom in enumerate(geometries):
         if (geom.network_height, geom.network_width) != (network_h, network_w):
             raise RuntimeError(
@@ -436,7 +615,16 @@ def run_vggt(cfg: ReconstructionConfig, inputs: BackendInputs) -> RawReconstruct
         v_idx = np.clip(np.round(vv_orig).astype(np.int32), 0, geom.original_height - 1)
         cols_full = rgb[v_idx, u_idx].astype(np.uint8)
 
-        finite = np.isfinite(pts3d).all(axis=-1) & np.isfinite(depth_map) & (depth_map > 1e-6)
+        # Exclude batch-padding border pixels (omega only; all-True for the
+        # original vggt 'crop' geometry, which has no such padding).
+        geom_valid = geom.valid_mask()
+
+        finite = (
+            np.isfinite(pts3d).all(axis=-1)
+            & np.isfinite(depth_map)
+            & (depth_map > 1e-6)
+            & geom_valid
+        )
         if vcfg.conf_threshold is not None:
             thr = float(vcfg.conf_threshold)
         else:
@@ -527,4 +715,4 @@ def run_vggt(cfg: ReconstructionConfig, inputs: BackendInputs) -> RawReconstruct
     )
 
 
-__all__ = ["VggtImageGeometry", "run_vggt"]
+__all__ = ["VggtImageGeometry", "VggtOmegaImageGeometry", "run_vggt"]

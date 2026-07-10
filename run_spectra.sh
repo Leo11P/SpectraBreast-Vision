@@ -58,9 +58,14 @@ echo "=============================================="
 # --- Lancia la pipeline ------------------------------------------------------
 # Sample e tutte le path sono definiti dentro configs/default.yaml,
 # quindi NON serve passare --sample qui (eviti di specificarlo in due posti).
-uv run spectra full \
-    --config configs/default.yaml \
-    -s vision.rerun.enabled=false
+
+#uv run spectra full \
+#    --config configs/default.yaml \
+#    -s vision.rerun.enabled=false
+
+uv run spectra registration \
+     --config configs/default.yaml \
+     --sample SAMPLE2
 
 echo "=============================================="
 echo "  Run finished : $(date)"

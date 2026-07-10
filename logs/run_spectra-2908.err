@@ -1,0 +1,5 @@
+Usage: spectra registration [OPTIONS]
+Try 'spectra registration --help' for help.
+╭─ Error ──────────────────────────────────────────────────────────────────────╮
+│ Missing option '--config' / '-c'.                                            │
+╰──────────────────────────────────────────────────────────────────────────────╯
