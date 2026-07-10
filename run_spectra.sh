@@ -63,9 +63,15 @@ echo "=============================================="
 #    --config configs/default.yaml \
 #    -s vision.rerun.enabled=false
 
-uv run spectra registration \
+#uv run spectra registration \
+#    --config configs/default.yaml \
+#    --sample SAMPLE2
+ 
+uv run spectra full \
      --config configs/default.yaml \
+     --force-vision \
      --sample SAMPLE2
+
 
 echo "=============================================="
 echo "  Run finished : $(date)"

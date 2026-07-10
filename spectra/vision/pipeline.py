@@ -584,8 +584,15 @@ def run_reconstruction(cfg: ReconstructionConfig) -> ReconstructionResult:
         _log_step("Step 4/6 - ArUco alignment disabled or no markers detected")
         if cfg.aruco.align_to_aruco:
             print("[yellow]No ArUco markers detected; skipping alignment.[/yellow]")
-
     V_all = int(raw.T_world_cam.shape[0])
+    print(
+        f"[debug] V_all={V_all}  "
+        f"aligned_poses.shape={aligned_poses.shape if aligned_poses is not None else 'UNDEFINED'}  "
+        f"reject_flag={cfg.aruco.reject_views_by_alignment_error}  "
+        f"aruco_alignment_is_none={aruco_alignment is None}  "
+        f"plane_frame_is_none={(aruco_alignment.plane_frame is None) if aruco_alignment is not None else 'N/A'}  "
+        f"markers_empty={not aligned_markers_in_output_frame}"
+    )
     if (
         cfg.aruco.reject_views_by_alignment_error
         and aruco_alignment is not None

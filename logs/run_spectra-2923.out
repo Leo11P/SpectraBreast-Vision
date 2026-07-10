@@ -1,0 +1,49 @@
+==============================================
+  Spectra run (uv, no Singularity)
+  Job ID  : 2923
+  Node    : mufasa2.e4-cluster.lan
+  Start   : Fri Jul 10 01:53:27 PM CEST 2026
+==============================================
+  Repo    : /home/lpassoni/Vggt/SpectraBreast-Vision
+  Python  : Python 3.12.13
+  Torch   : 2.12.0+cu130
+  CUDA ok : True
+  TMPDIR  : /home/lpassoni/.cache/tmp
+==============================================
+
+====================================================================
+  SPECTRA FULL — sample='SAMPLE2'
+  data_root    : DATA
+  results_root : RESULTS
+  stages       : ['vision', 'registration']
+  reg mode     : sweep
+====================================================================
+
+[orchestrator] Vision stage for sample='SAMPLE2'
+Step 1/6 - Preparing run folder and loading inputs
+Run directory: RESULTS/SAMPLE2/vision_05
+Loaded 26 images (no GT poses) (no GT intrinsics)
+Step 2/6 - Detecting ArUco markers
+Detected 98 markers across 26 views.
+Step 3/6 - Running VGGT
+Backend produced 2,000,000 fused points; frame = vggt
+Step 4/6 - Jointly bundle-adjusting ArUco markers + cameras (rigid squares)
+Bundle adjustment: 4 markers, 392 obs, reproj RMSE 42.693 -> 5.299 px (1000 
+iters)
+ArUco geometric QC: best-fit plane RMS 0.25 mm; corners reprojected with output 
+cameras → RMSE 5.299 px (max 19.169, p95 9.164, n=392)
+ArUco alignment applied: markers=4, scale=1.000000 (applied=1.000000), 
+MAD=0.000006
+ V_all=26  aligned_poses.shape=(26, 4, 4)  reject_flag=True  
+aruco_alignment_is_none=False  plane_frame_is_none=False  markers_empty=False
+Rejecting 8 view(s) with per-view marker RMSE > 6.0 px (0-based indices [0, 1, 
+6, 12, 14, 22, 24, 25]).
+After view rejection: 18 views; cloud 4,712,429 points; marker reproj RMSE 4.146
+px
+Step 5/6 - Reconstructing single-surface height field
+Surface: 754,234 vertices, 1,074,755 triangles, grid 1774x1244 @ step 0.001812
+Output frame: world +Z points down (Z negated).
+Step 6/6 - Writing outputs and logging to Rerun
+Checking if we should log the surface cloud to Open3D
+Vision timings saved → RESULTS/SAMPLE2/vision_05/timings.json
+Done in 119.5 s. Outputs: RESULTS/SAMPLE2/vision_05

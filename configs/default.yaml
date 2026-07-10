@@ -55,20 +55,20 @@ vision:
     dictionary:             4x4_50
     marker_edge_length_m:   0.068
     origin_marker_id:       null
-    min_views_per_marker:   2
+    min_views_per_marker:   3
     align_to_aruco:         true
     max_sim3_scale_deviation_when_poses_known: 0.05
     detection_draw_scale:   2.0
-    bundle_adjustment:      false
+    bundle_adjustment:      true
     ba_max_iters:           1000
     ba_lr:                  0.005
     ba_huber_delta_px:      2.0
     ba_cam_prior_sigma_m:   0.10
     ba_cam_prior_sigma_deg: 5.0
-    reject_views_by_alignment_error: false
-    max_view_alignment_reproj_rmse_px: 15.0
+    reject_views_by_alignment_error: true
+    max_view_alignment_reproj_rmse_px: 6
     min_kept_views: 2
-    reject_views_with_no_markers: false
+    reject_views_with_no_markers: true
 
   surface:
     grid_step:      0.0
@@ -85,11 +85,11 @@ vision:
     image_resolution:      512          # omega: 256/512 ; original vggt: 518
     preprocess_mode:       crop         # 'crop' | 'pad' (crop keeps exact intrinsics remap)
     patch_size:            16           # omega: 16 ; original vggt: 14
-    dtype:                 bf16         # bf16 | fp16 | fp32
+    dtype:                 fp32         # bf16 | fp16 | fp32
     point_source:          depth        # 'depth' (unproject; both impls) | 'world' (vggt head)
     use_gt_intrinsics:     true         # use GT K for reprojection when available
-    conf_threshold:        null         # absolute conf cut; overrides conf_percentile
-    conf_percentile:       75.0         # per-view: drop points below this conf percentile
+    conf_threshold:        3.0          # absolute conf cut (matches vggt-omega demo floor); overrides conf_percentile
+    conf_percentile:       90.0         # used only if conf_threshold is null: drop points below this percentile
     voxel_size:            0.0015
     max_points:            2000000
     max_frames:            null         # optional frame cap (memory guard)
@@ -174,8 +174,8 @@ registration:
 
   export:
     save_pointcloud: false
-    ply:             true
-    npy:             true
+    ply:             false
+    npy:             false
     csv:             false
     csv_max_points:  500000
     save_images:     false

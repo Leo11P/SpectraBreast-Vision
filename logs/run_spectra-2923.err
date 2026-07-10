@@ -1,0 +1,2 @@
+/home/lpassoni/Vggt/SpectraBreast-Vision/spectra/vision/backends/vggt_backend.py:426: UserWarning: Found images with different shapes: {(448, 592), (592, 448)}; padding to a common size.
+  images = load_and_preprocess_images(
