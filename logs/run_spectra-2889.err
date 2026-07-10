@@ -1,0 +1,53 @@
+warning: `VIRTUAL_ENV=/home/lpassoni/Vggt/SpectraBreast-Vision/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead
+warning: `VIRTUAL_ENV=/home/lpassoni/Vggt/SpectraBreast-Vision/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead
+warning: `VIRTUAL_ENV=/home/lpassoni/Vggt/SpectraBreast-Vision/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead
+warning: `VIRTUAL_ENV=/home/lpassoni/Vggt/SpectraBreast-Vision/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead
+╭───────────────────── Traceback (most recent call last) ──────────────────────╮
+│ /home/lpassoni/SpectraBreast-Vision/spectra/cli.py:207 in full_cmd           │
+│                                                                              │
+│   204 │   cfg = load_unified_config(config)                                  │
+│   205 │   if sample:                                                         │
+│   206 │   │   cfg = cfg.with_overrides({"sample_name": sample})              │
+│ ❱ 207 │   cfg = _apply_cli_overrides(cfg, set_override)                      │
+│   208 │                                                                      │
+│   209 │   from .orchestrator import run_full                                 │
+│   210                                                                        │
+│                                                                              │
+│ /home/lpassoni/SpectraBreast-Vision/spectra/cli.py:95 in                     │
+│ _apply_cli_overrides                                                         │
+│                                                                              │
+│    92 │   for ov in overrides:                                               │
+│    93 │   │   key, value = _parse_override(ov)                               │
+│    94 │   │   merged[key] = value                                            │
+│ ❱  95 │   return cfg.with_overrides(merged)                                  │
+│    96                                                                        │
+│    97                                                                        │
+│    98 #                                                                      │
+│       ====================================================================== │
+│       =======                                                                │
+│                                                                              │
+│ /home/lpassoni/SpectraBreast-Vision/spectra/config.py:244 in with_overrides  │
+│                                                                              │
+│   241 │   def with_overrides(self, overrides: Mapping[str, Any]) ->          │
+│       "UnifiedConfig":                                                       │
+│   242 │   │   base = copy.deepcopy(self.model_dump(mode="python"))           │
+│   243 │   │   for dotted_key, value in overrides.items():                    │
+│ ❱ 244 │   │   │   _set_dotted(base, dotted_key, value)                       │
+│   245 │   │   return UnifiedConfig.model_validate(base)                      │
+│   246                                                                        │
+│   247                                                                        │
+│                                                                              │
+│ /home/lpassoni/SpectraBreast-Vision/spectra/config.py:269 in _set_dotted     │
+│                                                                              │
+│   266 │   cursor: Any = root                                                 │
+│   267 │   for part in parts[:-1]:                                            │
+│   268 │   │   if not isinstance(cursor, MutableMapping) or part not in       │
+│       cursor:                                                                │
+│ ❱ 269 │   │   │   raise KeyError(f"Unknown config path {dotted_key!r} at     │
+│       segment {part!r}")                                                     │
+│   270 │   │   cursor = cursor[part]                                          │
+│   271 │   if not isinstance(cursor, MutableMapping) or parts[-1] not in      │
+│       cursor:                                                                │
+│   272 │   │   raise KeyError(f"Unknown config path {dotted_key!r}")          │
+╰──────────────────────────────────────────────────────────────────────────────╯
+KeyError: "Unknown config path 'rerun.enabled' at segment 'rerun'"

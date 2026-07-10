@@ -1,0 +1,28 @@
+==============================================
+  Spectra run (uv, no Singularity)
+  Job ID  : 2895
+  Node    : mufasa2.e4-cluster.lan
+  Start   : Thu Jul  9 05:43:58 PM CEST 2026
+==============================================
+  Repo    : /home/lpassoni/Vggt/SpectraBreast-Vision
+  Python  : Python 3.12.13
+  Torch   : 2.12.0+cu130
+  CUDA ok : True
+  TMPDIR  : /home/lpassoni/.cache/tmp
+==============================================
+
+====================================================================
+  SPECTRA FULL — sample='SAMPLE2'
+  data_root    : DATA
+  results_root : RESULTS
+  stages       : ['vision', 'registration']
+  reg mode     : sweep
+====================================================================
+
+[orchestrator] Vision stage for sample='SAMPLE2'
+Step 1/6 - Preparing run folder and loading inputs
+Run directory: RESULTS/SAMPLE2/vision_02
+Loaded 26 images (no GT poses) (no GT intrinsics)
+Step 2/6 - Detecting ArUco markers
+Detected 98 markers across 26 views.
+Step 3/6 - Running VGGT

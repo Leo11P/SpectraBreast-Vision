@@ -248,9 +248,13 @@ def _load_model_and_preprocess(vcfg: VggtConfig, filelist: List[str], device: to
                     "vggt-omega weights: set vggt.checkpoint_path to a local .pt "
                     "checkpoint (VGGTOmega has no from_pretrained)."
                 )
+       # vggt-omega usa un vocabolario diverso ("balanced"/"max_size") rispetto
+        # al nostro crop/pad (che guida invece la logica di remap delle intrinsics
+        # sotto, riga ~384). Traduciamo prima di chiamare la libreria omega.
+        _omega_mode = "balanced" if vcfg.preprocess_mode == "crop" else "max_size"
         try:
             images = load_and_preprocess_images(
-                filelist, image_resolution=vcfg.image_resolution, mode=vcfg.preprocess_mode
+                filelist, image_resolution=vcfg.image_resolution, mode=_omega_mode
             )
         except TypeError:
             images = load_and_preprocess_images(filelist, image_resolution=vcfg.image_resolution)

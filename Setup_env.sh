@@ -3,8 +3,8 @@
 # Crea il virtual environment uv usando vggt-omega gia' clonato DENTRO la repo.
 #
 # Uso:
-#   cd ~/SpectraBreast-Vision
-#   bash setup_env.sh
+#   cd <repo>            # ovunque tu abbia clonato SpectraBreast-Vision
+#   bash Setup_env.sh
 
 set -euo pipefail
 
@@ -14,8 +14,10 @@ echo "  User    : ${USER}"
 echo "  Start   : $(date)"
 echo "=============================================="
 
-REPO_DIR="${HOME}/SpectraBreast-Vision"
+# Radice repo = cartella che contiene questo script (funziona ovunque sia clonata).
+REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "${REPO_DIR}"
+echo "  Repo    : ${REPO_DIR}"
 
 # --- Cache nella home (mai in /tmp): qui uv scarica i GB di PyTorch ----------
 export UV_CACHE_DIR="${HOME}/.cache/uv"
@@ -62,10 +64,12 @@ echo "[3/4] uv sync (scarica PyTorch cu130, puo' volerci qualche minuto)..."
 uv sync
 
 # Installa vggt-omega (editable) e le sue dipendenze nello stesso .venv.
+# NB: si usa `uv pip` (il pip integrato di uv), NON `uv run pip`: la venv creata
+# da `uv sync` non contiene un eseguibile `pip`.
 if [ -f "${VGGT_DIR}/requirements.txt" ]; then
-    uv run pip install --no-cache-dir -r "${VGGT_DIR}/requirements.txt"
+    uv pip install --no-cache-dir -r "${VGGT_DIR}/requirements.txt"
 fi
-uv run pip install --no-cache-dir -e "${VGGT_DIR}"
+uv pip install --no-cache-dir -e "${VGGT_DIR}"
 
 # --- 4. Smoke test -----------------------------------------------------------
 echo "[4/4] Smoke test..."

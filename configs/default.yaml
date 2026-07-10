@@ -18,7 +18,7 @@
 # =============================================================================
 
 # Sample being processed. Used to build default input/output paths.
-sample_name: "SAMPLE1"
+sample_name: "SAMPLE2"
 
 # Roots that drive default path resolution for `spectra full`.
 # Both can be relative (resolved from cwd) or absolute.
@@ -40,9 +40,9 @@ vision:
     #   pose_dir         = DATA/input_vision/<sample>/poses          (if it exists)
     #   camera_params_dir= DATA/input_vision/<sample>/camera_parameters (if it exists)
     # Override here when running `spectra vision` standalone.
-    rgb_dir:           DATA/input_vision/SAMPLE1
-    pose_dir:          DATA/input_vision/SAMPLE1
-    camera_params_dir: DATA/input_vision/SAMPLE1
+    rgb_dir:           DATA/input_vision/SAMPLE2_iphone
+    pose_dir:          DATA/input_vision/SAMPLE2_iphone
+    camera_params_dir: DATA/input_vision/SAMPLE2_iphone
 
   output:
     # When `null`, derived to:  RESULTS/<sample>/vision
@@ -76,12 +76,12 @@ vision:
     smooth_iters:   1
     min_neighbors:  3
     max_resolution: 2048
-    conf_threshold_percentile: 50.0
+    conf_threshold_percentile: 75.0
 
   vggt:
     impl:                  omega        # 'omega' (vggt-omega) | 'vggt' (original)
     model_name:            facebook/VGGT-Omega   # HF id; for impl=vggt use facebook/VGGT-1B
-    checkpoint_path:       null         # local .pt (load_state_dict) instead of from_pretrained
+    checkpoint_path:       /home/lpassoni/Vggt/SpectraBreast-Vision/checkpoints/vggt_omega_1b_512.pt         # local .pt (load_state_dict) instead of from_pretrained
     image_resolution:      512          # omega: 256/512 ; original vggt: 518
     preprocess_mode:       crop         # 'crop' | 'pad' (crop keeps exact intrinsics remap)
     patch_size:            16           # omega: 16 ; original vggt: 14
@@ -89,7 +89,7 @@ vision:
     point_source:          depth        # 'depth' (unproject; both impls) | 'world' (vggt head)
     use_gt_intrinsics:     true         # use GT K for reprojection when available
     conf_threshold:        null         # absolute conf cut; overrides conf_percentile
-    conf_percentile:       50.0         # per-view: drop points below this conf percentile
+    conf_percentile:       75.0         # per-view: drop points below this conf percentile
     voxel_size:            0.0015
     max_points:            2000000
     max_frames:            null         # optional frame cap (memory guard)
@@ -195,7 +195,7 @@ registration:
   # mode == "sweep"
   # ------------------------------------------------------------------
   sweep:
-    roi_mode: true
+    roi_mode: false
     resolution_pairs:
       - [5.0, 0.5]
       - [2.0, 0.5]

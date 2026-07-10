@@ -1,0 +1,43 @@
+╭───────────────────── Traceback (most recent call last) ──────────────────────╮
+│ /home/lpassoni/Vggt/SpectraBreast-Vision/spectra/cli.py:204 in full_cmd      │
+│                                                                              │
+│   201 │   │   │   │   │   │   │   │     help="Resolve config + paths and     │
+│       print plan, no execution."),                                           │
+│   202 ) -> None:                                                             │
+│   203 │   """Run vision (skipped if already done) and then registration on   │
+│       one sample."""                                                         │
+│ ❱ 204 │   cfg = load_unified_config(config)                                  │
+│   205 │   if sample:                                                         │
+│   206 │   │   cfg = cfg.with_overrides({"sample_name": sample})              │
+│   207 │   cfg = _apply_cli_overrides(cfg, set_override)                      │
+│                                                                              │
+│ /home/lpassoni/Vggt/SpectraBreast-Vision/spectra/config.py:288 in            │
+│ load_unified_config                                                          │
+│                                                                              │
+│   285 │   │   │   f"Config {path} is missing a top-level `vision:` section.  │
+│       "                                                                      │
+│   286 │   │   │   "If you have a legacy vision-only config, wrap it under    │
+│       `vision:`."                                                            │
+│   287 │   │   )                                                              │
+│ ❱ 288 │   return UnifiedConfig.model_validate(data)                          │
+│   289                                                                        │
+│   290                                                                        │
+│   291 def save_unified_config(cfg: UnifiedConfig, path: str | Path) -> Path: │
+│                                                                              │
+│ /home/lpassoni/Vggt/SpectraBreast-Vision/.venv/lib/python3.12/site-packages/ │
+│ pydantic/main.py:732 in model_validate                                       │
+│                                                                              │
+│    729 │   │   │   │   code='validate-by-alias-and-name-false',              │
+│    730 │   │   │   )                                                         │
+│    731 │   │                                                                 │
+│ ❱  732 │   │   return cls.__pydantic_validator__.validate_python(            │
+│    733 │   │   │   obj,                                                      │
+│    734 │   │   │   strict=strict,                                            │
+│    735 │   │   │   extra=extra,                                              │
+╰──────────────────────────────────────────────────────────────────────────────╯
+ValidationError: 1 validation error for UnifiedConfig
+vision.vggt.preprocess_mode
+  Input should be 'crop' or 'pad' [type=literal_error, input_value='balanced', 
+input_type=str]
+    For further information visit 
+https://errors.pydantic.dev/2.13/v/literal_error

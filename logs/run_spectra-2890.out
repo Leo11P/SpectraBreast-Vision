@@ -1,0 +1,8 @@
+==============================================
+  Spectra run (uv, no Singularity)
+  Job ID  : 2890
+  Node    : mufasa2.e4-cluster.lan
+  Start   : Thu Jul  9 05:33:05 PM CEST 2026
+==============================================
+  Repo    : /var/spool/slurm/job02890
+ERRORE: .venv non trovato. Esegui prima:  bash setup_env.sh

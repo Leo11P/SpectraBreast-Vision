@@ -1,0 +1,85 @@
+/home/lpassoni/Vggt/SpectraBreast-Vision/spectra/vision/backends/vggt_backend.py:256: UserWarning: Found images with different shapes: {(448, 592), (592, 448)}; padding to a common size.
+  images = load_and_preprocess_images(
+╭───────────────────── Traceback (most recent call last) ──────────────────────╮
+│ /home/lpassoni/Vggt/SpectraBreast-Vision/spectra/cli.py:211 in full_cmd      │
+│                                                                              │
+│   208 │                                                                      │
+│   209 │   from .orchestrator import run_full                                 │
+│   210 │                                                                      │
+│ ❱ 211 │   run_full(cfg, force_cpu=force_cpu, force_vision=force_vision,      │
+│       dry_run=dry_run)                                                       │
+│   212                                                                        │
+│   213                                                                        │
+│   214 #                                                                      │
+│       ====================================================================== │
+│       =======                                                                │
+│                                                                              │
+│ /home/lpassoni/Vggt/SpectraBreast-Vision/spectra/orchestrator.py:269 in      │
+│ run_full                                                                     │
+│                                                                              │
+│   266 │   │   │   │   print("[orchestrator][dry-run] Would run vision        │
+│       stage.")                                                               │
+│   267 │   │   │   │   out["vision"] = {"skipped": False, "dry_run": True}    │
+│   268 │   │   │   else:                                                      │
+│ ❱ 269 │   │   │   │   out["vision"] = run_vision_stage(cfg,                  │
+│       sample_name=sample)                                                    │
+│   270 │   else:                                                              │
+│   271 │   │   print("[orchestrator] Vision stage disabled (not in            │
+│       cfg.stages).")                                                         │
+│   272                                                                        │
+│                                                                              │
+│ /home/lpassoni/Vggt/SpectraBreast-Vision/spectra/orchestrator.py:170 in      │
+│ run_vision_stage                                                             │
+│                                                                              │
+│   167 │   sample = sample_name or cfg.sample_name                            │
+│   168 │   print(f"\n[orchestrator] Vision stage for sample={sample!r}")      │
+│   169 │   t0 = time.time()                                                   │
+│ ❱ 170 │   result = run_reconstruction(cfg.vision)                            │
+│   171 │   dt = time.time() - t0                                              │
+│   172 │   print(f"[orchestrator] Vision finished in {dt:.1f}s —              │
+│       run_dir={result.run_dir}")                                             │
+│   173 │   return {"run_dir": Path(result.run_dir), "skipped": False,         │
+│       "elapsed_s": dt}                                                       │
+│                                                                              │
+│ /home/lpassoni/Vggt/SpectraBreast-Vision/spectra/vision/pipeline.py:419 in   │
+│ run_reconstruction                                                           │
+│                                                                              │
+│    416 │                                                                     │
+│    417 │   _log_step("Step 3/6 - Running VGGT")                              │
+│    418 │   _timer.begin("Step 3/6 - VGGT backend")                           │
+│ ❱  419 │   raw = _run_backend(cfg, backend_inputs)                           │
+│    420 │   print(                                                            │
+│    421 │   │   f"Backend produced                                            │
+│        [green]{raw.fused_points.shape[0]:,}[/green] fused points; "          │
+│    422 │   │   f"frame = [green]{raw.frame_description}[/green]"             │
+│                                                                              │
+│ /home/lpassoni/Vggt/SpectraBreast-Vision/spectra/vision/pipeline.py:227 in   │
+│ _run_backend                                                                 │
+│                                                                              │
+│    224 def _run_backend(cfg: ReconstructionConfig, inputs) ->                │
+│        RawReconstruction:                                                    │
+│    225 │   from .backends.vggt_backend import run_vggt                       │
+│    226 │                                                                     │
+│ ❱  227 │   return run_vggt(cfg, inputs)                                      │
+│    228                                                                       │
+│    229                                                                       │
+│    230 def _refuse_with_ba_delta(                                            │
+│                                                                              │
+│ /home/lpassoni/Vggt/SpectraBreast-Vision/spectra/vision/backends/vggt_backen │
+│ d.py:406 in run_vggt                                                         │
+│                                                                              │
+│   403 │   ]                                                                  │
+│   404 │   for i, geom in enumerate(geometries):                              │
+│   405 │   │   if (geom.network_height, geom.network_width) != (network_h,    │
+│       network_w):                                                            │
+│ ❱ 406 │   │   │   raise RuntimeError(                                        │
+│   407 │   │   │   │   f"View {i}: computed crop geometry                     │
+│       {(geom.network_height, geom.network_width)} "                          │
+│   408 │   │   │   │   f"!= actual network tensor {(network_h, network_w)}.   │
+│       Check vggt.patch_size "                                                │
+│   409 │   │   │   │   f"({vcfg.patch_size}) / image_resolution               │
+│       ({vcfg.image_resolution}) match the checkpoint."                       │
+╰──────────────────────────────────────────────────────────────────────────────╯
+RuntimeError: View 0: computed crop geometry (512, 512) != actual network tensor
+(592, 592). Check vggt.patch_size (16) / image_resolution (512) match the 
+checkpoint.

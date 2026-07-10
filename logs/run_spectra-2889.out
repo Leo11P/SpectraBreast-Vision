@@ -1,0 +1,11 @@
+==============================================
+  Spectra run (uv, no Singularity)
+  Job ID  : 2889
+  Node    : mufasa2.e4-cluster.lan
+  Start   : Thu Jul  9 05:22:05 PM CEST 2026
+==============================================
+  Python  : Python 3.12.3
+  Torch   : 2.12.0+cu130
+  CUDA ok : True
+  TMPDIR  : /home/lpassoni/.cache/tmp
+==============================================

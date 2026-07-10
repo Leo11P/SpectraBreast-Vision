@@ -1,0 +1,78 @@
+╭───────────────────── Traceback (most recent call last) ──────────────────────╮
+│ /home/lpassoni/Vggt/SpectraBreast-Vision/spectra/cli.py:211 in full_cmd      │
+│                                                                              │
+│   208 │                                                                      │
+│   209 │   from .orchestrator import run_full                                 │
+│   210 │                                                                      │
+│ ❱ 211 │   run_full(cfg, force_cpu=force_cpu, force_vision=force_vision,      │
+│       dry_run=dry_run)                                                       │
+│   212                                                                        │
+│   213                                                                        │
+│   214 #                                                                      │
+│       ====================================================================== │
+│       =======                                                                │
+│                                                                              │
+│ /home/lpassoni/Vggt/SpectraBreast-Vision/spectra/orchestrator.py:269 in      │
+│ run_full                                                                     │
+│                                                                              │
+│   266 │   │   │   │   print("[orchestrator][dry-run] Would run vision        │
+│       stage.")                                                               │
+│   267 │   │   │   │   out["vision"] = {"skipped": False, "dry_run": True}    │
+│   268 │   │   │   else:                                                      │
+│ ❱ 269 │   │   │   │   out["vision"] = run_vision_stage(cfg,                  │
+│       sample_name=sample)                                                    │
+│   270 │   else:                                                              │
+│   271 │   │   print("[orchestrator] Vision stage disabled (not in            │
+│       cfg.stages).")                                                         │
+│   272                                                                        │
+│                                                                              │
+│ /home/lpassoni/Vggt/SpectraBreast-Vision/spectra/orchestrator.py:170 in      │
+│ run_vision_stage                                                             │
+│                                                                              │
+│   167 │   sample = sample_name or cfg.sample_name                            │
+│   168 │   print(f"\n[orchestrator] Vision stage for sample={sample!r}")      │
+│   169 │   t0 = time.time()                                                   │
+│ ❱ 170 │   result = run_reconstruction(cfg.vision)                            │
+│   171 │   dt = time.time() - t0                                              │
+│   172 │   print(f"[orchestrator] Vision finished in {dt:.1f}s —              │
+│       run_dir={result.run_dir}")                                             │
+│   173 │   return {"run_dir": Path(result.run_dir), "skipped": False,         │
+│       "elapsed_s": dt}                                                       │
+│                                                                              │
+│ /home/lpassoni/Vggt/SpectraBreast-Vision/spectra/vision/pipeline.py:373 in   │
+│ run_reconstruction                                                           │
+│                                                                              │
+│    370 │   run_dir, run_name = prepare_run_dir(cfg.output.root,              │
+│        cfg.output.run_name)                                                  │
+│    371 │   print(f"Run directory: [green]{run_dir}[/green]")                 │
+│    372 │                                                                     │
+│ ❱  373 │   backend_inputs = build_backend_inputs(                            │
+│    374 │   │   rgb_dir=cfg.input.rgb_dir,                                    │
+│    375 │   │   pose_dir=cfg.input.pose_dir,                                  │
+│    376 │   │   camera_params_dir=cfg.input.camera_params_dir,                │
+│                                                                              │
+│ /home/lpassoni/Vggt/SpectraBreast-Vision/spectra/vision/inputs.py:152 in     │
+│ build_backend_inputs                                                         │
+│                                                                              │
+│   149 │   device: torch.device | None = None,                                │
+│   150 ) -> BackendInputs:                                                    │
+│   151 │   """Gather everything the back-end needs in a single                │
+│       `BackendInputs`."""                                                    │
+│ ❱ 152 │   image_paths = list_rgb_images(rgb_dir)                             │
+│   153 │   T_world_cam_gt, K_orig_gt, cam2ee, distortion = load_gt_cameras(   │
+│   154 │   │   pose_dir=pose_dir,                                             │
+│   155 │   │   camera_params_dir=camera_params_dir,                           │
+│                                                                              │
+│ /home/lpassoni/Vggt/SpectraBreast-Vision/spectra/vision/inputs.py:27 in      │
+│ list_rgb_images                                                              │
+│                                                                              │
+│    24 │   """Return a sorted list of image paths in a folder."""             │
+│    25 │   rgb_dir = Path(rgb_dir)                                            │
+│    26 │   if not rgb_dir.is_dir():                                           │
+│ ❱  27 │   │   raise FileNotFoundError(f"RGB folder does not exist:           │
+│       {rgb_dir}")                                                            │
+│    28 │   files = sorted(                                                    │
+│    29 │   │   p for p in rgb_dir.iterdir()                                   │
+│    30 │   │   if p.is_file() and p.suffix.lower() in IMAGE_EXTENSIONS        │
+╰──────────────────────────────────────────────────────────────────────────────╯
+FileNotFoundError: RGB folder does not exist: DATA/input_vision/SAMPLE2
