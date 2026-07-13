@@ -1,0 +1,212 @@
+╭───────────────────── Traceback (most recent call last) ──────────────────────╮
+│ /home/lpassoni/SpectraBreast-Vision/spectra/cli.py:204 in full_cmd           │
+│                                                                              │
+│   201 │   │   │   │   │   │   │   │     help="Resolve config + paths and     │
+│       print plan, no execution."),                                           │
+│   202 ) -> None:                                                             │
+│   203 │   """Run vision (skipped if already done) and then registration on   │
+│       one sample."""                                                         │
+│ ❱ 204 │   cfg = load_unified_config(config)                                  │
+│   205 │   if sample:                                                         │
+│   206 │   │   cfg = cfg.with_overrides({"sample_name": sample})              │
+│   207 │   cfg = _apply_cli_overrides(cfg, set_override)                      │
+│                                                                              │
+│ /home/lpassoni/SpectraBreast-Vision/spectra/config.py:280 in                 │
+│ load_unified_config                                                          │
+│                                                                              │
+│   277 │   """Load and validate a unified YAML config (must contain `vision:` │
+│       at least)."""                                                          │
+│   278 │   path = Path(path)                                                  │
+│   279 │   with path.open("r", encoding="utf-8") as f:                        │
+│ ❱ 280 │   │   data = yaml.safe_load(f) or {}                                 │
+│   281 │   if not isinstance(data, dict):                                     │
+│   282 │   │   raise ValueError(f"Top-level YAML in {path} must be a mapping, │
+│       got {type(data).__name__}")                                            │
+│   283 │   if "vision" not in data:                                           │
+│                                                                              │
+│ /home/lpassoni/SpectraBreast-Vision/.venv/lib/python3.12/site-packages/yaml/ │
+│ __init__.py:125 in safe_load                                                 │
+│                                                                              │
+│   122 │   Resolve only basic YAML tags. This is known                        │
+│   123 │   to be safe for untrusted input.                                    │
+│   124 │   """                                                                │
+│ ❱ 125 │   return load(stream, SafeLoader)                                    │
+│   126                                                                        │
+│   127 def safe_load_all(stream):                                             │
+│   128 │   """                                                                │
+│                                                                              │
+│ /home/lpassoni/SpectraBreast-Vision/.venv/lib/python3.12/site-packages/yaml/ │
+│ __init__.py:81 in load                                                       │
+│                                                                              │
+│    78 │   """                                                                │
+│    79 │   loader = Loader(stream)                                            │
+│    80 │   try:                                                               │
+│ ❱  81 │   │   return loader.get_single_data()                                │
+│    82 │   finally:                                                           │
+│    83 │   │   loader.dispose()                                               │
+│    84                                                                        │
+│                                                                              │
+│ /home/lpassoni/SpectraBreast-Vision/.venv/lib/python3.12/site-packages/yaml/ │
+│ constructor.py:49 in get_single_data                                         │
+│                                                                              │
+│    46 │                                                                      │
+│    47 │   def get_single_data(self):                                         │
+│    48 │   │   # Ensure that the stream contains a single document and        │
+│       construct it.                                                          │
+│ ❱  49 │   │   node = self.get_single_node()                                  │
+│    50 │   │   if node is not None:                                           │
+│    51 │   │   │   return self.construct_document(node)                       │
+│    52 │   │   return None                                                    │
+│                                                                              │
+│ /home/lpassoni/SpectraBreast-Vision/.venv/lib/python3.12/site-packages/yaml/ │
+│ composer.py:36 in get_single_node                                            │
+│                                                                              │
+│    33 │   │   # Compose a document if the stream is not empty.               │
+│    34 │   │   document = None                                                │
+│    35 │   │   if not self.check_event(StreamEndEvent):                       │
+│ ❱  36 │   │   │   document = self.compose_document()                         │
+│    37 │   │                                                                  │
+│    38 │   │   # Ensure that the stream contains no more documents.           │
+│    39 │   │   if not self.check_event(StreamEndEvent):                       │
+│                                                                              │
+│ /home/lpassoni/SpectraBreast-Vision/.venv/lib/python3.12/site-packages/yaml/ │
+│ composer.py:55 in compose_document                                           │
+│                                                                              │
+│    52 │   │   self.get_event()                                               │
+│    53 │   │                                                                  │
+│    54 │   │   # Compose the root node.                                       │
+│ ❱  55 │   │   node = self.compose_node(None, None)                           │
+│    56 │   │                                                                  │
+│    57 │   │   # Drop the DOCUMENT-END event.                                 │
+│    58 │   │   self.get_event()                                               │
+│                                                                              │
+│ /home/lpassoni/SpectraBreast-Vision/.venv/lib/python3.12/site-packages/yaml/ │
+│ composer.py:84 in compose_node                                               │
+│                                                                              │
+│    81 │   │   elif self.check_event(SequenceStartEvent):                     │
+│    82 │   │   │   node = self.compose_sequence_node(anchor)                  │
+│    83 │   │   elif self.check_event(MappingStartEvent):                      │
+│ ❱  84 │   │   │   node = self.compose_mapping_node(anchor)                   │
+│    85 │   │   self.ascend_resolver()                                         │
+│    86 │   │   return node                                                    │
+│    87                                                                        │
+│                                                                              │
+│ /home/lpassoni/SpectraBreast-Vision/.venv/lib/python3.12/site-packages/yaml/ │
+│ composer.py:133 in compose_mapping_node                                      │
+│                                                                              │
+│   130 │   │   │   #if item_key in node.value:                                │
+│   131 │   │   │   #    raise ComposerError("while composing a mapping",      │
+│       start_event.start_mark,                                                │
+│   132 │   │   │   #            "found duplicate key", key_event.start_mark)  │
+│ ❱ 133 │   │   │   item_value = self.compose_node(node, item_key)             │
+│   134 │   │   │   #node.value[item_key] = item_value                         │
+│   135 │   │   │   node.value.append((item_key, item_value))                  │
+│   136 │   │   end_event = self.get_event()                                   │
+│                                                                              │
+│ /home/lpassoni/SpectraBreast-Vision/.venv/lib/python3.12/site-packages/yaml/ │
+│ composer.py:84 in compose_node                                               │
+│                                                                              │
+│    81 │   │   elif self.check_event(SequenceStartEvent):                     │
+│    82 │   │   │   node = self.compose_sequence_node(anchor)                  │
+│    83 │   │   elif self.check_event(MappingStartEvent):                      │
+│ ❱  84 │   │   │   node = self.compose_mapping_node(anchor)                   │
+│    85 │   │   self.ascend_resolver()                                         │
+│    86 │   │   return node                                                    │
+│    87                                                                        │
+│                                                                              │
+│ /home/lpassoni/SpectraBreast-Vision/.venv/lib/python3.12/site-packages/yaml/ │
+│ composer.py:133 in compose_mapping_node                                      │
+│                                                                              │
+│   130 │   │   │   #if item_key in node.value:                                │
+│   131 │   │   │   #    raise ComposerError("while composing a mapping",      │
+│       start_event.start_mark,                                                │
+│   132 │   │   │   #            "found duplicate key", key_event.start_mark)  │
+│ ❱ 133 │   │   │   item_value = self.compose_node(node, item_key)             │
+│   134 │   │   │   #node.value[item_key] = item_value                         │
+│   135 │   │   │   node.value.append((item_key, item_value))                  │
+│   136 │   │   end_event = self.get_event()                                   │
+│                                                                              │
+│ /home/lpassoni/SpectraBreast-Vision/.venv/lib/python3.12/site-packages/yaml/ │
+│ composer.py:84 in compose_node                                               │
+│                                                                              │
+│    81 │   │   elif self.check_event(SequenceStartEvent):                     │
+│    82 │   │   │   node = self.compose_sequence_node(anchor)                  │
+│    83 │   │   elif self.check_event(MappingStartEvent):                      │
+│ ❱  84 │   │   │   node = self.compose_mapping_node(anchor)                   │
+│    85 │   │   self.ascend_resolver()                                         │
+│    86 │   │   return node                                                    │
+│    87                                                                        │
+│                                                                              │
+│ /home/lpassoni/SpectraBreast-Vision/.venv/lib/python3.12/site-packages/yaml/ │
+│ composer.py:127 in compose_mapping_node                                      │
+│                                                                              │
+│   124 │   │   │   │   flow_style=start_event.flow_style)                     │
+│   125 │   │   if anchor is not None:                                         │
+│   126 │   │   │   self.anchors[anchor] = node                                │
+│ ❱ 127 │   │   while not self.check_event(MappingEndEvent):                   │
+│   128 │   │   │   #key_event = self.peek_event()                             │
+│   129 │   │   │   item_key = self.compose_node(node, None)                   │
+│   130 │   │   │   #if item_key in node.value:                                │
+│                                                                              │
+│ /home/lpassoni/SpectraBreast-Vision/.venv/lib/python3.12/site-packages/yaml/ │
+│ parser.py:98 in check_event                                                  │
+│                                                                              │
+│    95 │   │   # Check the type of the next event.                            │
+│    96 │   │   if self.current_event is None:                                 │
+│    97 │   │   │   if self.state:                                             │
+│ ❱  98 │   │   │   │   self.current_event = self.state()                      │
+│    99 │   │   if self.current_event is not None:                             │
+│   100 │   │   │   if not choices:                                            │
+│   101 │   │   │   │   return True                                            │
+│                                                                              │
+│ /home/lpassoni/SpectraBreast-Vision/.venv/lib/python3.12/site-packages/yaml/ │
+│ parser.py:428 in parse_block_mapping_key                                     │
+│                                                                              │
+│   425 │   │   return self.parse_block_mapping_key()                          │
+│   426 │                                                                      │
+│   427 │   def parse_block_mapping_key(self):                                 │
+│ ❱ 428 │   │   if self.check_token(KeyToken):                                 │
+│   429 │   │   │   token = self.get_token()                                   │
+│   430 │   │   │   if not self.check_token(KeyToken, ValueToken,              │
+│       BlockEndToken):                                                        │
+│   431 │   │   │   │   self.states.append(self.parse_block_mapping_value)     │
+│                                                                              │
+│ /home/lpassoni/SpectraBreast-Vision/.venv/lib/python3.12/site-packages/yaml/ │
+│ scanner.py:115 in check_token                                                │
+│                                                                              │
+│    112 │                                                                     │
+│    113 │   def check_token(self, *choices):                                  │
+│    114 │   │   # Check if the next token is one of the given types.          │
+│ ❱  115 │   │   while self.need_more_tokens():                                │
+│    116 │   │   │   self.fetch_more_tokens()                                  │
+│    117 │   │   if self.tokens:                                               │
+│    118 │   │   │   if not choices:                                           │
+│                                                                              │
+│ /home/lpassoni/SpectraBreast-Vision/.venv/lib/python3.12/site-packages/yaml/ │
+│ scanner.py:152 in need_more_tokens                                           │
+│                                                                              │
+│    149 │   │   │   return True                                               │
+│    150 │   │   # The current token may be a potential simple key, so we      │
+│    151 │   │   # need to look further.                                       │
+│ ❱  152 │   │   self.stale_possible_simple_keys()                             │
+│    153 │   │   if self.next_possible_simple_key() == self.tokens_taken:      │
+│    154 │   │   │   return True                                               │
+│    155                                                                       │
+│                                                                              │
+│ /home/lpassoni/SpectraBreast-Vision/.venv/lib/python3.12/site-packages/yaml/ │
+│ scanner.py:291 in stale_possible_simple_keys                                 │
+│                                                                              │
+│    288 │   │   │   if key.line != self.line  \                               │
+│    289 │   │   │   │   │   or self.index-key.index > 1024:                   │
+│    290 │   │   │   │   if key.required:                                      │
+│ ❱  291 │   │   │   │   │   raise ScannerError("while scanning a simple key", │
+│        key.mark,                                                             │
+│    292 │   │   │   │   │   │   │   "could not find expected ':'",            │
+│        self.get_mark())                                                      │
+│    293 │   │   │   │   del self.possible_simple_keys[level]                  │
+│    294                                                                       │
+╰──────────────────────────────────────────────────────────────────────────────╯
+ScannerError: while scanning a simple key
+  in "configs/default.yaml", line 73, column 3
+could not find expected ':'
+  in "configs/default.yaml", line 74, column 14

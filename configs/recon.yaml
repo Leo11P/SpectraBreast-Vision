@@ -77,7 +77,7 @@ mast3r:
   confidence_percentile: 99.0
 
 rerun:
-  enabled: true
+  enabled: false
   grpc_port: 9876
   no_wait: true
   log_cloud_rgb: true

@@ -5,9 +5,9 @@
 #SBATCH --cpus-per-task=8
 #SBATCH --mem=64G
 #SBATCH --partition=jobs
-#SBATCH --qos=gpu
-#SBATCH --gres=gpu:3g.20gb:1
-#SBATCH --time=6:00:00
+#SBATCH --qos=gpuwide 
+#SBATCH --gres=gpu:4g.20gb:1
+#SBATCH --time=12:00:00
 #SBATCH --output=./logs/run_spectra-%j.out
 #SBATCH --error=./logs/run_spectra-%j.err
 
@@ -21,45 +21,40 @@ echo "  Node    : $(hostname)"
 echo "  Start   : $(date)"
 echo "=============================================="
 
-# --- Vai nella root della repo -----------------------------------------------
 cd ~/SpectraBreast-Vision
 
-# --- Tieni TUTTE le cache nella home (mai in /tmp) ---------------------------
-# uv, pip, huggingface e torch scrivono cache temporanee: senza queste righe
-# alcune finirebbero in /tmp. Le forziamo nella home per non saturare /.
 export UV_CACHE_DIR="${HOME}/.cache/uv"
 export PIP_CACHE_DIR="${HOME}/.cache/pip"
 export HF_HOME="${HOME}/.cache/huggingface"
 export TORCH_HOME="${HOME}/.cache/torch"
 export TMPDIR="${HOME}/.cache/tmp"
+export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
 mkdir -p "${UV_CACHE_DIR}" "${PIP_CACHE_DIR}" "${HF_HOME}" "${TORCH_HOME}" "${TMPDIR}"
 
-# --- Assicura uv nel PATH (lo installa setup_env.sh in ~/.local/bin) ---------
 export PATH="${HOME}/.local/bin:${PATH}"
 
-# --- Verifiche pre-volo ------------------------------------------------------
 if ! command -v uv &> /dev/null; then
-    echo "ERRORE: uv non trovato. Esegui prima:  bash setup_env.sh"
+    echo "ERRORE: uv non trovato. Esegui prima: bash setup_env.sh"
     exit 1
 fi
 if [ ! -d ".venv" ]; then
-    echo "ERRORE: .venv non trovato. Esegui prima:  bash setup_env.sh"
+    echo "ERRORE: .venv non trovato. Esegui prima: bash setup_env.sh"
     exit 1
 fi
 
 echo "  Python  : $(uv run python --version)"
 echo "  Torch   : $(uv run python -c 'import torch; print(torch.__version__)')"
 echo "  CUDA ok : $(uv run python -c 'import torch; print(torch.cuda.is_available())')"
-echo "  TMPDIR  : ${TMPDIR}"
 echo "=============================================="
 
-# --- Lancia la pipeline ------------------------------------------------------
-# Sample e tutte le path sono definiti dentro configs/default.yaml,
-# quindi NON serve passare --sample qui (eviti di specificarlo in due posti).
-uv run spectra full \
-    --config configs/default.yaml \
-    -s rerun.enabled=false
+uv run spectra full --config configs/default.yaml
+#uv run spectra registration --config configs/default.yaml
+
+echo "  Pulizia cache SfM intermedia..."
+find RESULTS -name ".mast3r_sfm_cache" -type d -exec rm -rf {} + 2>/dev/null || true
+echo "  Cache SfM rimossa."
 
 echo "=============================================="
 echo "  Run finished : $(date)"
+echo "  Spazio home  : $(df -h $HOME | tail -1 | awk '{print $4}') liberi"
 echo "=============================================="

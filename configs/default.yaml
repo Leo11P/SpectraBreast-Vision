@@ -18,7 +18,7 @@
 # =============================================================================
 
 # Sample being processed. Used to build default input/output paths.
-sample_name: "SAMPLE1"
+sample_name: "SAMPLE2"
 
 # Roots that drive default path resolution for `spectra full`.
 # Both can be relative (resolved from cwd) or absolute.
@@ -40,15 +40,15 @@ vision:
     #   pose_dir         = DATA/input_vision/<sample>/poses          (if it exists)
     #   camera_params_dir= DATA/input_vision/<sample>/camera_parameters (if it exists)
     # Override here when running `spectra vision` standalone.
-    rgb_dir:           DATA/input_vision/SAMPLE1
-    pose_dir:          DATA/input_vision/SAMPLE1
-    camera_params_dir: DATA/input_vision/SAMPLE1
+    rgb_dir:           DATA/input_vision/SAMPLE2_iphone
+    pose_dir:          DATA/input_vision/SAMPLE2_iphone
+    camera_params_dir: DATA/input_vision/SAMPLE2_iphone
 
   output:
     # When `null`, derived to:  RESULTS/<sample>/vision
-    root:                        null
+    root:                        RESULTS/SAMPLE2/vision_PCA
     run_name:                    null
-    update_most_recent_symlink:  true
+    update_most_recent_symlink:  false
     z_axis_points_down:          true
 
   aruco:
@@ -70,67 +70,67 @@ vision:
     min_kept_views: 2
     reject_views_with_no_markers: false
 
-  surface:
-    grid_step:      0.0
-    fill_iters:     2
-    smooth_iters:   1
-    min_neighbors:  3
-    max_resolution: 2048
+  surface: 
+    grid_step: 0.0
+    fill_iters: 2
+    smooth_iters: 2
+    min_neighbors: 3
+    max_resolution: 3072
     conf_threshold_percentile: 50.0
 
   mast3r:
-    model_name:               naver/MASt3R_ViTLarge_BaseDecoder_512_catmlpdpt_metric
-    pipeline_variant:         sfm
-    scene_graph:              auto
-    retrieval_model:          null
-    sfm_subsample:            4
-    sfm_lr1:                  0.07
-    sfm_niter1:               300
-    sfm_lr2:                  0.01
-    sfm_niter2:               300
-    sfm_opt_depth:            true
-    sfm_shared_intrinsics:    true
-    sfm_matching_conf_thr:    5.0
-    sfm_min_conf_thr:         1.5
-    sfm_clean_depth:          true
-    image_size:               512
-    neighbor_window:          2
-    desc_conf_thr:            0.1
-    dense_conf_thr:           12.0
-    voxel_size:               0.0015
-    max_points:               2000000
-    pixel_tol:                1.5
-    max_matches_per_pair:     50000
-    pose_refine_iters:        1
-    pose_refine_lr:           0.0
-    pose_refine_lr_min:       0.00001
-    pose_prior_sigma_deg:     1.0
-    pose_prior_sigma_m:       0.01
-    pose_prior_weight:        0.06
-    pose_refine_log_every:    25
+    model_name: naver/MASt3R_ViTLarge_BaseDecoder_512_catmlpdpt_metric
+    pipeline_variant: sfm
+    scene_graph: auto
+    retrieval_model: null
+    sfm_subsample: 4
+    sfm_lr1: 0.07
+    sfm_niter1: 300
+    sfm_lr2: 0.01
+    sfm_niter2: 300
+    sfm_opt_depth: true
+    sfm_shared_intrinsics: true
+    sfm_matching_conf_thr: 5.0
+    sfm_min_conf_thr: 1.5
+    sfm_clean_depth: true
+    image_size: 512
+    neighbor_window: 2
+    desc_conf_thr: 0.1
+    dense_conf_thr: 12.0
+    voxel_size: 0.0012
+    max_points: 2000000
+    pixel_tol: 1.5
+    max_matches_per_pair: 50000
+    pose_refine_iters: 1
+    pose_refine_lr: 0.0
+    pose_refine_lr_min: 1.0e-05
+    pose_prior_sigma_deg: 1.0
+    pose_prior_sigma_m: 0.01
+    pose_prior_weight: 0.06
+    pose_refine_log_every: 25
     pose_refine_max_drot_deg: 8.0
-    pose_refine_max_dt_m:     0.06
-    dense_refine_iters:       1
-    dense_refine_lr:          0.0
-    confidence_percentile:    99.0
+    pose_refine_max_dt_m: 0.06
+    dense_refine_iters: 1
+    dense_refine_lr: 0.0
+    confidence_percentile: 99.0
 
   rerun:
     enabled: false
     grpc_port: 9876
-    no_wait: true
-    log_cloud_rgb: true
+    no_wait: false
+    log_cloud_rgb: false
     log_cloud_confidence: false
     log_cameras: false
     log_camera_aruco_images: false
     log_camera_confidence_images: false
-    log_aruco_3d: true
+    log_aruco_3d: false
     log_surface_mesh: false
     log_surface_cloud_open3d_web: false
     open3d_web_visualizer_port: 8888
     open3d_web_show_ui: false
     pointcloud_resample_factor: 0.25
-    save_rrd: true
-    save_rbl: true
+    save_rrd: false
+    save_rbl: false
     rerun_subdir: rerun
     rrd_basename: spectra.rrd
     rbl_basename: spectra.rbl
@@ -157,18 +157,18 @@ registration:
   #
   # Override here when running `spectra registration` standalone with custom inputs.
   paths:
-    hsi_hdr:      null
-    mesh:         null
-    aruco_json:   null
+    hsi_hdr:      DATA/input_registration/SAMPLE2/SAMPLE2_raw.hdr
+    mesh:         RESULTS/SAMPLE2/vision/surface_mesh.ply
+    aruco_json:   RESULTS/SAMPLE2/vision/aruco_markers_3d.json
     liveview_png: null
-    output_dir:   null
+    output_dir:   RESULTS/SAMPLE2_mean/registration
 
   detection:
     hsi_extraction_method: "mean"     # "mean" | "visible_band" | "pca"
     aruco_dict:            "4X4_50"
     marker_side_mm:        6.8
     use_subpix:            true
-    subpix_winsize:        5
+    subpix_winsize:        2
 
   roi:
     method:         "sift"
@@ -179,8 +179,8 @@ registration:
     save_match_viz: true
 
   render:
-    resolution_mm_per_px:     5.0
-    resolution_reg_mm_per_px: 0.5
+    resolution_mm_per_px:     0.5 #risoluzione per la creazione della mesh finale
+    resolution_reg_mm_per_px: 1.0 #risoluzione per la registrazione
     margin_mm:                10.0
     ray_chunk_size:           16384
     face_chunk_size:          2048
@@ -193,8 +193,8 @@ registration:
 
   export:
     save_pointcloud: false
-    ply:             true
-    npy:             true
+    ply:             false
+    npy:             false
     csv:             false
     csv_max_points:  500000
     save_images:     false
@@ -214,7 +214,7 @@ registration:
   # mode == "sweep"
   # ------------------------------------------------------------------
   sweep:
-    roi_mode: true
+    roi_mode: false
     resolution_pairs:
       - [5.0, 0.5]
       - [2.0, 0.5]

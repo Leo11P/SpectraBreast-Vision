@@ -1,0 +1,10 @@
+==============================================
+  Spectra run (uv, no Singularity)
+  Job ID  : 2981
+  Node    : mufasa2.e4-cluster.lan
+  Start   : Mon Jul 13 01:55:28 PM CEST 2026
+==============================================
+  Python  : Python 3.12.3
+  Torch   : 2.12.0+cu130
+  CUDA ok : True
+==============================================

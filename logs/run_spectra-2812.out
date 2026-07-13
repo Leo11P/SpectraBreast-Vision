@@ -1,0 +1,22 @@
+==============================================
+  Spectra run (uv, no Singularity)
+  Job ID  : 2812
+  Node    : mufasa2.e4-cluster.lan
+  Start   : Tue Jul  7 04:30:32 PM CEST 2026
+==============================================
+  Python  : Python 3.12.3
+  Torch   : 2.12.0+cu130
+  CUDA ok : True
+==============================================
+
+====================================================================
+  SPECTRA FULL — sample='SAMPLE2'
+  data_root    : DATA
+  results_root : RESULTS
+  stages       : ['vision', 'registration']
+  reg mode     : roi
+====================================================================
+
+[orchestrator] Vision stage for sample='SAMPLE2'
+Step 1/6 - Preparing run folder and loading inputs
+Run directory: RESULTS/SAMPLE2/vision_01

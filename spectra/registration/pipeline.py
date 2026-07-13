@@ -137,12 +137,39 @@ def extract_2d_from_hsi(cube, meta, method='visible_band'):
 
     elif method == 'pca':
         rows, cols, bands = cube.shape
-        X = cube.reshape(-1, bands).astype(np.float32)
-        X -= X.mean(axis=0)
-        _, _, Vt = np.linalg.svd(X, full_matrices=False)
-        pc1 = X @ Vt[0]
+        # Work in float64 and reshape to (n_pixels, bands).
+        X = cube.reshape(-1, bands).astype(np.float64)
+
+        # 1) Clean NaN/Inf BEFORE the decomposition — LAPACK fails on non-finite
+        #    input (a raw HSI cube often has dead/saturated pixels as NaN).
+        X = np.nan_to_num(X, nan=0.0, posinf=0.0, neginf=0.0)
+
+        # 2) Center on the per-band mean.
+        mean_spectrum = X.mean(axis=0)
+        Xc = X - mean_spectrum
+
+        # 3) Eigen-decompose the small (bands x bands) covariance matrix instead
+        #    of SVD-ing the tall (n_pixels x bands) matrix. Mathematically the
+        #    top eigenvector equals the first right-singular vector of Xc, but
+        #    the decomposition is on a tiny, well-behaved matrix — no memory
+        #    blow-up and no "SVD did not converge" on near-singular HSI data.
+        cov = (Xc.T @ Xc) / max(Xc.shape[0] - 1, 1)          # (bands, bands)
+        eigvals, eigvecs = np.linalg.eigh(cov)               # ascending order
+        pc1_axis = eigvecs[:, -1]                            # largest eigenvalue
+
+        pc1 = Xc @ pc1_axis                                  # (n_pixels,)
+
+        # 4) Fix the arbitrary sign of the eigenvector so the output is
+        #    deterministic. Convention: make the brightest-variance direction
+        #    correlate positively with overall intensity, so markers keep a
+        #    consistent dark-on-light polarity for ArUco.
+        if np.corrcoef(pc1, Xc.mean(axis=1))[0, 1] < 0:
+            pc1 = -pc1
+
         img_2d = pc1.reshape(rows, cols)
-        print(f"[HSI] PCA: first component extracted")
+        var_explained = eigvals[-1] / (eigvals.sum() + 1e-12)
+        print(f"[HSI] PCA: first component extracted "
+              f"(variance explained={var_explained:.3f})")
 
     elif method == 'mean':
         img_2d = cube.mean(axis=2).astype(np.float32)

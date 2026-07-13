@@ -1,0 +1,51 @@
+╭───────────────────── Traceback (most recent call last) ──────────────────────╮
+│ /home/lpassoni/SpectraBreast-Vision/spectra/cli.py:211 in full_cmd           │
+│                                                                              │
+│   208 │                                                                      │
+│   209 │   from .orchestrator import run_full                                 │
+│   210 │                                                                      │
+│ ❱ 211 │   run_full(cfg, force_cpu=force_cpu, force_vision=force_vision,      │
+│       dry_run=dry_run)                                                       │
+│   212                                                                        │
+│   213                                                                        │
+│   214 #                                                                      │
+│       ====================================================================== │
+│       =======                                                                │
+│                                                                              │
+│ /home/lpassoni/SpectraBreast-Vision/spectra/orchestrator.py:282 in run_full  │
+│                                                                              │
+│   279 │   │   │   print("[orchestrator][dry-run] Would run registration      │
+│       stage.")                                                               │
+│   280 │   │   │   out["registration"] = {"dry_run": True}                    │
+│   281 │   │   else:                                                          │
+│ ❱ 282 │   │   │   out["registration"] = run_registration_stage(              │
+│   283 │   │   │   │   cfg, sample_name=sample, force_cpu=force_cpu,          │
+│       dry_run=False,                                                         │
+│   284 │   │   │   )                                                          │
+│   285 │   else:                                                              │
+│                                                                              │
+│ /home/lpassoni/SpectraBreast-Vision/spectra/orchestrator.py:191 in           │
+│ run_registration_stage                                                       │
+│                                                                              │
+│   188 │   print(f"\n[orchestrator] Registration stage for sample={sample!r}  │
+│       "                                                                      │
+│   189 │   │     f"(mode={cfg.registration.mode!r})")                         │
+│   190 │   t0 = time.time()                                                   │
+│ ❱ 191 │   result = run_registration(                                         │
+│   192 │   │   cfg.registration,                                              │
+│   193 │   │   sample_name=sample,                                            │
+│   194 │   │   data_root=cfg.data_root,                                       │
+│                                                                              │
+│ /home/lpassoni/SpectraBreast-Vision/spectra/registration/runner.py:217 in    │
+│ run_registration                                                             │
+│                                                                              │
+│   214 │   if errors:                                                         │
+│   215 │   │   for e in errors:                                               │
+│   216 │   │   │   print(f"[Validate] MISSING — {e}")                         │
+│ ❱ 217 │   │   raise FileNotFoundError(                                       │
+│   218 │   │   │   f"Registration cannot start: {len(errors)} input file(s)   │
+│       missing."                                                              │
+│   219 │   │   )                                                              │
+│   220                                                                        │
+╰──────────────────────────────────────────────────────────────────────────────╯
+FileNotFoundError: Registration cannot start: 2 input file(s) missing.

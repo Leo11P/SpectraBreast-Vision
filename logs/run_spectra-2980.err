@@ -1,0 +1,109 @@
+╭───────────────────── Traceback (most recent call last) ──────────────────────╮
+│ /home/lpassoni/SpectraBreast-Vision/spectra/cli.py:211 in full_cmd           │
+│                                                                              │
+│   208 │                                                                      │
+│   209 │   from .orchestrator import run_full                                 │
+│   210 │                                                                      │
+│ ❱ 211 │   run_full(cfg, force_cpu=force_cpu, force_vision=force_vision,      │
+│       dry_run=dry_run)                                                       │
+│   212                                                                        │
+│   213                                                                        │
+│   214 #                                                                      │
+│       ====================================================================== │
+│       =======                                                                │
+│                                                                              │
+│ /home/lpassoni/SpectraBreast-Vision/spectra/orchestrator.py:282 in run_full  │
+│                                                                              │
+│   279 │   │   │   print("[orchestrator][dry-run] Would run registration      │
+│       stage.")                                                               │
+│   280 │   │   │   out["registration"] = {"dry_run": True}                    │
+│   281 │   │   else:                                                          │
+│ ❱ 282 │   │   │   out["registration"] = run_registration_stage(              │
+│   283 │   │   │   │   cfg, sample_name=sample, force_cpu=force_cpu,          │
+│       dry_run=False,                                                         │
+│   284 │   │   │   )                                                          │
+│   285 │   else:                                                              │
+│                                                                              │
+│ /home/lpassoni/SpectraBreast-Vision/spectra/orchestrator.py:191 in           │
+│ run_registration_stage                                                       │
+│                                                                              │
+│   188 │   print(f"\n[orchestrator] Registration stage for sample={sample!r}  │
+│       "                                                                      │
+│   189 │   │     f"(mode={cfg.registration.mode!r})")                         │
+│   190 │   t0 = time.time()                                                   │
+│ ❱ 191 │   result = run_registration(                                         │
+│   192 │   │   cfg.registration,                                              │
+│   193 │   │   sample_name=sample,                                            │
+│   194 │   │   data_root=cfg.data_root,                                       │
+│                                                                              │
+│ /home/lpassoni/SpectraBreast-Vision/spectra/registration/runner.py:266 in    │
+│ run_registration                                                             │
+│                                                                              │
+│   263 │   │   return {"summary_xlsx": xlsx_path}                             │
+│   264 │                                                                      │
+│   265 │   # ----- mode == "single" / "roi"                                   │
+│       -----------------------------------------                              │
+│ ❱ 266 │   return _run_single_or_roi(                                         │
+│   267 │   │   cfg=cfg,                                                       │
+│   268 │   │   sample_name=sample_name,                                       │
+│   269 │   │   aruco_dict_cv=aruco_dict_cv,                                   │
+│                                                                              │
+│ /home/lpassoni/SpectraBreast-Vision/spectra/registration/runner.py:353 in    │
+│ _run_single_or_roi                                                           │
+│                                                                              │
+│   350 │   roi_align_cfg = cfg.roi.model_dump() if cfg.mode == "roi" else     │
+│       None                                                                   │
+│   351 │                                                                      │
+│   352 │   t0 = time.time()                                                   │
+│ ❱ 353 │   result = run_full_pipeline_roi(                                    │
+│   354 │   │   hsi_hdr_path             = str(cfg.paths.hsi_hdr),             │
+│   355 │   │   mesh_path                = str(cfg.paths.mesh),                │
+│   356 │   │   aruco_json_path          = str(cfg.paths.aruco_json),          │
+│                                                                              │
+│ /home/lpassoni/SpectraBreast-Vision/spectra/registration/pipeline_roi.py:227 │
+│ in run_full_pipeline_roi                                                     │
+│                                                                              │
+│   224 │   print(f"  Cube shape (ROI): {cube.shape}")                         │
+│   225 │   # Mean del cubo ROI (qualunque method qui produce un'immagine 2D,  │
+│   226 │   # ma 'mean' e' la piu' robusta per feature matching)               │
+│ ❱ 227 │   roi_2d = extract_2d_from_hsi(cube, meta,                           │
+│       method=hsi_extraction_method)                                          │
+│   228 │                                                                      │
+│   229 │   # ── Step 1b: Carico PNG LiveView                                  │
+│       ──────────────────────────────────────────                             │
+│   230 │   print(f"\n[Step 1b] Loading LiveView PNG: {liveview_png_path}")    │
+│                                                                              │
+│ /home/lpassoni/SpectraBreast-Vision/spectra/registration/pipeline.py:142 in  │
+│ extract_2d_from_hsi                                                          │
+│                                                                              │
+│    139 │   │   rows, cols, bands = cube.shape                                │
+│    140 │   │   X = cube.reshape(-1, bands).astype(np.float32)                │
+│    141 │   │   X -= X.mean(axis=0)                                           │
+│ ❱  142 │   │   _, _, Vt = np.linalg.svd(X, full_matrices=False)              │
+│    143 │   │   pc1 = X @ Vt[0]                                               │
+│    144 │   │   img_2d = pc1.reshape(rows, cols)                              │
+│    145 │   │   print(f"[HSI] PCA: first component extracted")                │
+│                                                                              │
+│ /home/lpassoni/SpectraBreast-Vision/.venv/lib/python3.12/site-packages/numpy │
+│ /linalg/_linalg.py:1841 in svd                                               │
+│                                                                              │
+│   1838 │   │   with errstate(call=_raise_linalgerror_svd_nonconvergence,     │
+│   1839 │   │   │   │   │     invalid='call', over='ignore', divide='ignore', │
+│   1840 │   │   │   │   │     under='ignore'):                                │
+│ ❱ 1841 │   │   │   u, s, vh = gufunc(a, signature=signature)                 │
+│   1842 │   │   u = u.astype(result_t, copy=False)                            │
+│   1843 │   │   s = s.astype(_realType(result_t), copy=False)                 │
+│   1844 │   │   vh = vh.astype(result_t, copy=False)                          │
+│                                                                              │
+│ /home/lpassoni/SpectraBreast-Vision/.venv/lib/python3.12/site-packages/numpy │
+│ /linalg/_linalg.py:154 in _raise_linalgerror_svd_nonconvergence              │
+│                                                                              │
+│    151 │   raise LinAlgError("Eigenvalues did not converge")                 │
+│    152                                                                       │
+│    153 def _raise_linalgerror_svd_nonconvergence(err, flag):                 │
+│ ❱  154 │   raise LinAlgError("SVD did not converge")                         │
+│    155                                                                       │
+│    156 def _raise_linalgerror_lstsq(err, flag):                              │
+│    157 │   raise LinAlgError("SVD did not converge in Linear Least Squares") │
+╰──────────────────────────────────────────────────────────────────────────────╯
+LinAlgError: SVD did not converge

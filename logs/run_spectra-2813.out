@@ -1,0 +1,78 @@
+==============================================
+  Spectra run (uv, no Singularity)
+  Job ID  : 2813
+  Node    : mufasa2.e4-cluster.lan
+  Start   : Tue Jul  7 04:31:37 PM CEST 2026
+==============================================
+  Python  : Python 3.12.3
+  Torch   : 2.12.0+cu130
+  CUDA ok : True
+==============================================
+
+====================================================================
+  SPECTRA FULL — sample='SAMPLE2'
+  data_root    : DATA
+  results_root : RESULTS
+  stages       : ['vision', 'registration']
+  reg mode     : roi
+====================================================================
+
+[orchestrator] Vision stage for sample='SAMPLE2'
+Step 1/6 - Preparing run folder and loading inputs
+Run directory: RESULTS/SAMPLE2/vision_02
+Loaded 26 images (no GT poses) (no GT intrinsics)
+Step 2/6 - Detecting ArUco markers
+Detected 98 markers across 26 views.
+Step 3/6 - Running MASt3R-SfM
+>> Loading a list of 26 images
+ - adding RESULTS/SAMPLE2/vision_02/inputs_exif_canonical/IMG_1964.png with resolution 3024x4032 --> 384x512
+ - adding RESULTS/SAMPLE2/vision_02/inputs_exif_canonical/IMG_1965.png with resolution 3024x4032 --> 384x512
+ - adding RESULTS/SAMPLE2/vision_02/inputs_exif_canonical/IMG_1966.png with resolution 3024x4032 --> 384x512
+ - adding RESULTS/SAMPLE2/vision_02/inputs_exif_canonical/IMG_1967.png with resolution 3024x4032 --> 384x512
+ - adding RESULTS/SAMPLE2/vision_02/inputs_exif_canonical/IMG_1968.png with resolution 3024x4032 --> 384x512
+ - adding RESULTS/SAMPLE2/vision_02/inputs_exif_canonical/IMG_1969.png with resolution 3024x4032 --> 384x512
+ - adding RESULTS/SAMPLE2/vision_02/inputs_exif_canonical/IMG_1970.png with resolution 4032x3024 --> 512x384
+ - adding RESULTS/SAMPLE2/vision_02/inputs_exif_canonical/IMG_1971.png with resolution 4032x3024 --> 512x384
+ - adding RESULTS/SAMPLE2/vision_02/inputs_exif_canonical/IMG_1972.png with resolution 4032x3024 --> 512x384
+ - adding RESULTS/SAMPLE2/vision_02/inputs_exif_canonical/IMG_1973.png with resolution 4032x3024 --> 512x384
+ - adding RESULTS/SAMPLE2/vision_02/inputs_exif_canonical/IMG_1974.png with resolution 4032x3024 --> 512x384
+ - adding RESULTS/SAMPLE2/vision_02/inputs_exif_canonical/IMG_1975.png with resolution 4032x3024 --> 512x384
+ - adding RESULTS/SAMPLE2/vision_02/inputs_exif_canonical/IMG_1976.png with resolution 4032x3024 --> 512x384
+ - adding RESULTS/SAMPLE2/vision_02/inputs_exif_canonical/IMG_1977.png with resolution 4032x3024 --> 512x384
+ - adding RESULTS/SAMPLE2/vision_02/inputs_exif_canonical/IMG_1978.png with resolution 4032x3024 --> 512x384
+ - adding RESULTS/SAMPLE2/vision_02/inputs_exif_canonical/IMG_1979.png with resolution 4032x3024 --> 512x384
+ - adding RESULTS/SAMPLE2/vision_02/inputs_exif_canonical/IMG_1980.png with resolution 4032x3024 --> 512x384
+ - adding RESULTS/SAMPLE2/vision_02/inputs_exif_canonical/IMG_1981.png with resolution 4032x3024 --> 512x384
+ - adding RESULTS/SAMPLE2/vision_02/inputs_exif_canonical/IMG_1982.png with resolution 4032x3024 --> 512x384
+ - adding RESULTS/SAMPLE2/vision_02/inputs_exif_canonical/IMG_1983.png with resolution 4032x3024 --> 512x384
+ - adding RESULTS/SAMPLE2/vision_02/inputs_exif_canonical/IMG_1984.png with resolution 3024x4032 --> 384x512
+ - adding RESULTS/SAMPLE2/vision_02/inputs_exif_canonical/IMG_1985.png with resolution 3024x4032 --> 384x512
+ - adding RESULTS/SAMPLE2/vision_02/inputs_exif_canonical/IMG_1986.png with resolution 3024x4032 --> 384x512
+ - adding RESULTS/SAMPLE2/vision_02/inputs_exif_canonical/IMG_1987.png with resolution 3024x4032 --> 384x512
+ - adding RESULTS/SAMPLE2/vision_02/inputs_exif_canonical/IMG_1988.png with resolution 4032x3024 --> 512x384
+ - adding RESULTS/SAMPLE2/vision_02/inputs_exif_canonical/IMG_1989.png with resolution 4032x3024 --> 512x384
+ (Found 26 images)
+init focal (shared) =  637.82
+>> final loss = 0.02134043537080288
+>> final loss = 0.5900987386703491
+Final focal (shared) =  745.82
+Backend produced 1,674,207 fused points; frame = sfm
+Step 4/6 - Triangulating ArUco markers and building Sim3
+ArUco geometric QC: best-fit plane RMS 0.35 mm; corners reprojected with output 
+cameras → RMSE 4.042 px (max 12.994, p95 7.495, n=392)
+ArUco alignment applied: markers=4, scale=0.615493 (applied=0.615493), 
+MAD=0.004721
+Step 5/6 - Reconstructing single-surface height field
+Surface: 575,297 vertices, 820,113 triangles, grid 1136x1422 @ step 0.001930
+Output frame: world +Z points down (Z negated).
+Step 6/6 - Writing outputs and logging to Rerun
+Checking if we should log the surface cloud to Open3D
+Vision timings saved → RESULTS/SAMPLE2/vision_02/timings.json
+Done in 661.7 s. Outputs: RESULTS/SAMPLE2/vision_02
+[orchestrator] Vision finished in 661.7s — run_dir=RESULTS/SAMPLE2/vision_02
+
+[orchestrator] Registration stage for sample='SAMPLE2' (mode='roi')
+[Validate] MISSING — HSI .hdr not found: DATA/input_registration/SAMPLE2/SAMPLE2_raw.hdr
+[Validate] MISSING — Mesh not found: RESULTS/SAMPLE2/vision/surface_mesh.ply
+[Validate] MISSING — ArUco JSON not found: RESULTS/SAMPLE2/vision/aruco_markers_3d.json
+[Validate] MISSING — LiveView PNG not found: DATA/input_registration/SAMPLE2/SAMPLE2_raw.png

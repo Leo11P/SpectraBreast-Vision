@@ -1,0 +1,305 @@
+/home/lpassoni/SpectraBreast-Vision/mast3r/dust3r/dust3r/cloud_opt/base_opt.py:275: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  @torch.cuda.amp.autocast(enabled=False)
+/home/lpassoni/SpectraBreast-Vision/spectra/vision/backends/mast3r_backend.py:533: UserWarning: The given NumPy array is not writable, and PyTorch does not support non-writable tensors. This means writing to this tensor will result in undefined behavior. You may want to copy the array to protect its data or make it writable before converting it to a tensor. This type of warning will be suppressed for the rest of this program. (Triggered internally at /pytorch/torch/csrc/utils/tensor_numpy.cpp:213.)
+  return torch.from_numpy(np.transpose(arr, (2, 0, 1)))  # [3, H, W]
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+  0%|          | 0/1122 [00:00<?, ?it/s]  0%|          | 0/1122 [00:00<?, ?it/s]
+╭───────────────────── Traceback (most recent call last) ──────────────────────╮
+│ /home/lpassoni/SpectraBreast-Vision/spectra/cli.py:211 in full_cmd           │
+│                                                                              │
+│   208 │                                                                      │
+│   209 │   from .orchestrator import run_full                                 │
+│   210 │                                                                      │
+│ ❱ 211 │   run_full(cfg, force_cpu=force_cpu, force_vision=force_vision,      │
+│       dry_run=dry_run)                                                       │
+│   212                                                                        │
+│   213                                                                        │
+│   214 #                                                                      │
+│       ====================================================================== │
+│       =======                                                                │
+│                                                                              │
+│ /home/lpassoni/SpectraBreast-Vision/spectra/orchestrator.py:269 in run_full  │
+│                                                                              │
+│   266 │   │   │   │   print("[orchestrator][dry-run] Would run vision        │
+│       stage.")                                                               │
+│   267 │   │   │   │   out["vision"] = {"skipped": False, "dry_run": True}    │
+│   268 │   │   │   else:                                                      │
+│ ❱ 269 │   │   │   │   out["vision"] = run_vision_stage(cfg,                  │
+│       sample_name=sample)                                                    │
+│   270 │   else:                                                              │
+│   271 │   │   print("[orchestrator] Vision stage disabled (not in            │
+│       cfg.stages).")                                                         │
+│   272                                                                        │
+│                                                                              │
+│ /home/lpassoni/SpectraBreast-Vision/spectra/orchestrator.py:170 in           │
+│ run_vision_stage                                                             │
+│                                                                              │
+│   167 │   sample = sample_name or cfg.sample_name                            │
+│   168 │   print(f"\n[orchestrator] Vision stage for sample={sample!r}")      │
+│   169 │   t0 = time.time()                                                   │
+│ ❱ 170 │   result = run_reconstruction(cfg.vision)                            │
+│   171 │   dt = time.time() - t0                                              │
+│   172 │   print(f"[orchestrator] Vision finished in {dt:.1f}s —              │
+│       run_dir={result.run_dir}")                                             │
+│   173 │   return {"run_dir": Path(result.run_dir), "skipped": False,         │
+│       "elapsed_s": dt}                                                       │
+│                                                                              │
+│ /home/lpassoni/SpectraBreast-Vision/spectra/vision/pipeline.py:419 in        │
+│ run_reconstruction                                                           │
+│                                                                              │
+│    416 │                                                                     │
+│    417 │   _log_step("Step 3/6 - Running MASt3R-SfM")                        │
+│    418 │   _timer.begin("Step 3/6 - MASt3R-SfM backend")                     │
+│ ❱  419 │   raw = _run_mast3r_backend(cfg, backend_inputs)                    │
+│    420 │   print(                                                            │
+│    421 │   │   f"Backend produced                                            │
+│        [green]{raw.fused_points.shape[0]:,}[/green] fused points; "          │
+│    422 │   │   f"frame = [green]{raw.frame_description}[/green]"             │
+│                                                                              │
+│ /home/lpassoni/SpectraBreast-Vision/spectra/vision/pipeline.py:227 in        │
+│ _run_mast3r_backend                                                          │
+│                                                                              │
+│    224 def _run_mast3r_backend(cfg: ReconstructionConfig, inputs) ->         │
+│        RawReconstruction:                                                    │
+│    225 │   from .backends.mast3r_backend import run_mast3r                   │
+│    226 │                                                                     │
+│ ❱  227 │   return run_mast3r(cfg, inputs)                                    │
+│    228                                                                       │
+│    229                                                                       │
+│    230 def _refuse_with_ba_delta(                                            │
+│                                                                              │
+│ /home/lpassoni/SpectraBreast-Vision/spectra/vision/backends/mast3r_backend.p │
+│ y:765 in run_mast3r                                                          │
+│                                                                              │
+│    762 │   """Run MASt3R pair inference + global alignment + dense           │
+│        fusion."""                                                            │
+│    763 │   mcfg: Mast3rConfig = cfg.mast3r                                   │
+│    764 │   if mcfg.pipeline_variant == "sfm":                                │
+│ ❱  765 │   │   return _run_mast3r_sfm(cfg, inputs)                           │
+│    766 │                                                                     │
+│    767 │   _ensure_mast3r_on_path()                                          │
+│    768 │   import mast3r.utils.path_to_dust3r  # noqa: F401                  │
+│                                                                              │
+│ /home/lpassoni/SpectraBreast-Vision/spectra/vision/backends/mast3r_backend.p │
+│ y:635 in _run_mast3r_sfm                                                     │
+│                                                                              │
+│    632 │                                                                     │
+│    633 │   cache_dir = Path(cfg.output.root) / ".mast3r_sfm_cache"           │
+│    634 │   cache_dir.mkdir(parents=True, exist_ok=True)                      │
+│ ❱  635 │   scene = sparse_global_alignment(                                  │
+│    636 │   │   filelist,                                                     │
+│    637 │   │   pairs,                                                        │
+│    638 │   │   str(cache_dir),                                               │
+│                                                                              │
+│ /home/lpassoni/SpectraBreast-Vision/mast3r/mast3r/cloud_opt/sparse_ga.py:133 │
+│ in sparse_global_alignment                                                   │
+│                                                                              │
+│    130 │   # Convert pair naming convention from dust3r to mast3r            │
+│    131 │   pairs_in = convert_dust3r_pairs_naming(imgs, pairs_in)            │
+│    132 │   # forward pass                                                    │
+│ ❱  133 │   pairs, cache_path = forward_mast3r(pairs_in, model,               │
+│    134 │   │   │   │   │   │   │   │   │      cache_path=cache_path,         │
+│        subsample=subsample,                                                  │
+│    135 │   │   │   │   │   │   │   │   │      desc_conf=desc_conf,           │
+│        device=device)                                                        │
+│    136                                                                       │
+│                                                                              │
+│ /home/lpassoni/SpectraBreast-Vision/.venv/lib/python3.12/site-packages/torch │
+│ /utils/_contextlib.py:124 in decorate_context                                │
+│                                                                              │
+│   121 │   def decorate_context(*args, **kwargs):                             │
+│   122 │   │   # pyrefly: ignore [bad-context-manager]                        │
+│   123 │   │   with ctx_factory():                                            │
+│ ❱ 124 │   │   │   return func(*args, **kwargs)                               │
+│   125 │                                                                      │
+│   126 │   return decorate_context                                            │
+│   127                                                                        │
+│                                                                              │
+│ /home/lpassoni/SpectraBreast-Vision/mast3r/mast3r/cloud_opt/sparse_ga.py:583 │
+│ in forward_mast3r                                                            │
+│                                                                              │
+│    580 │   │   if not all(os.path.isfile(p) for p in (path1, path2,          │
+│        path_corres)):                                                        │
+│    581 │   │   │   if model is None:                                         │
+│    582 │   │   │   │   continue                                              │
+│ ❱  583 │   │   │   res = symmetric_inference(model, img1, img2,              │
+│        device=device)                                                        │
+│    584 │   │   │   X11, X21, X22, X12 = [r['pts3d'][0] for r in res]         │
+│    585 │   │   │   C11, C21, C22, C12 = [r['conf'][0] for r in res]          │
+│    586 │   │   │   descs = [r['desc'][0] for r in res]                       │
+│                                                                              │
+│ /home/lpassoni/SpectraBreast-Vision/mast3r/mast3r/cloud_opt/sparse_ga.py:616 │
+│ in symmetric_inference                                                       │
+│                                                                              │
+│    613 │   img2 = img2['img'].to(device, non_blocking=True)                  │
+│    614 │                                                                     │
+│    615 │   # compute encoder only once                                       │
+│ ❱  616 │   feat1, feat2, pos1, pos2 = model._encode_image_pairs(img1, img2,  │
+│        shape1, shape2)                                                       │
+│    617 │                                                                     │
+│    618 │   def decoder(feat1, feat2, pos1, pos2, shape1, shape2):            │
+│    619 │   │   dec1, dec2 = model._decoder(feat1, pos1, feat2, pos2)         │
+│                                                                              │
+│ /home/lpassoni/SpectraBreast-Vision/mast3r/dust3r/dust3r/model.py:144 in     │
+│ _encode_image_pairs                                                          │
+│                                                                              │
+│   141 │                                                                      │
+│   142 │   def _encode_image_pairs(self, img1, img2, true_shape1,             │
+│       true_shape2):                                                          │
+│   143 │   │   if img1.shape[-2:] == img2.shape[-2:]:                         │
+│ ❱ 144 │   │   │   out, pos, _ = self._encode_image(torch.cat((img1, img2),   │
+│       dim=0),                                                                │
+│   145 │   │   │   │   │   │   │   │   │   │   │    torch.cat((true_shape1,   │
+│       true_shape2), dim=0))                                                  │
+│   146 │   │   │   out, out2 = out.chunk(2, dim=0)                            │
+│   147 │   │   │   pos, pos2 = pos.chunk(2, dim=0)                            │
+│                                                                              │
+│ /home/lpassoni/SpectraBreast-Vision/mast3r/dust3r/dust3r/model.py:137 in     │
+│ _encode_image                                                                │
+│                                                                              │
+│   134 │   │                                                                  │
+│   135 │   │   # now apply the transformer encoder and normalization          │
+│   136 │   │   for blk in self.enc_blocks:                                    │
+│ ❱ 137 │   │   │   x = blk(x, pos)                                            │
+│   138 │   │                                                                  │
+│   139 │   │   x = self.enc_norm(x)                                           │
+│   140 │   │   return x, pos, None                                            │
+│                                                                              │
+│ /home/lpassoni/SpectraBreast-Vision/.venv/lib/python3.12/site-packages/torch │
+│ /nn/modules/module.py:1778 in _wrapped_call_impl                             │
+│                                                                              │
+│   1775 │   │   if self._compiled_call_impl is not None:                      │
+│   1776 │   │   │   return self._compiled_call_impl(*args, **kwargs)  # type: │
+│        ignore[misc]                                                          │
+│   1777 │   │   else:                                                         │
+│ ❱ 1778 │   │   │   return self._call_impl(*args, **kwargs)                   │
+│   1779 │                                                                     │
+│   1780 │   # torchrec tests the code consistency with the following code     │
+│   1781 │   # fmt: off                                                        │
+│                                                                              │
+│ /home/lpassoni/SpectraBreast-Vision/.venv/lib/python3.12/site-packages/torch │
+│ /nn/modules/module.py:1789 in _call_impl                                     │
+│                                                                              │
+│   1786 │   │   if not (self._backward_hooks or self._backward_pre_hooks or   │
+│        self._forward_hooks or self._forward_pre_hooks                        │
+│   1787 │   │   │   │   or _global_backward_pre_hooks or                      │
+│        _global_backward_hooks                                                │
+│   1788 │   │   │   │   or _global_forward_hooks or                           │
+│        _global_forward_pre_hooks):                                           │
+│ ❱ 1789 │   │   │   return forward_call(*args, **kwargs)                      │
+│   1790 │   │                                                                 │
+│   1791 │   │   result = None                                                 │
+│   1792 │   │   called_always_called_hooks = set()                            │
+│                                                                              │
+│ /home/lpassoni/SpectraBreast-Vision/mast3r/dust3r/croco/models/blocks.py:128 │
+│ in forward                                                                   │
+│                                                                              │
+│   125 │   │   self.mlp = Mlp(in_features=dim,                                │
+│       hidden_features=mlp_hidden_dim, act_layer=act_layer, drop=drop)        │
+│   126 │                                                                      │
+│   127 │   def forward(self, x, xpos):                                        │
+│ ❱ 128 │   │   x = x + self.drop_path(self.attn(self.norm1(x), xpos))         │
+│   129 │   │   x = x + self.drop_path(self.mlp(self.norm2(x)))                │
+│   130 │   │   return x                                                       │
+│   131                                                                        │
+│                                                                              │
+│ /home/lpassoni/SpectraBreast-Vision/.venv/lib/python3.12/site-packages/torch │
+│ /nn/modules/module.py:1778 in _wrapped_call_impl                             │
+│                                                                              │
+│   1775 │   │   if self._compiled_call_impl is not None:                      │
+│   1776 │   │   │   return self._compiled_call_impl(*args, **kwargs)  # type: │
+│        ignore[misc]                                                          │
+│   1777 │   │   else:                                                         │
+│ ❱ 1778 │   │   │   return self._call_impl(*args, **kwargs)                   │
+│   1779 │                                                                     │
+│   1780 │   # torchrec tests the code consistency with the following code     │
+│   1781 │   # fmt: off                                                        │
+│                                                                              │
+│ /home/lpassoni/SpectraBreast-Vision/.venv/lib/python3.12/site-packages/torch │
+│ /nn/modules/module.py:1789 in _call_impl                                     │
+│                                                                              │
+│   1786 │   │   if not (self._backward_hooks or self._backward_pre_hooks or   │
+│        self._forward_hooks or self._forward_pre_hooks                        │
+│   1787 │   │   │   │   or _global_backward_pre_hooks or                      │
+│        _global_backward_hooks                                                │
+│   1788 │   │   │   │   or _global_forward_hooks or                           │
+│        _global_forward_pre_hooks):                                           │
+│ ❱ 1789 │   │   │   return forward_call(*args, **kwargs)                      │
+│   1790 │   │                                                                 │
+│   1791 │   │   result = None                                                 │
+│   1792 │   │   called_always_called_hooks = set()                            │
+│                                                                              │
+│ /home/lpassoni/SpectraBreast-Vision/mast3r/dust3r/croco/models/blocks.py:102 │
+│ in forward                                                                   │
+│                                                                              │
+│    99 │   │   # q,k,v = qkv.unbind(2)  # make torchscript happy (cannot use  │
+│       tensor as tuple)                                                       │
+│   100 │   │                                                                  │
+│   101 │   │   if self.rope is not None:                                      │
+│ ❱ 102 │   │   │   q = self.rope(q, xpos)                                     │
+│   103 │   │   │   k = self.rope(k, xpos)                                     │
+│   104 │   │                                                                  │
+│   105 │   │   attn = (q @ k.transpose(-2, -1)) * self.scale                  │
+│                                                                              │
+│ /home/lpassoni/SpectraBreast-Vision/.venv/lib/python3.12/site-packages/torch │
+│ /nn/modules/module.py:1778 in _wrapped_call_impl                             │
+│                                                                              │
+│   1775 │   │   if self._compiled_call_impl is not None:                      │
+│   1776 │   │   │   return self._compiled_call_impl(*args, **kwargs)  # type: │
+│        ignore[misc]                                                          │
+│   1777 │   │   else:                                                         │
+│ ❱ 1778 │   │   │   return self._call_impl(*args, **kwargs)                   │
+│   1779 │                                                                     │
+│   1780 │   # torchrec tests the code consistency with the following code     │
+│   1781 │   # fmt: off                                                        │
+│                                                                              │
+│ /home/lpassoni/SpectraBreast-Vision/.venv/lib/python3.12/site-packages/torch │
+│ /nn/modules/module.py:1789 in _call_impl                                     │
+│                                                                              │
+│   1786 │   │   if not (self._backward_hooks or self._backward_pre_hooks or   │
+│        self._forward_hooks or self._forward_pre_hooks                        │
+│   1787 │   │   │   │   or _global_backward_pre_hooks or                      │
+│        _global_backward_hooks                                                │
+│   1788 │   │   │   │   or _global_forward_hooks or                           │
+│        _global_forward_pre_hooks):                                           │
+│ ❱ 1789 │   │   │   return forward_call(*args, **kwargs)                      │
+│   1790 │   │                                                                 │
+│   1791 │   │   result = None                                                 │
+│   1792 │   │   called_always_called_hooks = set()                            │
+│                                                                              │
+│ /home/lpassoni/SpectraBreast-Vision/mast3r/dust3r/croco/models/curope/curope │
+│ 2d.py:39 in forward                                                          │
+│                                                                              │
+│   36 │   │   self.F0 = F0                                                    │
+│   37 │                                                                       │
+│   38 │   def forward(self, tokens, positions):                               │
+│ ❱ 39 │   │   cuRoPE2D_func.apply( tokens.transpose(1,2), positions,          │
+│      self.base, self.F0 )                                                    │
+│   40 │   │   return tokens                                                   │
+│   41                                                                         │
+│                                                                              │
+│ /home/lpassoni/SpectraBreast-Vision/.venv/lib/python3.12/site-packages/torch │
+│ /autograd/function.py:596 in apply                                           │
+│                                                                              │
+│   593 │   │   if not torch._C._are_functorch_transforms_active():            │
+│   594 │   │   │   # See NOTE: [functorch vjp and autograd interaction]       │
+│   595 │   │   │   args = _functorch.utils.unwrap_dead_wrappers(args)         │
+│ ❱ 596 │   │   │   return super().apply(*args, **kwargs)  # type:             │
+│       ignore[misc]                                                           │
+│   597 │   │                                                                  │
+│   598 │   │   if not is_setup_ctx_defined:                                   │
+│   599 │   │   │   raise RuntimeError(                                        │
+│                                                                              │
+│ /home/lpassoni/SpectraBreast-Vision/mast3r/dust3r/croco/models/curope/curope │
+│ 2d.py:20 in forward                                                          │
+│                                                                              │
+│   17 │   │   ctx.saved_base = base                                           │
+│   18 │   │   ctx.saved_F0 = F0                                               │
+│   19 │   │   # tokens = tokens.clone() # uncomment this if inplace doesn't   │
+│      work                                                                    │
+│ ❱ 20 │   │   _kernels.rope_2d( tokens, positions, base, F0 )                 │
+│   21 │   │   ctx.mark_dirty(tokens)                                          │
+│   22 │   │   return tokens                                                   │
+│   23                                                                         │
+╰──────────────────────────────────────────────────────────────────────────────╯
+AttributeError: module 'curope' has no attribute 'rope_2d'

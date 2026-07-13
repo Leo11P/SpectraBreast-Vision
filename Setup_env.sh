@@ -17,7 +17,7 @@ echo "=============================================="
 REPO_DIR="${HOME}/SpectraBreast-Vision"
 cd "${REPO_DIR}"
 
-# --- Cache nella home (mai in /tmp): qui uv scarica i GB di PyTorch ----------
+# --- Cache nella home (mai in /tmp) ------------------------------------------
 export UV_CACHE_DIR="${HOME}/.cache/uv"
 export PIP_CACHE_DIR="${HOME}/.cache/pip"
 export HF_HOME="${HOME}/.cache/huggingface"
@@ -45,30 +45,36 @@ else
     echo "[1/4] uv gia' presente: $(uv --version)"
 fi
 
-# --- 2. Verifica che mast3r e asmk siano gia' clonati DENTRO la repo ---------
-# (li hai gia' clonati: questo script NON li riclona, li usa dove sono)
+# --- 2. Verifica mast3r e asmk -----------------------------------------------
 MAST3R_DIR="${REPO_DIR}/mast3r"
-ASMK_DIR="${REPO_DIR}/asmk"
+ASMK_DIR="${REPO_DIR}/mast3r/asmk"
 
 if [ ! -d "${MAST3R_DIR}" ]; then
-    echo "ERRORE: ${MAST3R_DIR} non trovato. Clona mast3r dentro la repo prima di procedere."
+    echo "ERRORE: ${MAST3R_DIR} non trovato."
     exit 1
 fi
 if [ ! -d "${ASMK_DIR}" ]; then
-    echo "ERRORE: ${ASMK_DIR} non trovato. Clona asmk dentro la repo prima di procedere."
+    echo "ERRORE: ${ASMK_DIR} non trovato."
     exit 1
 fi
-echo "[2/4] mast3r e asmk trovati dentro la repo."
+echo "[2/4] mast3r e asmk trovati."
 
-# --- 3. uv sync (crea .venv e installa le dipendenze del pyproject) ----------
-echo "[3/4] uv sync (scarica PyTorch cu130, puo' volerci qualche minuto)..."
+# --- 3. uv sync --------------------------------------------------------------
+echo "[3/4] uv sync..."
 uv sync
 
-# Installa le dipendenze di mast3r/dust3r e asmk dentro lo stesso .venv,
-# leggendole dai cloni gia' presenti nella repo.
+# Installa dipendenze mast3r e dust3r (usa 'uv run pip', non 'pip' direttamente)
 uv run pip install --no-cache-dir -r "${MAST3R_DIR}/requirements.txt"
 if [ -f "${MAST3R_DIR}/dust3r/requirements.txt" ]; then
     uv run pip install --no-cache-dir -r "${MAST3R_DIR}/dust3r/requirements.txt"
+fi
+
+# Compila cython per asmk e installa
+uv run pip install --no-cache-dir cython
+if [ -d "${ASMK_DIR}/cython" ]; then
+    cd "${ASMK_DIR}/cython"
+    uv run cythonize *.pyx
+    cd "${REPO_DIR}"
 fi
 uv run pip install --no-cache-dir -e "${ASMK_DIR}"
 
