@@ -222,6 +222,11 @@ def _write_aruco_markers_3d(
 
 
 def _run_backend(cfg: ReconstructionConfig, inputs) -> RawReconstruction:
+    if cfg.vggt.impl == "omni":
+        from .backends.omnivggt_backend import run_omnivggt
+
+        return run_omnivggt(cfg, inputs)
+
     from .backends.vggt_backend import run_vggt
 
     return run_vggt(cfg, inputs)

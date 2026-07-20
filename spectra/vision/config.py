@@ -242,13 +242,20 @@ class VggtConfig(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-    impl: Literal["omega", "vggt"] = Field(
+    impl: Literal["omega", "vggt", "omni"] = Field(
         default="omega",
         description=(
             "Which library API to drive: 'omega' = facebookresearch/vggt-omega "
             "(stronger, scales to hundreds of frames), 'vggt' = the original "
-            "facebookresearch/vggt (stable, documented). The back-end selects "
-            "the matching import paths and pose-decoder helper for each."
+            "facebookresearch/vggt (stable, documented), 'omni' = "
+            "Livioni/OmniVGGT (VGGT extended to accept GT camera poses / "
+            "intrinsics / depth as *conditioning* — when pose_dir + "
+            "camera_params_dir are present the reconstruction is guided by the "
+            "known cameras instead of ignoring them). The back-end selects the "
+            "matching import paths and pose-decoder helper for each. OmniVGGT "
+            "runs at a fixed 518px / patch-14 network resolution, so "
+            "``image_resolution``/``patch_size``/``dtype`` are ignored for "
+            "impl='omni'."
         ),
     )
     model_name: str = Field(
@@ -256,15 +263,16 @@ class VggtConfig(BaseModel):
         description=(
             "HuggingFace model id passed to ``from_pretrained`` when no "
             "``checkpoint_path`` is given. For impl='vggt' use "
-            "'facebook/VGGT-1B'."
+            "'facebook/VGGT-1B'; for impl='omni' use 'Livioni/OmniVGGT'."
         ),
     )
     checkpoint_path: str | None = Field(
         default=None,
         description=(
-            "Optional local ``.pt`` checkpoint. When set, the model is built "
-            "and ``load_state_dict`` is called instead of ``from_pretrained`` "
-            "(the documented omega loading path)."
+            "Optional local checkpoint. When set, the model is built and "
+            "``load_state_dict`` is called instead of ``from_pretrained``. For "
+            "impl in ('omega','vggt') this is a ``.pt`` file; for impl='omni' "
+            "point it at the ``OmniVGGT.safetensors`` weights."
         ),
     )
     image_resolution: int = Field(

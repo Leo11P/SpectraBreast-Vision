@@ -474,6 +474,186 @@ def _to_numpy(t) -> np.ndarray:
 
 
 # =============================================================================
+# Shared post-forward fusion (VGGT + OmniVGGT)
+# =============================================================================
+
+
+def _pack_raw_reconstruction(
+    *,
+    vcfg: VggtConfig,
+    inputs: BackendInputs,
+    orig_rgb: List[np.ndarray],
+    geometries: list,
+    network_h: int,
+    network_w: int,
+    extrinsic_np: np.ndarray,       # [S, 3, 4] world->cam (OpenCV)
+    intrinsic_np: np.ndarray,       # [S, 3, 3] network pixels
+    depth_np: np.ndarray,           # [S, H, W]
+    depth_conf_np: np.ndarray,      # [S, H, W]
+    world_points_np: np.ndarray | None,   # [S, H, W, 3] or None
+    world_conf_np: np.ndarray | None,      # [S, H, W] or None
+    backend_name: str,
+    impl_label: str,
+    extra_info: dict,
+) -> RawReconstruction:
+    """Turn decoded per-view predictions into a backend-agnostic
+    :class:`RawReconstruction`.
+
+    This is the part of the pipeline that is *identical* for the plain VGGT
+    back-end and the OmniVGGT (pose/intrinsics-conditioned) back-end: both
+    decode a pose encoding into ``[S,3,4]`` world→cam extrinsics + ``[S,3,3]``
+    network intrinsics and a dense depth map, and both need the same
+    cam2world inversion, per-view unprojection/colour sampling, confidence
+    filtering, voxel fusion, and original-pixel intrinsics remap. Keeping it in
+    one place means the two back-ends can only diverge where they genuinely
+    differ (model loading, preprocessing, and — for OmniVGGT — the conditioning
+    tensors fed to the forward pass).
+    """
+    num_views = len(orig_rgb)
+    have_gt_intrinsics = vcfg.use_gt_intrinsics and inputs.K_orig_gt is not None
+    point_source = "world" if world_points_np is not None else "depth"
+
+    # --- Camera-to-world poses (RawReconstruction expects cam2world) -------
+    T_world_cam = np.zeros((num_views, 4, 4), dtype=np.float32)
+    for i in range(num_views):
+        w2c = np.eye(4, dtype=np.float32)
+        w2c[:3, :4] = extrinsic_np[i]
+        T_world_cam[i] = np.linalg.inv(w2c).astype(np.float32)
+
+    for i, geom in enumerate(geometries):
+        if (geom.network_height, geom.network_width) != (network_h, network_w):
+            raise RuntimeError(
+                f"View {i}: computed crop geometry {(geom.network_height, geom.network_width)} "
+                f"!= actual network tensor {(network_h, network_w)}. Check vggt.patch_size "
+                f"({vcfg.patch_size}) / image_resolution ({vcfg.image_resolution}) match the checkpoint."
+            )
+
+    # --- Build per-view point maps, colours, confidence, masks -------------
+    all_pts_list: List[np.ndarray] = []
+    all_cols_list: List[np.ndarray] = []
+    all_conf_list: List[np.ndarray] = []
+    valid_masks: List[np.ndarray] = []
+    point_map_world: List[np.ndarray] = []
+    images_network_uint8: List[np.ndarray] = []
+    confidence_maps_network: List[np.ndarray] = []
+
+    for i, (geom, rgb) in enumerate(zip(geometries, orig_rgb)):
+        conf_map = depth_conf_np[i].astype(np.float32)
+        depth_map = depth_np[i].astype(np.float32)
+
+        if world_points_np is not None:
+            pts3d = world_points_np[i].astype(np.float32)
+            if world_conf_np is not None:
+                conf_map = world_conf_np[i].astype(np.float32)
+        else:
+            pts3d = _unproject_depth_to_world(depth_map, intrinsic_np[i], T_world_cam[i])
+
+        # Colours: sample the ORIGINAL image at each network pixel (independent
+        # of the model's input normalization; keeps crisp full-res colour).
+        uu_orig, vv_orig = geom.network_grid_to_original()
+        u_idx = np.clip(np.round(uu_orig).astype(np.int32), 0, geom.original_width - 1)
+        v_idx = np.clip(np.round(vv_orig).astype(np.int32), 0, geom.original_height - 1)
+        cols_full = rgb[v_idx, u_idx].astype(np.uint8)
+
+        # Exclude batch-padding border pixels (omega only; all-True for the
+        # original vggt 'crop' geometry, which has no such padding).
+        geom_valid = geom.valid_mask()
+
+        finite = (
+            np.isfinite(pts3d).all(axis=-1)
+            & np.isfinite(depth_map)
+            & (depth_map > 1e-6)
+            & geom_valid
+        )
+        if vcfg.conf_threshold is not None:
+            thr = float(vcfg.conf_threshold)
+        else:
+            pool = conf_map[finite]
+            thr = float(np.percentile(pool, vcfg.conf_percentile)) if pool.size else 0.0
+        valid = finite & (conf_map >= thr)
+        if not np.any(valid):
+            valid = finite
+
+        all_pts_list.append(pts3d[valid].astype(np.float32))
+        all_cols_list.append(cols_full[valid].astype(np.uint8))
+        all_conf_list.append(conf_map[valid].astype(np.float32))
+        valid_masks.append(valid)
+        point_map_world.append(pts3d)
+        images_network_uint8.append(cols_full)
+        confidence_maps_network.append(conf_map)
+
+    if not any(len(p) > 0 for p in all_pts_list):
+        raise RuntimeError(f"{backend_name} dense extraction produced no valid points.")
+
+    fused_points = np.concatenate(all_pts_list, axis=0)
+    fused_colors = np.concatenate(all_cols_list, axis=0)
+    fused_confidence = np.concatenate(all_conf_list, axis=0)
+
+    if vcfg.voxel_size > 0.0:
+        fused_points, fused_colors, fused_confidence = _weighted_voxel_downsample(
+            fused_points, fused_colors, fused_confidence, vcfg.voxel_size
+        )
+    if len(fused_points) > vcfg.max_points:
+        keep = np.argsort(fused_confidence)[-vcfg.max_points:][::-1]
+        fused_points = fused_points[keep]
+        fused_colors = fused_colors[keep]
+        fused_confidence = fused_confidence[keep]
+
+    point_map_world_np, valid_masks_np, images_net_np, conf_maps_np = _pad_view_maps_for_stacking(
+        point_map_world=point_map_world,
+        valid_masks=valid_masks,
+        images_network_uint8=images_network_uint8,
+        confidence_maps_network=confidence_maps_network,
+    )
+
+    # --- Intrinsics in original pixel space --------------------------------
+    K_net_per_view = intrinsic_np.astype(np.float32)
+    if have_gt_intrinsics:
+        K_orig_per_view = np.repeat(
+            inputs.K_orig_gt[None].astype(np.float32), num_views, axis=0
+        )
+    else:
+        K_orig_per_view = np.stack(
+            [geom.network_to_original_intrinsics(K_net_per_view[i]) for i, geom in enumerate(geometries)],
+            axis=0,
+        ).astype(np.float32)
+
+    network_image_sizes = np.asarray(
+        [[g.network_width, g.network_height] for g in geometries], dtype=np.int32
+    )
+    original_image_sizes = np.asarray(
+        [[g.original_width, g.original_height] for g in geometries], dtype=np.int32
+    )
+
+    return RawReconstruction(
+        fused_points=fused_points,
+        fused_colors=fused_colors,
+        fused_confidence=fused_confidence,
+        point_map_world=point_map_world_np,
+        valid_masks=valid_masks_np,
+        T_world_cam=T_world_cam,
+        K_per_view_orig=K_orig_per_view,
+        K_per_view_network=K_net_per_view,
+        network_image_sizes=network_image_sizes,
+        original_image_sizes=original_image_sizes,
+        images_network_uint8=images_net_np,
+        confidence_maps_network=conf_maps_np,
+        frame_description=backend_name,
+        backend_name=backend_name,
+        alignment_info={
+            "impl": impl_label,
+            "point_source": point_source,
+        },
+        extra={
+            "impl": impl_label,
+            "point_source": point_source,
+            "have_gt_intrinsics": bool(have_gt_intrinsics),
+            **extra_info,
+        },
+    )
+
+
+# =============================================================================
 # Main entry point
 # =============================================================================
 
@@ -546,13 +726,6 @@ def run_vggt(cfg: ReconstructionConfig, inputs: BackendInputs) -> RawReconstruct
     if device.type == "cuda":
         torch.cuda.empty_cache()
 
-    # --- Camera-to-world poses (RawReconstruction expects cam2world) -------
-    T_world_cam = np.zeros((num_views, 4, 4), dtype=np.float32)
-    for i in range(num_views):
-        w2c = np.eye(4, dtype=np.float32)
-        w2c[:3, :4] = extrinsic_np[i]
-        T_world_cam[i] = np.linalg.inv(w2c).astype(np.float32)
-
     # --- Per-view geometry + original RGB ----------------------------------
     have_gt_intrinsics = vcfg.use_gt_intrinsics and inputs.K_orig_gt is not None
     if vcfg.impl != "omega" and vcfg.preprocess_mode != "crop" and not have_gt_intrinsics:
@@ -580,139 +753,34 @@ def run_vggt(cfg: ReconstructionConfig, inputs: BackendInputs) -> RawReconstruct
             for rgb in orig_rgb
         ]
 
-    for i, geom in enumerate(geometries):
-        if (geom.network_height, geom.network_width) != (network_h, network_w):
-            raise RuntimeError(
-                f"View {i}: computed crop geometry {(geom.network_height, geom.network_width)} "
-                f"!= actual network tensor {(network_h, network_w)}. Check vggt.patch_size "
-                f"({vcfg.patch_size}) / image_resolution ({vcfg.image_resolution}) match the checkpoint."
-            )
-
-    # --- Build per-view point maps, colours, confidence, masks -------------
-    all_pts_list: List[np.ndarray] = []
-    all_cols_list: List[np.ndarray] = []
-    all_conf_list: List[np.ndarray] = []
-    valid_masks: List[np.ndarray] = []
-    point_map_world: List[np.ndarray] = []
-    images_network_uint8: List[np.ndarray] = []
-    confidence_maps_network: List[np.ndarray] = []
-
-    for i, (geom, rgb) in enumerate(zip(geometries, orig_rgb)):
-        conf_map = depth_conf_np[i].astype(np.float32)
-        depth_map = depth_np[i].astype(np.float32)
-
-        if world_points_np is not None:
-            pts3d = world_points_np[i].astype(np.float32)
-            if world_conf_np is not None:
-                conf_map = world_conf_np[i].astype(np.float32)
-        else:
-            pts3d = _unproject_depth_to_world(depth_map, intrinsic_np[i], T_world_cam[i])
-
-        # Colours: sample the ORIGINAL image at each network pixel (independent
-        # of the model's input normalization; keeps crisp full-res colour).
-        uu_orig, vv_orig = geom.network_grid_to_original()
-        u_idx = np.clip(np.round(uu_orig).astype(np.int32), 0, geom.original_width - 1)
-        v_idx = np.clip(np.round(vv_orig).astype(np.int32), 0, geom.original_height - 1)
-        cols_full = rgb[v_idx, u_idx].astype(np.uint8)
-
-        # Exclude batch-padding border pixels (omega only; all-True for the
-        # original vggt 'crop' geometry, which has no such padding).
-        geom_valid = geom.valid_mask()
-
-        finite = (
-            np.isfinite(pts3d).all(axis=-1)
-            & np.isfinite(depth_map)
-            & (depth_map > 1e-6)
-            & geom_valid
-        )
-        if vcfg.conf_threshold is not None:
-            thr = float(vcfg.conf_threshold)
-        else:
-            pool = conf_map[finite]
-            thr = float(np.percentile(pool, vcfg.conf_percentile)) if pool.size else 0.0
-        valid = finite & (conf_map >= thr)
-        if not np.any(valid):
-            valid = finite
-
-        all_pts_list.append(pts3d[valid].astype(np.float32))
-        all_cols_list.append(cols_full[valid].astype(np.uint8))
-        all_conf_list.append(conf_map[valid].astype(np.float32))
-        valid_masks.append(valid)
-        point_map_world.append(pts3d)
-        images_network_uint8.append(cols_full)
-        confidence_maps_network.append(conf_map)
-
-    if not any(len(p) > 0 for p in all_pts_list):
-        raise RuntimeError("VGGT dense extraction produced no valid points.")
-
-    fused_points = np.concatenate(all_pts_list, axis=0)
-    fused_colors = np.concatenate(all_cols_list, axis=0)
-    fused_confidence = np.concatenate(all_conf_list, axis=0)
-
-    if vcfg.voxel_size > 0.0:
-        fused_points, fused_colors, fused_confidence = _weighted_voxel_downsample(
-            fused_points, fused_colors, fused_confidence, vcfg.voxel_size
-        )
-    if len(fused_points) > vcfg.max_points:
-        keep = np.argsort(fused_confidence)[-vcfg.max_points:][::-1]
-        fused_points = fused_points[keep]
-        fused_colors = fused_colors[keep]
-        fused_confidence = fused_confidence[keep]
-
-    point_map_world_np, valid_masks_np, images_net_np, conf_maps_np = _pad_view_maps_for_stacking(
-        point_map_world=point_map_world,
-        valid_masks=valid_masks,
-        images_network_uint8=images_network_uint8,
-        confidence_maps_network=confidence_maps_network,
-    )
-
-    # --- Intrinsics in original pixel space --------------------------------
-    K_net_per_view = intrinsic_np.astype(np.float32)
-    if have_gt_intrinsics:
-        K_orig_per_view = np.repeat(
-            inputs.K_orig_gt[None].astype(np.float32), num_views, axis=0
-        )
-    else:
-        K_orig_per_view = np.stack(
-            [geom.network_to_original_intrinsics(K_net_per_view[i]) for i, geom in enumerate(geometries)],
-            axis=0,
-        ).astype(np.float32)
-
-    network_image_sizes = np.asarray(
-        [[g.network_width, g.network_height] for g in geometries], dtype=np.int32
-    )
-    original_image_sizes = np.asarray(
-        [[g.original_width, g.original_height] for g in geometries], dtype=np.int32
-    )
-
-    return RawReconstruction(
-        fused_points=fused_points,
-        fused_colors=fused_colors,
-        fused_confidence=fused_confidence,
-        point_map_world=point_map_world_np,
-        valid_masks=valid_masks_np,
-        T_world_cam=T_world_cam,
-        K_per_view_orig=K_orig_per_view,
-        K_per_view_network=K_net_per_view,
-        network_image_sizes=network_image_sizes,
-        original_image_sizes=original_image_sizes,
-        images_network_uint8=images_net_np,
-        confidence_maps_network=conf_maps_np,
-        frame_description="vggt",
+    return _pack_raw_reconstruction(
+        vcfg=vcfg,
+        inputs=inputs,
+        orig_rgb=orig_rgb,
+        geometries=geometries,
+        network_h=network_h,
+        network_w=network_w,
+        extrinsic_np=extrinsic_np,
+        intrinsic_np=intrinsic_np,
+        depth_np=depth_np,
+        depth_conf_np=depth_conf_np,
+        world_points_np=world_points_np,
+        world_conf_np=world_conf_np,
         backend_name="vggt",
-        alignment_info={
-            "impl": vcfg.impl,
-            "point_source": "world" if world_points_np is not None else "depth",
-        },
-        extra={
-            "impl": vcfg.impl,
+        impl_label=vcfg.impl,
+        extra_info={
             "model_name": vcfg.model_name,
             "image_resolution": vcfg.image_resolution,
-            "point_source": "world" if world_points_np is not None else "depth",
-            "have_gt_intrinsics": bool(have_gt_intrinsics),
             "num_views": num_views,
         },
     )
 
 
-__all__ = ["VggtImageGeometry", "VggtOmegaImageGeometry", "run_vggt"]
+__all__ = [
+    "VggtImageGeometry",
+    "VggtOmegaImageGeometry",
+    "_compute_crop_geometry",
+    "_pack_raw_reconstruction",
+    "_read_image_rgb",
+    "run_vggt",
+]
