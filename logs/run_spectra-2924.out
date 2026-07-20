@@ -1,8 +1,8 @@
 ==============================================
   Spectra run (uv, no Singularity)
-  Job ID  : 2923
+  Job ID  : 2924
   Node    : mufasa2.e4-cluster.lan
-  Start   : Fri Jul 10 01:53:27 PM CEST 2026
+  Start   : Fri Jul 10 02:02:37 PM CEST 2026
 ==============================================
   Repo    : /home/lpassoni/Vggt/SpectraBreast-Vision
   Python  : Python 3.12.13
@@ -21,7 +21,7 @@
 
 [orchestrator] Vision stage for sample='SAMPLE2'
 Step 1/6 - Preparing run folder and loading inputs
-Run directory: RESULTS/SAMPLE2/vision_05
+Run directory: RESULTS/SAMPLE2/vision_06
 Loaded 26 images (no GT poses) (no GT intrinsics)
 Step 2/6 - Detecting ArUco markers
 Detected 98 markers across 26 views.
@@ -45,9 +45,9 @@ Surface: 754,234 vertices, 1,074,755 triangles, grid 1774x1244 @ step 0.001812
 Output frame: world +Z points down (Z negated).
 Step 6/6 - Writing outputs and logging to Rerun
 Checking if we should log the surface cloud to Open3D
-Vision timings saved → RESULTS/SAMPLE2/vision_05/timings.json
-Done in 119.5 s. Outputs: RESULTS/SAMPLE2/vision_05
-[orchestrator] Vision finished in 119.5s — run_dir=RESULTS/SAMPLE2/vision_05
+Vision timings saved → RESULTS/SAMPLE2/vision_06/timings.json
+Done in 119.1 s. Outputs: RESULTS/SAMPLE2/vision_06
+[orchestrator] Vision finished in 119.1s — run_dir=RESULTS/SAMPLE2/vision_06
 
 [orchestrator] Registration stage for sample='SAMPLE2' (mode='sweep')
 
@@ -102,7 +102,7 @@ SPECTRA REGISTRATION — SUMMARY
   Tile 1/64  hits=241  Tile 2/64  hits=39  Tile 3/64  hits=502  Tile 4/64  hits=592  Tile 5/64  hits=1,190  Tile 6/64  hits=997  Tile 7/64  hits=179  Tile 8/64  hits=167  Tile 9/64  hits=1,099  Tile 10/64  hits=4,220  Tile 11/64  hits=6,409  Tile 12/64  hits=6,940  Tile 13/64  hits=6,992  Tile 14/64  hits=5,249  Tile 15/64  hits=4,786  Tile 16/64  hits=3,305  Tile 17/64  hits=2,501  Tile 18/64  hits=6,692  Tile 19/64  hits=7,179  Tile 20/64  hits=4,152  Tile 21/64  hits=5,000  Tile 22/64  hits=5,757  Tile 23/64  hits=7,058  Tile 24/64  hits=4,994  Tile 25/64  hits=2,957  Tile 26/64  hits=7,025  Tile 27/64  hits=6,567  Tile 28/64  hits=5,864  Tile 29/64  hits=5,781  Tile 30/64  hits=4,017  Tile 31/64  hits=7,313  Tile 32/64  hits=4,764  Tile 33/64  hits=2,013  Tile 34/64  hits=6,630  Tile 35/64  hits=6,942  Tile 36/64  hits=5,691  Tile 37/64  hits=5,065  Tile 38/64  hits=5,213  Tile 39/64  hits=7,327  Tile 40/64  hits=5,456  Tile 41/64  hits=1,773  Tile 42/64  hits=5,112  Tile 43/64  hits=6,109  Tile 44/64  hits=6,565  Tile 45/64  hits=6,401  Tile 46/64  hits=5,857  Tile 47/64  hits=6,201  Tile 48/64  hits=4,723  Tile 49/64  hits=1  Tile 50/64  hits=337  Tile 51/64  hits=1,500  Tile 52/64  hits=2,308  Tile 53/64  hits=2,207  Tile 54/64  hits=1,816  Tile 55/64  hits=2,588  Tile 56/64  hits=1,575  Tile 57/64  hits=0  Tile 58/64  hits=0  Tile 59/64  hits=0  Tile 60/64  hits=0  Tile 61/64  hits=2  Tile 62/64  hits=627  Tile 63/64  hits=1,035  Tile 64/64  hits=229
 [render_torch] Hits totali: 231,831 / 490,105
 [render_gpu] Done. origin_xy=(-582.62, -734.80) mm
-[sweep][cache]   done in 2.7s
+[sweep][cache]   done in 2.6s
 [sweep][cache] Render 3/4: res=1.0 mm/px on cuda
 [render_gpu] Grid  : 1330 x 1473 px  (1.0 mm/px)
              Rays  : 1,959,090
@@ -120,8 +120,8 @@ SPECTRA REGISTRATION — SUMMARY
   Tile 1/64  hits=3,702  Tile 2/64  hits=705  Tile 3/64  hits=7,837  Tile 4/64  hits=9,296  Tile 5/64  hits=18,928  Tile 6/64  hits=15,570  Tile 7/64  hits=2,858  Tile 8/64  hits=2,820  Tile 9/64  hits=17,941  Tile 10/64  hits=67,862  Tile 11/64  hits=102,575  Tile 12/64  hits=111,352  Tile 13/64  hits=112,364  Tile 14/64  hits=85,132  Tile 15/64  hits=76,391  Tile 16/64  hits=53,234  Tile 17/64  hits=40,240  Tile 18/64  hits=106,588  Tile 19/64  hits=114,151  Tile 20/64  hits=66,154  Tile 21/64  hits=79,696  Tile 22/64  hits=91,947  Tile 23/64  hits=112,555  Tile 24/64  hits=79,468  Tile 25/64  hits=47,536  Tile 26/64  hits=112,110  Tile 27/64  hits=104,865  Tile 28/64  hits=93,229  Tile 29/64  hits=92,579  Tile 30/64  hits=64,605  Tile 31/64  hits=116,389  Tile 32/64  hits=75,978  Tile 33/64  hits=32,673  Tile 34/64  hits=106,195  Tile 35/64  hits=110,519  Tile 36/64  hits=90,854  Tile 37/64  hits=80,991  Tile 38/64  hits=83,493  Tile 39/64  hits=116,753  Tile 40/64  hits=86,910  Tile 41/64  hits=28,868  Tile 42/64  hits=81,272  Tile 43/64  hits=96,776  Tile 44/64  hits=104,936  Tile 45/64  hits=102,045  Tile 46/64  hits=94,637  Tile 47/64  hits=99,232  Tile 48/64  hits=75,706  Tile 49/64  hits=21  Tile 50/64  hits=5,696  Tile 51/64  hits=24,255  Tile 52/64  hits=37,568  Tile 53/64  hits=35,507  Tile 54/64  hits=29,719  Tile 55/64  hits=40,976  Tile 56/64  hits=25,105  Tile 57/64  hits=0  Tile 58/64  hits=0  Tile 59/64  hits=0  Tile 60/64  hits=0  Tile 61/64  hits=42  Tile 62/64  hits=10,005  Tile 63/64  hits=16,364  Tile 64/64  hits=3,451
 [render_torch] Hits totali: 3,707,226 / 7,836,360
 [render_gpu] Done. origin_xy=(-582.62, -734.80) mm
-[sweep][cache]   done in 33.8s
-[sweep][cache] All 4 renders ready in 46.2s
+[sweep][cache]   done in 33.7s
+[sweep][cache] All 4 renders ready in 46.1s
 
 ====================================================================
   SWEEP RUN — res_reg=5.0  res_pc=0.5  ROI=NO
@@ -534,16 +534,16 @@ SWEEP COMPLETED
   OK / Failed  : 4 / 0
   Excel summary: RESULTS/SAMPLE2/registration/SAMPLE2_sweep_resolution_summary.xlsx
 ====================================================================
-[orchestrator] Registration finished in 51.8s
+[orchestrator] Registration finished in 51.7s
 
 ====================================================================
 SPECTRA FULL COMPLETED
 ====================================================================
   Sample        : SAMPLE2
   Vision skipped: False
-  Vision output : RESULTS/SAMPLE2/vision_05
+  Vision output : RESULTS/SAMPLE2/vision_06
   Reg. output   : RESULTS/SAMPLE2/registration
 ====================================================================
 ==============================================
-  Run finished : Fri Jul 10 01:56:25 PM CEST 2026
+  Run finished : Fri Jul 10 02:05:35 PM CEST 2026
 ==============================================

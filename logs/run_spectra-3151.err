@@ -1,0 +1,72 @@
+╭───────────────────── Traceback (most recent call last) ──────────────────────╮
+│ /home/lpassoni/Vggt/SpectraBreast-Vision/spectra/cli.py:136 in vision_cmd    │
+│                                                                              │
+│   133 │   │   │   │   │   │   │   │     help="Resolve paths and print the    │
+│       config without running."),                                             │
+│   134 ) -> None:                                                             │
+│   135 │   """Run only the VGGT + ArUco vision stage."""                      │
+│ ❱ 136 │   _execute_vision(config, sample, set_override, dry_run)             │
+│   137                                                                        │
+│   138                                                                        │
+│   139 @app.command("recon", hidden=True)                                     │
+│                                                                              │
+│ /home/lpassoni/Vggt/SpectraBreast-Vision/spectra/cli.py:120 in               │
+│ _execute_vision                                                              │
+│                                                                              │
+│   117 │   │   print("[bold]Dry-run — vision config resolved:[/bold]")        │
+│   118 │   │   print(cfg.vision.model_dump(mode="python"))                    │
+│   119 │   │   return                                                         │
+│ ❱ 120 │   result = run_vision_stage(cfg)                                     │
+│   121 │   print(f"[green]Vision finished:[/green] {result['run_dir']}")      │
+│   122                                                                        │
+│   123                                                                        │
+│                                                                              │
+│ /home/lpassoni/Vggt/SpectraBreast-Vision/spectra/orchestrator.py:180 in      │
+│ run_vision_stage                                                             │
+│                                                                              │
+│   177 │   sample = sample_name or cfg.sample_name                            │
+│   178 │   print(f"\n[orchestrator] Vision stage for sample={sample!r}")      │
+│   179 │   t0 = time.time()                                                   │
+│ ❱ 180 │   result = run_reconstruction(cfg.vision)                            │
+│   181 │   dt = time.time() - t0                                              │
+│   182 │   print(f"[orchestrator] Vision finished in {dt:.1f}s —              │
+│       run_dir={result.run_dir}")                                             │
+│   183 │   return {"run_dir": Path(result.run_dir), "skipped": False,         │
+│       "elapsed_s": dt}                                                       │
+│                                                                              │
+│ /home/lpassoni/Vggt/SpectraBreast-Vision/spectra/vision/pipeline.py:373 in   │
+│ run_reconstruction                                                           │
+│                                                                              │
+│    370 │   run_dir, run_name = prepare_run_dir(cfg.output.root,              │
+│        cfg.output.run_name)                                                  │
+│    371 │   print(f"Run directory: [green]{run_dir}[/green]")                 │
+│    372 │                                                                     │
+│ ❱  373 │   backend_inputs = build_backend_inputs(                            │
+│    374 │   │   rgb_dir=cfg.input.rgb_dir,                                    │
+│    375 │   │   pose_dir=cfg.input.pose_dir,                                  │
+│    376 │   │   camera_params_dir=cfg.input.camera_params_dir,                │
+│                                                                              │
+│ /home/lpassoni/Vggt/SpectraBreast-Vision/spectra/vision/inputs.py:152 in     │
+│ build_backend_inputs                                                         │
+│                                                                              │
+│   149 │   device: torch.device | None = None,                                │
+│   150 ) -> BackendInputs:                                                    │
+│   151 │   """Gather everything the back-end needs in a single                │
+│       `BackendInputs`."""                                                    │
+│ ❱ 152 │   image_paths = list_rgb_images(rgb_dir)                             │
+│   153 │   T_world_cam_gt, K_orig_gt, cam2ee, distortion = load_gt_cameras(   │
+│   154 │   │   pose_dir=pose_dir,                                             │
+│   155 │   │   camera_params_dir=camera_params_dir,                           │
+│                                                                              │
+│ /home/lpassoni/Vggt/SpectraBreast-Vision/spectra/vision/inputs.py:33 in      │
+│ list_rgb_images                                                              │
+│                                                                              │
+│    30 │   │   if p.is_file() and p.suffix.lower() in IMAGE_EXTENSIONS        │
+│    31 │   )                                                                  │
+│    32 │   if not files:                                                      │
+│ ❱  33 │   │   raise FileNotFoundError(f"No image files found in {rgb_dir}")  │
+│    34 │   return files                                                       │
+│    35                                                                        │
+│    36                                                                        │
+╰──────────────────────────────────────────────────────────────────────────────╯
+FileNotFoundError: No image files found in DATA/input_vision/TETTA_iphone3

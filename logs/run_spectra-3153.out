@@ -1,0 +1,42 @@
+==============================================
+  Spectra run (uv, no Singularity)
+  Job ID  : 3153
+  Node    : mufasa2.e4-cluster.lan
+  Start   : Mon Jul 20 11:14:16 AM CEST 2026
+==============================================
+  Repo    : /home/lpassoni/Vggt/SpectraBreast-Vision
+  Python  : Python 3.12.13
+  Torch   : 2.12.0+cu130
+  CUDA ok : True
+  TMPDIR  : /home/lpassoni/.cache/tmp
+==============================================
+
+[orchestrator] Vision stage for sample='TETTA'
+Step 1/6 - Preparing run folder and loading inputs
+Run directory: RESULTS/TETTA/vision_02
+Loaded 25 images (no GT poses) and GT intrinsics
+Step 2/6 - Detecting ArUco markers
+Detected 85 markers across 25 views.
+Step 3/6 - Running VGGT
+Backend produced 2,000,000 fused points; frame = vggt
+Step 4/6 - Jointly bundle-adjusting ArUco markers + cameras (rigid squares)
+Bundle adjustment: 4 markers, 340 obs, reproj RMSE 29.202 -> 1.533 px (1000 
+iters)
+ArUco geometric QC: best-fit plane RMS 0.74 mm; corners reprojected with output 
+cameras → RMSE 1.533 px (max 5.607, p95 2.906, n=340)
+ArUco alignment applied: markers=4, scale=1.000000 (applied=1.000000), 
+MAD=0.000010
+ V_all=25  aligned_poses.shape=(25, 4, 4)  reject_flag=True  
+aruco_alignment_is_none=False  plane_frame_is_none=False  markers_empty=False
+Step 5/6 - Reconstructing single-surface height field
+Surface: 967,585 vertices, 1,441,025 triangles, grid 1210x1421 @ step 0.003088
+Output frame: world +Z points down (Z negated).
+Step 6/6 - Writing outputs and logging to Rerun
+Checking if we should log the surface cloud to Open3D
+Vision timings saved → RESULTS/TETTA/vision_02/timings.json
+Done in 65.4 s. Outputs: RESULTS/TETTA/vision_02
+[orchestrator] Vision finished in 65.4s — run_dir=RESULTS/TETTA/vision_02
+Vision finished: RESULTS/TETTA/vision_02
+==============================================
+  Run finished : Mon Jul 20 11:15:28 AM CEST 2026
+==============================================

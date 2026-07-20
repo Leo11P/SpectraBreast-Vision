@@ -1,0 +1,251 @@
+==============================================
+  Spectra GRID SEARCH (uv, no Singularity)
+  Job ID  : 2941
+  Node    : mufasa2.e4-cluster.lan
+  Start   : Fri Jul 10 04:58:50 PM CEST 2026
+==============================================
+  Repo    : /home/lpassoni/Vggt/SpectraBreast-Vision
+  Python  : Python 3.12.13
+  Torch   : 2.12.0+cu130
+  CUDA ok : True
+==============================================
+[grid] 26 combos; sample=SAMPLE2; config=configs/default.yaml
+
+======================================================================
+[grid] Combo 1/26
+       {"vision.vggt.conf_threshold": 2.0, "vision.vggt.voxel_size": 0.0005, "vision.aruco.ba_huber_delta_px": 2.0, "vision.aruco.max_view_alignment_reproj_rmse_px": 10.0, "vision.aruco.min_views_per_marker": 3}
+======================================================================
+[grid] -> OK  3D=4.0922mm  BA=5.299px  t=508s  gpu=38912MiB
+
+[report] Excel  -> RESULTS/grid_search/grid_report.xlsx
+[report] Markdown -> RESULTS/grid_search/grid_report.md
+
+======================================================================
+[grid] Combo 2/26
+       {"vision.vggt.conf_threshold": 2.0, "vision.vggt.voxel_size": 0.001, "vision.aruco.ba_huber_delta_px": 2.0, "vision.aruco.max_view_alignment_reproj_rmse_px": 10.0, "vision.aruco.min_views_per_marker": 3}
+======================================================================
+[grid] -> OK  3D=4.213mm  BA=5.299px  t=502s  gpu=21699MiB
+
+[report] Excel  -> RESULTS/grid_search/grid_report.xlsx
+[report] Markdown -> RESULTS/grid_search/grid_report.md
+
+======================================================================
+[grid] Combo 3/26
+       {"vision.vggt.conf_threshold": 2.0, "vision.vggt.voxel_size": 0.0015, "vision.aruco.ba_huber_delta_px": 2.0, "vision.aruco.max_view_alignment_reproj_rmse_px": 10.0, "vision.aruco.min_views_per_marker": 3}
+======================================================================
+[grid] -> OK  3D=4.3621mm  BA=5.299px  t=499s  gpu=21701MiB
+
+[report] Excel  -> RESULTS/grid_search/grid_report.xlsx
+[report] Markdown -> RESULTS/grid_search/grid_report.md
+
+======================================================================
+[grid] Combo 4/26
+       {"vision.vggt.conf_threshold": 3.0, "vision.vggt.voxel_size": 0.0005, "vision.aruco.ba_huber_delta_px": 2.0, "vision.aruco.max_view_alignment_reproj_rmse_px": 10.0, "vision.aruco.min_views_per_marker": 3}
+======================================================================
+[grid] -> OK  3D=4.0547mm  BA=5.299px  t=419s  gpu=21499MiB
+
+[report] Excel  -> RESULTS/grid_search/grid_report.xlsx
+[report] Markdown -> RESULTS/grid_search/grid_report.md
+
+======================================================================
+[grid] Combo 5/26
+       {"vision.vggt.conf_threshold": 3.0, "vision.vggt.voxel_size": 0.001, "vision.aruco.ba_huber_delta_px": 2.0, "vision.aruco.max_view_alignment_reproj_rmse_px": 10.0, "vision.aruco.min_views_per_marker": 3}
+======================================================================
+[grid] -> OK  3D=4.1189mm  BA=5.299px  t=420s  gpu=21499MiB
+
+[report] Excel  -> RESULTS/grid_search/grid_report.xlsx
+[report] Markdown -> RESULTS/grid_search/grid_report.md
+
+======================================================================
+[grid] Combo 6/26
+       {"vision.vggt.conf_threshold": 3.0, "vision.vggt.voxel_size": 0.0015, "vision.aruco.ba_huber_delta_px": 2.0, "vision.aruco.max_view_alignment_reproj_rmse_px": 10.0, "vision.aruco.min_views_per_marker": 3}
+======================================================================
+[grid] -> OK  3D=4.1623mm  BA=5.299px  t=419s  gpu=21493MiB
+
+[report] Excel  -> RESULTS/grid_search/grid_report.xlsx
+[report] Markdown -> RESULTS/grid_search/grid_report.md
+
+======================================================================
+[grid] Combo 7/26
+       {"vision.vggt.conf_threshold": 5.0, "vision.vggt.voxel_size": 0.0005, "vision.aruco.ba_huber_delta_px": 2.0, "vision.aruco.max_view_alignment_reproj_rmse_px": 10.0, "vision.aruco.min_views_per_marker": 3}
+======================================================================
+[grid] -> OK  3D=4.0416mm  BA=5.299px  t=305s  gpu=21299MiB
+
+[report] Excel  -> RESULTS/grid_search/grid_report.xlsx
+[report] Markdown -> RESULTS/grid_search/grid_report.md
+
+======================================================================
+[grid] Combo 8/26
+       {"vision.vggt.conf_threshold": 5.0, "vision.vggt.voxel_size": 0.001, "vision.aruco.ba_huber_delta_px": 2.0, "vision.aruco.max_view_alignment_reproj_rmse_px": 10.0, "vision.aruco.min_views_per_marker": 3}
+======================================================================
+[grid] -> OK  3D=4.1393mm  BA=5.299px  t=306s  gpu=21299MiB
+
+[report] Excel  -> RESULTS/grid_search/grid_report.xlsx
+[report] Markdown -> RESULTS/grid_search/grid_report.md
+
+======================================================================
+[grid] Combo 9/26
+       {"vision.vggt.conf_threshold": 5.0, "vision.vggt.voxel_size": 0.0015, "vision.aruco.ba_huber_delta_px": 2.0, "vision.aruco.max_view_alignment_reproj_rmse_px": 10.0, "vision.aruco.min_views_per_marker": 3}
+======================================================================
+[grid] -> OK  3D=4.1282mm  BA=5.299px  t=300s  gpu=21299MiB
+
+[report] Excel  -> RESULTS/grid_search/grid_report.xlsx
+[report] Markdown -> RESULTS/grid_search/grid_report.md
+
+======================================================================
+[grid] Combo 10/26
+       {"vision.vggt.conf_threshold": 3.0, "vision.vggt.voxel_size": 0.0005, "vision.aruco.ba_huber_delta_px": 1.0, "vision.aruco.max_view_alignment_reproj_rmse_px": 6.0, "vision.aruco.min_views_per_marker": 2}
+======================================================================
+[grid] -> OK  3D=2.6061mm  BA=5.323px  t=350s  gpu=20437MiB
+
+[report] Excel  -> RESULTS/grid_search/grid_report.xlsx
+[report] Markdown -> RESULTS/grid_search/grid_report.md
+
+======================================================================
+[grid] Combo 11/26
+       {"vision.vggt.conf_threshold": 3.0, "vision.vggt.voxel_size": 0.0005, "vision.aruco.ba_huber_delta_px": 1.0, "vision.aruco.max_view_alignment_reproj_rmse_px": 6.0, "vision.aruco.min_views_per_marker": 3}
+======================================================================
+[grid] -> OK  3D=2.6061mm  BA=5.323px  t=345s  gpu=20437MiB
+
+[report] Excel  -> RESULTS/grid_search/grid_report.xlsx
+[report] Markdown -> RESULTS/grid_search/grid_report.md
+
+======================================================================
+[grid] Combo 12/26
+       {"vision.vggt.conf_threshold": 3.0, "vision.vggt.voxel_size": 0.0005, "vision.aruco.ba_huber_delta_px": 1.0, "vision.aruco.max_view_alignment_reproj_rmse_px": 8.0, "vision.aruco.min_views_per_marker": 2}
+======================================================================
+[grid] -> OK  3D=3.2375mm  BA=5.323px  t=390s  gpu=21469MiB
+
+[report] Excel  -> RESULTS/grid_search/grid_report.xlsx
+[report] Markdown -> RESULTS/grid_search/grid_report.md
+
+======================================================================
+[grid] Combo 13/26
+       {"vision.vggt.conf_threshold": 3.0, "vision.vggt.voxel_size": 0.0005, "vision.aruco.ba_huber_delta_px": 1.0, "vision.aruco.max_view_alignment_reproj_rmse_px": 8.0, "vision.aruco.min_views_per_marker": 3}
+======================================================================
+[grid] -> OK  3D=3.2375mm  BA=5.323px  t=391s  gpu=21063MiB
+
+[report] Excel  -> RESULTS/grid_search/grid_report.xlsx
+[report] Markdown -> RESULTS/grid_search/grid_report.md
+
+======================================================================
+[grid] Combo 14/26
+       {"vision.vggt.conf_threshold": 3.0, "vision.vggt.voxel_size": 0.0005, "vision.aruco.ba_huber_delta_px": 1.0, "vision.aruco.max_view_alignment_reproj_rmse_px": 10.0, "vision.aruco.min_views_per_marker": 2}
+======================================================================
+[grid] -> OK  3D=3.7951mm  BA=5.323px  t=431s  gpu=21617MiB
+
+[report] Excel  -> RESULTS/grid_search/grid_report.xlsx
+[report] Markdown -> RESULTS/grid_search/grid_report.md
+
+======================================================================
+[grid] Combo 15/26
+       {"vision.vggt.conf_threshold": 3.0, "vision.vggt.voxel_size": 0.0005, "vision.aruco.ba_huber_delta_px": 1.0, "vision.aruco.max_view_alignment_reproj_rmse_px": 10.0, "vision.aruco.min_views_per_marker": 3}
+======================================================================
+[grid] -> OK  3D=3.7951mm  BA=5.323px  t=428s  gpu=21617MiB
+
+[report] Excel  -> RESULTS/grid_search/grid_report.xlsx
+[report] Markdown -> RESULTS/grid_search/grid_report.md
+
+======================================================================
+[grid] Combo 16/26
+       {"vision.vggt.conf_threshold": 3.0, "vision.vggt.voxel_size": 0.0005, "vision.aruco.ba_huber_delta_px": 2.0, "vision.aruco.max_view_alignment_reproj_rmse_px": 6.0, "vision.aruco.min_views_per_marker": 2}
+======================================================================
+[grid] -> OK  3D=5.1309mm  BA=5.299px  t=338s  gpu=19005MiB
+
+[report] Excel  -> RESULTS/grid_search/grid_report.xlsx
+[report] Markdown -> RESULTS/grid_search/grid_report.md
+
+======================================================================
+[grid] Combo 17/26
+       {"vision.vggt.conf_threshold": 3.0, "vision.vggt.voxel_size": 0.0005, "vision.aruco.ba_huber_delta_px": 2.0, "vision.aruco.max_view_alignment_reproj_rmse_px": 6.0, "vision.aruco.min_views_per_marker": 3}
+======================================================================
+[grid] -> OK  3D=5.1309mm  BA=5.299px  t=340s  gpu=19005MiB
+
+[report] Excel  -> RESULTS/grid_search/grid_report.xlsx
+[report] Markdown -> RESULTS/grid_search/grid_report.md
+
+======================================================================
+[grid] Combo 18/26
+       {"vision.vggt.conf_threshold": 3.0, "vision.vggt.voxel_size": 0.0005, "vision.aruco.ba_huber_delta_px": 2.0, "vision.aruco.max_view_alignment_reproj_rmse_px": 8.0, "vision.aruco.min_views_per_marker": 2}
+======================================================================
+[grid] -> OK  3D=4.0517mm  BA=5.299px  t=426s  gpu=21589MiB
+
+[report] Excel  -> RESULTS/grid_search/grid_report.xlsx
+[report] Markdown -> RESULTS/grid_search/grid_report.md
+
+======================================================================
+[grid] Combo 19/26
+       {"vision.vggt.conf_threshold": 3.0, "vision.vggt.voxel_size": 0.0005, "vision.aruco.ba_huber_delta_px": 2.0, "vision.aruco.max_view_alignment_reproj_rmse_px": 8.0, "vision.aruco.min_views_per_marker": 3}
+======================================================================
+[grid] -> OK  3D=4.0517mm  BA=5.299px  t=432s  gpu=21589MiB
+
+[report] Excel  -> RESULTS/grid_search/grid_report.xlsx
+[report] Markdown -> RESULTS/grid_search/grid_report.md
+
+======================================================================
+[grid] Combo 20/26
+       {"vision.vggt.conf_threshold": 3.0, "vision.vggt.voxel_size": 0.0005, "vision.aruco.ba_huber_delta_px": 2.0, "vision.aruco.max_view_alignment_reproj_rmse_px": 10.0, "vision.aruco.min_views_per_marker": 2}
+======================================================================
+[grid] -> OK  3D=4.0547mm  BA=5.299px  t=420s  gpu=21499MiB
+
+[report] Excel  -> RESULTS/grid_search/grid_report.xlsx
+[report] Markdown -> RESULTS/grid_search/grid_report.md
+
+======================================================================
+[grid] Combo 21/26
+       {"vision.vggt.conf_threshold": 3.0, "vision.vggt.voxel_size": 0.0005, "vision.aruco.ba_huber_delta_px": 4.0, "vision.aruco.max_view_alignment_reproj_rmse_px": 6.0, "vision.aruco.min_views_per_marker": 2}
+======================================================================
+[grid] -> OK  3D=4.574mm  BA=5.098px  t=395s  gpu=19865MiB
+
+[report] Excel  -> RESULTS/grid_search/grid_report.xlsx
+[report] Markdown -> RESULTS/grid_search/grid_report.md
+
+======================================================================
+[grid] Combo 22/26
+       {"vision.vggt.conf_threshold": 3.0, "vision.vggt.voxel_size": 0.0005, "vision.aruco.ba_huber_delta_px": 4.0, "vision.aruco.max_view_alignment_reproj_rmse_px": 6.0, "vision.aruco.min_views_per_marker": 3}
+======================================================================
+[grid] -> OK  3D=4.574mm  BA=5.098px  t=392s  gpu=19865MiB
+
+[report] Excel  -> RESULTS/grid_search/grid_report.xlsx
+[report] Markdown -> RESULTS/grid_search/grid_report.md
+
+======================================================================
+[grid] Combo 23/26
+       {"vision.vggt.conf_threshold": 3.0, "vision.vggt.voxel_size": 0.0005, "vision.aruco.ba_huber_delta_px": 4.0, "vision.aruco.max_view_alignment_reproj_rmse_px": 8.0, "vision.aruco.min_views_per_marker": 2}
+======================================================================
+[grid] -> OK  3D=4.2923mm  BA=5.098px  t=435s  gpu=21611MiB
+
+[report] Excel  -> RESULTS/grid_search/grid_report.xlsx
+[report] Markdown -> RESULTS/grid_search/grid_report.md
+
+======================================================================
+[grid] Combo 24/26
+       {"vision.vggt.conf_threshold": 3.0, "vision.vggt.voxel_size": 0.0005, "vision.aruco.ba_huber_delta_px": 4.0, "vision.aruco.max_view_alignment_reproj_rmse_px": 8.0, "vision.aruco.min_views_per_marker": 3}
+======================================================================
+[grid] -> OK  3D=4.2923mm  BA=5.098px  t=437s  gpu=21611MiB
+
+[report] Excel  -> RESULTS/grid_search/grid_report.xlsx
+[report] Markdown -> RESULTS/grid_search/grid_report.md
+
+======================================================================
+[grid] Combo 25/26
+       {"vision.vggt.conf_threshold": 3.0, "vision.vggt.voxel_size": 0.0005, "vision.aruco.ba_huber_delta_px": 4.0, "vision.aruco.max_view_alignment_reproj_rmse_px": 10.0, "vision.aruco.min_views_per_marker": 2}
+======================================================================
+[grid] -> OK  3D=4.2353mm  BA=5.098px  t=445s  gpu=21583MiB
+
+[report] Excel  -> RESULTS/grid_search/grid_report.xlsx
+[report] Markdown -> RESULTS/grid_search/grid_report.md
+
+======================================================================
+[grid] Combo 26/26
+       {"vision.vggt.conf_threshold": 3.0, "vision.vggt.voxel_size": 0.0005, "vision.aruco.ba_huber_delta_px": 4.0, "vision.aruco.max_view_alignment_reproj_rmse_px": 10.0, "vision.aruco.min_views_per_marker": 3}
+======================================================================
+[grid] -> OK  3D=4.2353mm  BA=5.098px  t=434s  gpu=21583MiB
+
+[report] Excel  -> RESULTS/grid_search/grid_report.xlsx
+[report] Markdown -> RESULTS/grid_search/grid_report.md
+
+[grid] DONE. 26/26 OK.
+==============================================
+  Grid finished : Fri Jul 10 07:54:00 PM CEST 2026
+==============================================

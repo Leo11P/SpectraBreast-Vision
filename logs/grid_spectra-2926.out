@@ -1,0 +1,41 @@
+==============================================
+  Spectra GRID SEARCH (uv, no Singularity)
+  Job ID  : 2926
+  Node    : mufasa2.e4-cluster.lan
+  Start   : Fri Jul 10 02:21:12 PM CEST 2026
+==============================================
+  Repo    : /home/lpassoni/Vggt/SpectraBreast-Vision
+  Python  : Python 3.12.13
+  Torch   : 2.12.0+cu130
+  CUDA ok : True
+==============================================
+[grid] 26 combos; sample=SAMPLE2; config=configs/default.yaml
+  [00] -s vision.vggt.conf_threshold=2.0 -s vision.vggt.voxel_size=0.0005 -s vision.aruco.ba_huber_delta_px=2.0 -s vision.aruco.max_view_alignment_reproj_rmse_px=10.0 -s vision.aruco.min_views_per_marker=3
+  [01] -s vision.vggt.conf_threshold=2.0 -s vision.vggt.voxel_size=0.001 -s vision.aruco.ba_huber_delta_px=2.0 -s vision.aruco.max_view_alignment_reproj_rmse_px=10.0 -s vision.aruco.min_views_per_marker=3
+  [02] -s vision.vggt.conf_threshold=2.0 -s vision.vggt.voxel_size=0.0015 -s vision.aruco.ba_huber_delta_px=2.0 -s vision.aruco.max_view_alignment_reproj_rmse_px=10.0 -s vision.aruco.min_views_per_marker=3
+  [03] -s vision.vggt.conf_threshold=3.0 -s vision.vggt.voxel_size=0.0005 -s vision.aruco.ba_huber_delta_px=2.0 -s vision.aruco.max_view_alignment_reproj_rmse_px=10.0 -s vision.aruco.min_views_per_marker=3
+  [04] -s vision.vggt.conf_threshold=3.0 -s vision.vggt.voxel_size=0.001 -s vision.aruco.ba_huber_delta_px=2.0 -s vision.aruco.max_view_alignment_reproj_rmse_px=10.0 -s vision.aruco.min_views_per_marker=3
+  [05] -s vision.vggt.conf_threshold=3.0 -s vision.vggt.voxel_size=0.0015 -s vision.aruco.ba_huber_delta_px=2.0 -s vision.aruco.max_view_alignment_reproj_rmse_px=10.0 -s vision.aruco.min_views_per_marker=3
+  [06] -s vision.vggt.conf_threshold=5.0 -s vision.vggt.voxel_size=0.0005 -s vision.aruco.ba_huber_delta_px=2.0 -s vision.aruco.max_view_alignment_reproj_rmse_px=10.0 -s vision.aruco.min_views_per_marker=3
+  [07] -s vision.vggt.conf_threshold=5.0 -s vision.vggt.voxel_size=0.001 -s vision.aruco.ba_huber_delta_px=2.0 -s vision.aruco.max_view_alignment_reproj_rmse_px=10.0 -s vision.aruco.min_views_per_marker=3
+  [08] -s vision.vggt.conf_threshold=5.0 -s vision.vggt.voxel_size=0.0015 -s vision.aruco.ba_huber_delta_px=2.0 -s vision.aruco.max_view_alignment_reproj_rmse_px=10.0 -s vision.aruco.min_views_per_marker=3
+  [09] -s vision.vggt.conf_threshold=3.0 -s vision.vggt.voxel_size=0.0005 -s vision.aruco.ba_huber_delta_px=1.0 -s vision.aruco.max_view_alignment_reproj_rmse_px=6.0 -s vision.aruco.min_views_per_marker=2
+  [10] -s vision.vggt.conf_threshold=3.0 -s vision.vggt.voxel_size=0.0005 -s vision.aruco.ba_huber_delta_px=1.0 -s vision.aruco.max_view_alignment_reproj_rmse_px=6.0 -s vision.aruco.min_views_per_marker=3
+  [11] -s vision.vggt.conf_threshold=3.0 -s vision.vggt.voxel_size=0.0005 -s vision.aruco.ba_huber_delta_px=1.0 -s vision.aruco.max_view_alignment_reproj_rmse_px=8.0 -s vision.aruco.min_views_per_marker=2
+  [12] -s vision.vggt.conf_threshold=3.0 -s vision.vggt.voxel_size=0.0005 -s vision.aruco.ba_huber_delta_px=1.0 -s vision.aruco.max_view_alignment_reproj_rmse_px=8.0 -s vision.aruco.min_views_per_marker=3
+  [13] -s vision.vggt.conf_threshold=3.0 -s vision.vggt.voxel_size=0.0005 -s vision.aruco.ba_huber_delta_px=1.0 -s vision.aruco.max_view_alignment_reproj_rmse_px=10.0 -s vision.aruco.min_views_per_marker=2
+  [14] -s vision.vggt.conf_threshold=3.0 -s vision.vggt.voxel_size=0.0005 -s vision.aruco.ba_huber_delta_px=1.0 -s vision.aruco.max_view_alignment_reproj_rmse_px=10.0 -s vision.aruco.min_views_per_marker=3
+  [15] -s vision.vggt.conf_threshold=3.0 -s vision.vggt.voxel_size=0.0005 -s vision.aruco.ba_huber_delta_px=2.0 -s vision.aruco.max_view_alignment_reproj_rmse_px=6.0 -s vision.aruco.min_views_per_marker=2
+  [16] -s vision.vggt.conf_threshold=3.0 -s vision.vggt.voxel_size=0.0005 -s vision.aruco.ba_huber_delta_px=2.0 -s vision.aruco.max_view_alignment_reproj_rmse_px=6.0 -s vision.aruco.min_views_per_marker=3
+  [17] -s vision.vggt.conf_threshold=3.0 -s vision.vggt.voxel_size=0.0005 -s vision.aruco.ba_huber_delta_px=2.0 -s vision.aruco.max_view_alignment_reproj_rmse_px=8.0 -s vision.aruco.min_views_per_marker=2
+  [18] -s vision.vggt.conf_threshold=3.0 -s vision.vggt.voxel_size=0.0005 -s vision.aruco.ba_huber_delta_px=2.0 -s vision.aruco.max_view_alignment_reproj_rmse_px=8.0 -s vision.aruco.min_views_per_marker=3
+  [19] -s vision.vggt.conf_threshold=3.0 -s vision.vggt.voxel_size=0.0005 -s vision.aruco.ba_huber_delta_px=2.0 -s vision.aruco.max_view_alignment_reproj_rmse_px=10.0 -s vision.aruco.min_views_per_marker=2
+  [20] -s vision.vggt.conf_threshold=3.0 -s vision.vggt.voxel_size=0.0005 -s vision.aruco.ba_huber_delta_px=4.0 -s vision.aruco.max_view_alignment_reproj_rmse_px=6.0 -s vision.aruco.min_views_per_marker=2
+  [21] -s vision.vggt.conf_threshold=3.0 -s vision.vggt.voxel_size=0.0005 -s vision.aruco.ba_huber_delta_px=4.0 -s vision.aruco.max_view_alignment_reproj_rmse_px=6.0 -s vision.aruco.min_views_per_marker=3
+  [22] -s vision.vggt.conf_threshold=3.0 -s vision.vggt.voxel_size=0.0005 -s vision.aruco.ba_huber_delta_px=4.0 -s vision.aruco.max_view_alignment_reproj_rmse_px=8.0 -s vision.aruco.min_views_per_marker=2
+  [23] -s vision.vggt.conf_threshold=3.0 -s vision.vggt.voxel_size=0.0005 -s vision.aruco.ba_huber_delta_px=4.0 -s vision.aruco.max_view_alignment_reproj_rmse_px=8.0 -s vision.aruco.min_views_per_marker=3
+  [24] -s vision.vggt.conf_threshold=3.0 -s vision.vggt.voxel_size=0.0005 -s vision.aruco.ba_huber_delta_px=4.0 -s vision.aruco.max_view_alignment_reproj_rmse_px=10.0 -s vision.aruco.min_views_per_marker=2
+  [25] -s vision.vggt.conf_threshold=3.0 -s vision.vggt.voxel_size=0.0005 -s vision.aruco.ba_huber_delta_px=4.0 -s vision.aruco.max_view_alignment_reproj_rmse_px=10.0 -s vision.aruco.min_views_per_marker=3
+==============================================
+  Grid finished : Fri Jul 10 02:21:15 PM CEST 2026
+==============================================

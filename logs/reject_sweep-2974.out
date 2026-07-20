@@ -1,0 +1,63 @@
+==============================================
+  Spectra REJECT-THRESHOLD SWEEP
+  Job ID  : 2974
+  Node    : mufasa2.e4-cluster.lan
+  Start   : Mon Jul 13 11:05:25 AM CEST 2026
+==============================================
+  Repo    : /home/lpassoni/Vggt/SpectraBreast-Vision
+  Python  : Python 3.12.13
+==============================================
+[sweep] 6 combos; sample=SAMPLE2; config=configs/default.yaml
+
+======================================================================
+[sweep] Combo 1/6  rej_thr=6.0
+======================================================================
+[sweep] -> OK  3D=2.6061mm  rejected=7 kept=19/26 skipped=False  t=346s
+
+[report] Excel    -> RESULTS/reject_sweep/reject_sweep_report.xlsx
+[report] Markdown -> RESULTS/reject_sweep/reject_sweep_report.md
+
+======================================================================
+[sweep] Combo 2/6  rej_thr=5.0
+======================================================================
+[sweep] -> OK  3D=1.7034mm  rejected=12 kept=14/26 skipped=False  t=318s
+
+[report] Excel    -> RESULTS/reject_sweep/reject_sweep_report.xlsx
+[report] Markdown -> RESULTS/reject_sweep/reject_sweep_report.md
+
+======================================================================
+[sweep] Combo 3/6  rej_thr=4.5
+======================================================================
+[sweep] -> OK  3D=2.7887mm  rejected=16 kept=10/26 skipped=False  t=238s
+
+[report] Excel    -> RESULTS/reject_sweep/reject_sweep_report.xlsx
+[report] Markdown -> RESULTS/reject_sweep/reject_sweep_report.md
+
+======================================================================
+[sweep] Combo 4/6  rej_thr=4.0
+======================================================================
+[sweep] -> OK  3D=10.8216mm  rejected=21 kept=5/26 skipped=False  t=218s
+
+[report] Excel    -> RESULTS/reject_sweep/reject_sweep_report.xlsx
+[report] Markdown -> RESULTS/reject_sweep/reject_sweep_report.md
+
+======================================================================
+[sweep] Combo 5/6  rej_thr=3.5
+======================================================================
+[sweep] -> OK  3D=11.2048mm  rejected=22 kept=4/26 skipped=False  t=194s
+
+[report] Excel    -> RESULTS/reject_sweep/reject_sweep_report.xlsx
+[report] Markdown -> RESULTS/reject_sweep/reject_sweep_report.md
+
+======================================================================
+[sweep] Combo 6/6  rej_thr=3.0
+======================================================================
+[sweep] -> OK  3D=3.9864mm  rejected=0 kept=1/26 skipped=True  t=424s
+
+[report] Excel    -> RESULTS/reject_sweep/reject_sweep_report.xlsx
+[report] Markdown -> RESULTS/reject_sweep/reject_sweep_report.md
+
+[sweep] DONE. 6/6 OK.
+==============================================
+  Sweep finished : Mon Jul 13 11:34:24 AM CEST 2026
+==============================================

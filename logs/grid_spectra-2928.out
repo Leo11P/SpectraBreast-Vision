@@ -1,0 +1,35 @@
+==============================================
+  Spectra GRID SEARCH (uv, no Singularity)
+  Job ID  : 2928
+  Node    : mufasa2.e4-cluster.lan
+  Start   : Fri Jul 10 02:24:59 PM CEST 2026
+==============================================
+  Repo    : /home/lpassoni/Vggt/SpectraBreast-Vision
+  Python  : Python 3.12.13
+  Torch   : 2.12.0+cu130
+  CUDA ok : True
+==============================================
+[grid] 2 combos; sample=SAMPLE2; config=configs/default.yaml
+
+======================================================================
+[grid] Combo 1/2
+       {"vision.vggt.conf_threshold": 3.0, "vision.vggt.voxel_size": 0.0005, "vision.aruco.ba_huber_delta_px": 2.0, "vision.aruco.max_view_alignment_reproj_rmse_px": 10.0, "vision.aruco.min_views_per_marker": 3}
+======================================================================
+[grid] -> OK  3D=1.9655mm  BA=5.299px  t=185s  gpu=18903MiB
+
+[report] Excel  -> RESULTS/grid_search/grid_report.xlsx
+[report] Markdown -> RESULTS/grid_search/grid_report.md
+
+======================================================================
+[grid] Combo 2/2
+       {"vision.vggt.conf_threshold": 3.0, "vision.vggt.voxel_size": 0.0005, "vision.aruco.ba_huber_delta_px": 2.0, "vision.aruco.max_view_alignment_reproj_rmse_px": 6.0, "vision.aruco.min_views_per_marker": 3}
+======================================================================
+[grid] -> OK  3D=1.9655mm  BA=5.299px  t=176s  gpu=18907MiB
+
+[report] Excel  -> RESULTS/grid_search/grid_report.xlsx
+[report] Markdown -> RESULTS/grid_search/grid_report.md
+
+[grid] DONE. 2/2 OK.
+==============================================
+  Grid finished : Fri Jul 10 02:31:04 PM CEST 2026
+==============================================

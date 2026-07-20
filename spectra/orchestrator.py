@@ -50,7 +50,17 @@ def registration_input_dir(data_root: Path, sample: str) -> Path:
 
 
 def vision_output_dir(results_root: Path, sample: str) -> Path:
-    return Path(results_root) / sample / "vision"
+    # The vision stage writes each run to a fresh timestamped/numbered folder
+    # (vision, vision_01, ... vision_NN) and repoints `<sample>/most-recent` at
+    # the latest one. Prefer that symlink so downstream stages (registration)
+    # always consume the MOST RECENT reconstruction, not a stale `vision/` left
+    # over from the first-ever run. Fall back to the fixed `vision/` path only
+    # when no symlink exists (e.g. legacy layouts).
+    base = Path(results_root) / sample
+    most_recent = base / "most-recent"
+    if most_recent.is_symlink() or most_recent.is_dir():
+        return most_recent
+    return base / "vision"
 
 
 def registration_output_dir(results_root: Path, sample: str) -> Path:

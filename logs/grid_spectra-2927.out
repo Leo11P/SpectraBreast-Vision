@@ -1,0 +1,17 @@
+==============================================
+  Spectra GRID SEARCH (uv, no Singularity)
+  Job ID  : 2927
+  Node    : mufasa2.e4-cluster.lan
+  Start   : Fri Jul 10 02:24:19 PM CEST 2026
+==============================================
+  Repo    : /home/lpassoni/Vggt/SpectraBreast-Vision
+  Python  : Python 3.12.13
+  Torch   : 2.12.0+cu130
+  CUDA ok : True
+==============================================
+[grid] 2 combos; sample=SAMPLE2; config=configs/default.yaml
+  [00] -s vision.vggt.conf_threshold=3.0 -s vision.vggt.voxel_size=0.0005 -s vision.aruco.ba_huber_delta_px=2.0 -s vision.aruco.max_view_alignment_reproj_rmse_px=10.0 -s vision.aruco.min_views_per_marker=3
+  [01] -s vision.vggt.conf_threshold=3.0 -s vision.vggt.voxel_size=0.0005 -s vision.aruco.ba_huber_delta_px=2.0 -s vision.aruco.max_view_alignment_reproj_rmse_px=6.0 -s vision.aruco.min_views_per_marker=3
+==============================================
+  Grid finished : Fri Jul 10 02:24:22 PM CEST 2026
+==============================================

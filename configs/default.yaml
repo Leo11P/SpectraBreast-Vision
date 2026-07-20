@@ -18,7 +18,7 @@
 # =============================================================================
 
 # Sample being processed. Used to build default input/output paths.
-sample_name: "SAMPLE2"
+sample_name: "TETTA"
 
 # Roots that drive default path resolution for `spectra full`.
 # Both can be relative (resolved from cwd) or absolute.
@@ -40,9 +40,9 @@ vision:
     #   pose_dir         = DATA/input_vision/<sample>/poses          (if it exists)
     #   camera_params_dir= DATA/input_vision/<sample>/camera_parameters (if it exists)
     # Override here when running `spectra vision` standalone.
-    rgb_dir:           DATA/input_vision/SAMPLE2_iphone
-    pose_dir:          DATA/input_vision/SAMPLE2_iphone
-    camera_params_dir: DATA/input_vision/SAMPLE2_iphone
+    rgb_dir:           DATA/input_vision/TETTA_iphone3/rgb
+    pose_dir:          DATA/input_vision/TETTA_iphone3/poses
+    camera_params_dir: DATA/input_vision/TETTA_iphone3/camera_parameters
 
   output:
     # When `null`, derived to:  RESULTS/<sample>/vision
@@ -53,9 +53,9 @@ vision:
 
   aruco:
     dictionary:             4x4_50
-    marker_edge_length_m:   0.068
+    marker_edge_length_m:   0.165
     origin_marker_id:       null
-    min_views_per_marker:   3
+    min_views_per_marker:   2
     align_to_aruco:         true
     max_sim3_scale_deviation_when_poses_known: 0.05
     detection_draw_scale:   2.0
@@ -89,7 +89,7 @@ vision:
     point_source:          depth        # 'depth' (unproject; both impls) | 'world' (vggt head)
     use_gt_intrinsics:     true         # use GT K for reprojection when available
     conf_threshold:        3.0          # absolute conf cut (matches vggt-omega demo floor); overrides conf_percentile
-    conf_percentile:       90.0         # used only if conf_threshold is null: drop points below this percentile
+    conf_percentile:       50.0         # used only if conf_threshold is null: drop points below this percentile
     voxel_size:            0.0015
     max_points:            2000000
     max_frames:            null         # optional frame cap (memory guard)

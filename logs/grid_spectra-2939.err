@@ -1,0 +1,14 @@
+Traceback (most recent call last):
+  File "/home/lpassoni/Vggt/SpectraBreast-Vision/grid_search_vision.py", line 454, in <module>
+    sys.exit(main())
+             ^^^^^^
+  File "/home/lpassoni/Vggt/SpectraBreast-Vision/grid_search_vision.py", line 423, in main
+    combos = build_grid()
+             ^^^^^^^^^^^^
+  File "/home/lpassoni/Vggt/SpectraBreast-Vision/grid_search_vision.py", line 100, in build_grid
+    for combo in _combos_from_grid(GRID_A) + _combos_from_grid(GRID_B):
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/lpassoni/Vggt/SpectraBreast-Vision/grid_search_vision.py", line 90, in _combos_from_grid
+    combo = dict(BASELINE)
+                 ^^^^^^^^
+NameError: name 'BASELINE' is not defined

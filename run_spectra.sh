@@ -67,11 +67,12 @@ echo "=============================================="
 #    --config configs/default.yaml \
 #    --sample SAMPLE2
  
-uv run spectra full \
-     --config configs/default.yaml \
-     --force-vision \
-     --sample SAMPLE2
+#uv run spectra full \
+#     --config configs/default.yaml \
+#     --force-vision \
+#     --sample SAMPLE2
 
+uv run spectra vision --config configs/default.yaml
 
 echo "=============================================="
 echo "  Run finished : $(date)"

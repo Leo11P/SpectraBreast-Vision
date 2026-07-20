@@ -1,0 +1,16 @@
+==============================================
+  Spectra run (uv, no Singularity)
+  Job ID  : 3151
+  Node    : mufasa2.e4-cluster.lan
+  Start   : Mon Jul 20 11:10:24 AM CEST 2026
+==============================================
+  Repo    : /home/lpassoni/Vggt/SpectraBreast-Vision
+  Python  : Python 3.12.13
+  Torch   : 2.12.0+cu130
+  CUDA ok : True
+  TMPDIR  : /home/lpassoni/.cache/tmp
+==============================================
+
+[orchestrator] Vision stage for sample='TETTA'
+Step 1/6 - Preparing run folder and loading inputs
+Run directory: RESULTS/TETTA/vision
