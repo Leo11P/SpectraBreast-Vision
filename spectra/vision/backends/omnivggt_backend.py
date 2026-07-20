@@ -79,23 +79,39 @@ def _load_omnivggt(vcfg: VggtConfig, device: torch.device):
         ) from exc
 
     if vcfg.checkpoint_path:
-        model = OmniVGGT()
         ckpt = str(vcfg.checkpoint_path)
-        if ckpt.endswith(".safetensors"):
-            from safetensors.torch import load_file  # type: ignore
-
-            state = load_file(ckpt)
-        else:
-            state = torch.load(ckpt, map_location="cpu")
-            state = state.get("model", state) if isinstance(state, dict) else state
-        model.load_state_dict(state, strict=True)
     else:
-        if not hasattr(OmniVGGT, "from_pretrained"):
-            raise RuntimeError(
-                "OmniVGGT has no from_pretrained; set vggt.checkpoint_path to a "
-                "local OmniVGGT.safetensors instead."
-            )
-        model = OmniVGGT.from_pretrained(vcfg.model_name)
+        # PyTorchModelHubMixin.from_pretrained only auto-discovers files named
+        # exactly 'model.safetensors' or 'pytorch_model.bin'. The Livioni/
+        # OmniVGGT repo's weight file is named 'OmniVGGT.safetensors' instead
+        # (verified via the HF API repo listing) — from_pretrained 404s on
+        # both standard names and can never find it. Downloading the known
+        # filename directly sidesteps that broken auto-discovery.
+        from huggingface_hub import hf_hub_download  # type: ignore
+
+        ckpt = hf_hub_download(repo_id=vcfg.model_name, filename="OmniVGGT.safetensors")
+
+    model = OmniVGGT()
+    if ckpt.endswith(".safetensors"):
+        from safetensors.torch import load_file  # type: ignore
+
+        state = load_file(ckpt)
+    else:
+        state = torch.load(ckpt, map_location="cpu")
+        state = state.get("model", state) if isinstance(state, dict) else state
+    try:
+        model.load_state_dict(state, strict=True)
+    except RuntimeError as exc:
+        raise RuntimeError(
+            f"Checkpoint {ckpt!r} does not match the OmniVGGT architecture "
+            "(mismatched keys/shapes below). This almost always means "
+            "vggt.checkpoint_path is still pointing at a vggt-omega/vggt "
+            "checkpoint left over from another vggt.impl — when switching "
+            "impl to 'omni', checkpoint_path (and model_name) must point at "
+            "OmniVGGT weights too, e.g. set checkpoint_path=null and "
+            "model_name='Livioni/OmniVGGT' to download the correct weights "
+            f"from HF. Original error: {exc}"
+        ) from exc
 
     return model.to(device).eval()
 

@@ -103,7 +103,7 @@ def load_gt_cameras(
     if pose_dir is not None:
         pose_dir = Path(pose_dir)
         if pose_dir.exists():
-            pose_files = sorted(pose_dir.glob("pose_*.txt"))
+            pose_files = sorted(pose_dir.glob("pose*.txt"))
             if len(pose_files) == num_images:
                 poses6 = np.stack(
                     [np.asarray(pf.read_text().strip().split(), dtype=np.float32) for pf in pose_files],

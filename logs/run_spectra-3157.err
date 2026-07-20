@@ -1,0 +1,164 @@
+╭───────────────────── Traceback (most recent call last) ──────────────────────╮
+│ /home/lpassoni/Vggt/SpectraBreast-Vision/spectra/vision/backends/omnivggt_ba │
+│ ckend.py:73 in _load_omnivggt                                                │
+│                                                                              │
+│    70 def _load_omnivggt(vcfg: VggtConfig, device: torch.device):            │
+│    71 │   """Instantiate OmniVGGT and load weights (safetensors checkpoint   │
+│       or HF)."""                                                             │
+│    72 │   try:                                                               │
+│ ❱  73 │   │   from omnivggt.models.omnivggt import OmniVGGT  # type: ignore  │
+│    74 │   except Exception as exc:  # pragma: no cover - env-specific        │
+│    75 │   │   raise RuntimeError(                                            │
+│    76 │   │   │   "Could not import 'omnivggt'. Install Livioni/OmniVGGT     │
+│       into the "                                                             │
+│                                                                              │
+│ /home/lpassoni/Vggt/SpectraBreast-Vision/omnivggt/omnivggt/models/omnivggt.p │
+│ y:5 in <module>                                                              │
+│                                                                              │
+│     2 import torch.nn as nn                                                  │
+│     3 from huggingface_hub import PyTorchModelHubMixin  # used for model hub │
+│     4                                                                        │
+│ ❱   5 from omnivggt.models.omnivggt_aggregator import ZeroAggregator         │
+│     6 from omnivggt.heads.camera_head import CameraHead                      │
+│     7 from omnivggt.heads.dpt_head import DPTHead                            │
+│     8                                                                        │
+│                                                                              │
+│ /home/lpassoni/Vggt/SpectraBreast-Vision/omnivggt/omnivggt/models/omnivggt_a │
+│ ggregator.py:11 in <module>                                                  │
+│                                                                              │
+│     8 from omnivggt.layers.block import Block                                │
+│     9 from omnivggt.utils.pose_enc import extri_intri_to_pose_encoding       │
+│    10 from torch.utils.checkpoint import checkpoint                          │
+│ ❱  11 from omnivggt.utils.geometry import closed_form_inverse_se3            │
+│    12 from omnivggt.models.aggregator import Aggregator,                     │
+│       slice_expand_and_flatten                                               │
+│    13                                                                        │
+│    14 logger = logging.getLogger(__name__)                                   │
+│                                                                              │
+│ /home/lpassoni/Vggt/SpectraBreast-Vision/omnivggt/omnivggt/utils/geometry.py │
+│ :12 in <module>                                                              │
+│                                                                              │
+│     9 import numpy as np                                                     │
+│    10 from scipy.spatial import cKDTree as KDTree                            │
+│    11                                                                        │
+│ ❱  12 from omnivggt.utils.misc import invalid_to_zeros, invalid_to_nans      │
+│    13 from omnivggt.utils.device import to_numpy                             │
+│    14                                                                        │
+│    15 def xy_grid(W, H, device=None, origin=(0, 0), unsqueeze=None,          │
+│       cat_dim=-1, homogeneous=False, **arange_kw):                           │
+│                                                                              │
+│ /home/lpassoni/Vggt/SpectraBreast-Vision/omnivggt/omnivggt/utils/misc.py:7   │
+│ in <module>                                                                  │
+│                                                                              │
+│     4 import torch                                                           │
+│     5 import cv2                                                             │
+│     6 import numpy as np                                                     │
+│ ❱   7 from omnivggt.utils.vo_eval import save_trajectory_tum_format          │
+│     8 from PIL import Image                                                  │
+│     9                                                                        │
+│    10 def get_stride_distribution(strides, dist_type='uniform'):             │
+│                                                                              │
+│ /home/lpassoni/Vggt/SpectraBreast-Vision/omnivggt/omnivggt/utils/vo_eval.py: │
+│ 6 in <module>                                                                │
+│                                                                              │
+│     3 from copy import deepcopy                                              │
+│     4 from pathlib import Path                                               │
+│     5                                                                        │
+│ ❱   6 import evo.main_ape as main_ape                                        │
+│     7 import evo.main_rpe as main_rpe                                        │
+│     8 import matplotlib                                                      │
+│     9 matplotlib.use('Agg')                                                  │
+╰──────────────────────────────────────────────────────────────────────────────╯
+ModuleNotFoundError: No module named 'evo'
+
+The above exception was the direct cause of the following exception:
+
+╭───────────────────── Traceback (most recent call last) ──────────────────────╮
+│ /home/lpassoni/Vggt/SpectraBreast-Vision/spectra/cli.py:136 in vision_cmd    │
+│                                                                              │
+│   133 │   │   │   │   │   │   │   │     help="Resolve paths and print the    │
+│       config without running."),                                             │
+│   134 ) -> None:                                                             │
+│   135 │   """Run only the VGGT + ArUco vision stage."""                      │
+│ ❱ 136 │   _execute_vision(config, sample, set_override, dry_run)             │
+│   137                                                                        │
+│   138                                                                        │
+│   139 @app.command("recon", hidden=True)                                     │
+│                                                                              │
+│ /home/lpassoni/Vggt/SpectraBreast-Vision/spectra/cli.py:120 in               │
+│ _execute_vision                                                              │
+│                                                                              │
+│   117 │   │   print("[bold]Dry-run — vision config resolved:[/bold]")        │
+│   118 │   │   print(cfg.vision.model_dump(mode="python"))                    │
+│   119 │   │   return                                                         │
+│ ❱ 120 │   result = run_vision_stage(cfg)                                     │
+│   121 │   print(f"[green]Vision finished:[/green] {result['run_dir']}")      │
+│   122                                                                        │
+│   123                                                                        │
+│                                                                              │
+│ /home/lpassoni/Vggt/SpectraBreast-Vision/spectra/orchestrator.py:180 in      │
+│ run_vision_stage                                                             │
+│                                                                              │
+│   177 │   sample = sample_name or cfg.sample_name                            │
+│   178 │   print(f"\n[orchestrator] Vision stage for sample={sample!r}")      │
+│   179 │   t0 = time.time()                                                   │
+│ ❱ 180 │   result = run_reconstruction(cfg.vision)                            │
+│   181 │   dt = time.time() - t0                                              │
+│   182 │   print(f"[orchestrator] Vision finished in {dt:.1f}s —              │
+│       run_dir={result.run_dir}")                                             │
+│   183 │   return {"run_dir": Path(result.run_dir), "skipped": False,         │
+│       "elapsed_s": dt}                                                       │
+│                                                                              │
+│ /home/lpassoni/Vggt/SpectraBreast-Vision/spectra/vision/pipeline.py:424 in   │
+│ run_reconstruction                                                           │
+│                                                                              │
+│    421 │                                                                     │
+│    422 │   _log_step("Step 3/6 - Running VGGT")                              │
+│    423 │   _timer.begin("Step 3/6 - VGGT backend")                           │
+│ ❱  424 │   raw = _run_backend(cfg, backend_inputs)                           │
+│    425 │   print(                                                            │
+│    426 │   │   f"Backend produced                                            │
+│        [green]{raw.fused_points.shape[0]:,}[/green] fused points; "          │
+│    427 │   │   f"frame = [green]{raw.frame_description}[/green]"             │
+│                                                                              │
+│ /home/lpassoni/Vggt/SpectraBreast-Vision/spectra/vision/pipeline.py:228 in   │
+│ _run_backend                                                                 │
+│                                                                              │
+│    225 │   if cfg.vggt.impl == "omni":                                       │
+│    226 │   │   from .backends.omnivggt_backend import run_omnivggt           │
+│    227 │   │                                                                 │
+│ ❱  228 │   │   return run_omnivggt(cfg, inputs)                              │
+│    229 │                                                                     │
+│    230 │   from .backends.vggt_backend import run_vggt                       │
+│    231                                                                       │
+│                                                                              │
+│ /home/lpassoni/Vggt/SpectraBreast-Vision/spectra/vision/backends/omnivggt_ba │
+│ ckend.py:253 in run_omnivggt                                                 │
+│                                                                              │
+│   250 │   ]                                                                  │
+│   251 │                                                                      │
+│   252 │   # --- Load model + preprocess                                      │
+│       -------------------------------------------                            │
+│ ❱ 253 │   model = _load_omnivggt(vcfg, device)                               │
+│   254 │   images = _preprocess_images(orig_rgb).to(device)  # [S,3,H,W] in   │
+│       [0,1]                                                                  │
+│   255 │   network_h, network_w = int(images.shape[-2]),                      │
+│       int(images.shape[-1])                                                  │
+│   256                                                                        │
+│                                                                              │
+│ /home/lpassoni/Vggt/SpectraBreast-Vision/spectra/vision/backends/omnivggt_ba │
+│ ckend.py:75 in _load_omnivggt                                                │
+│                                                                              │
+│    72 │   try:                                                               │
+│    73 │   │   from omnivggt.models.omnivggt import OmniVGGT  # type: ignore  │
+│    74 │   except Exception as exc:  # pragma: no cover - env-specific        │
+│ ❱  75 │   │   raise RuntimeError(                                            │
+│    76 │   │   │   "Could not import 'omnivggt'. Install Livioni/OmniVGGT     │
+│       into the "                                                             │
+│    77 │   │   │   "environment (pip install -e . inside the OmniVGGT repo),  │
+│       or choose "                                                            │
+│    78 │   │   │   f"a different vggt.impl. Original error: {exc}"            │
+╰──────────────────────────────────────────────────────────────────────────────╯
+RuntimeError: Could not import 'omnivggt'. Install Livioni/OmniVGGT into the 
+environment (pip install -e . inside the OmniVGGT repo), or choose a different 
+vggt.impl. Original error: No module named 'evo'

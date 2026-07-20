@@ -1,0 +1,20 @@
+==============================================
+  Spectra run (uv, no Singularity)
+  Job ID  : 3159
+  Node    : mufasa2.e4-cluster.lan
+  Start   : Mon Jul 20 12:37:13 PM CEST 2026
+==============================================
+  Repo    : /home/lpassoni/Vggt/SpectraBreast-Vision
+  Python  : Python 3.12.13
+  Torch   : 2.12.0+cu130
+  CUDA ok : True
+  TMPDIR  : /home/lpassoni/.cache/tmp
+==============================================
+
+[orchestrator] Vision stage for sample='TETTA'
+Step 1/6 - Preparing run folder and loading inputs
+Run directory: RESULTS/TETTA/vision_04
+Loaded 25 images (no GT poses) and GT intrinsics
+Step 2/6 - Detecting ArUco markers
+Detected 85 markers across 25 views.
+Step 3/6 - Running VGGT

@@ -79,9 +79,9 @@ vision:
     conf_threshold_percentile: 75.0
 
   vggt:
-    impl:                  omega        # 'omega' (vggt-omega) | 'vggt' (original) | 'omni' (OmniVGGT, conditions on GT poses+intrinsics)
-    model_name:            facebook/VGGT-Omega   # HF id; impl=vggt -> facebook/VGGT-1B ; impl=omni -> Livioni/OmniVGGT
-    checkpoint_path:       /home/lpassoni/Vggt/SpectraBreast-Vision/checkpoints/vggt_omega_1b_512.pt         # local weights instead of from_pretrained (.pt for omega/vggt, OmniVGGT.safetensors for omni)
+    impl:                  omni        # 'omega' (vggt-omega) | 'vggt' (original) | 'omni' (OmniVGGT, conditions on GT poses+intrinsics)
+    model_name:            Livioni/OmniVGGT   # HF id; impl=vggt -> facebook/VGGT-1B ; impl=omni -> Livioni/OmniVGGT
+    checkpoint_path:       null #/home/lpassoni/Vggt/SpectraBreast-Vision/checkpoints/vggt_omega_1b_512.pt         # local weights instead of from_pretrained (.pt for omega/vggt, OmniVGGT.safetensors for omni)
     image_resolution:      512          # omega: 256/512 ; original vggt: 518 ; omni: fixed 518 (this field ignored)
     preprocess_mode:       crop         # 'crop' | 'pad' (crop keeps exact intrinsics remap)
     patch_size:            16           # omega: 16 ; original vggt: 14

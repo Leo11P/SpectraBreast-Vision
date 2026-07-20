@@ -38,8 +38,9 @@ class InputConfig(BaseModel):
     pose_dir: Path | None = Field(
         default=None,
         description=(
-            "Optional folder with pose_*.txt files (one per image, 6 floats "
-            "[X Y Z Roll Pitch Yaw]). When None, runs in RGB-only mode."
+            "Optional folder with pose*.txt files (one per image, e.g. "
+            "pose0001.txt or pose_0001.txt; 6 floats [X Y Z Roll Pitch Yaw], "
+            "XYZ in meters and RPY in radians). When None, runs in RGB-only mode."
         ),
     )
     camera_params_dir: Path | None = Field(

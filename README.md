@@ -42,7 +42,7 @@ uv run spectra recon --config configs/default.yaml
 # Overrides
 uv run spectra recon -c configs/default.yaml --rgb-dir DATA/s/rgb --out RESULTS --run-name trial1
 
-# [WORK IN PROGRESS] Optional camera pose and intrinsic GT: same stem order as images → pose_*.txt + intrinsics.npy folder
+# [WORK IN PROGRESS] Optional camera pose and intrinsic GT: same stem order as images → pose*.txt (e.g. pose0001.txt) + intrinsics.npy folder
 uv run spectra recon -c configs/default.yaml \
   --rgb-dir DATA/s/rgb --pose-dir DATA/s/poses --camera-params-dir DATA/s/cam
 

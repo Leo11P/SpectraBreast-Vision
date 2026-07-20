@@ -1,0 +1,422 @@
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+Using cache found in /home/lpassoni/.cache/torch/hub/facebookresearch_dinov2_main
+/home/lpassoni/.cache/torch/hub/facebookresearch_dinov2_main/dinov2/layers/swiglu_ffn.py:51: UserWarning: xFormers is not available (SwiGLU)
+  warnings.warn("xFormers is not available (SwiGLU)")
+/home/lpassoni/.cache/torch/hub/facebookresearch_dinov2_main/dinov2/layers/attention.py:33: UserWarning: xFormers is not available (Attention)
+  warnings.warn("xFormers is not available (Attention)")
+/home/lpassoni/.cache/torch/hub/facebookresearch_dinov2_main/dinov2/layers/block.py:40: UserWarning: xFormers is not available (Block)
+  warnings.warn("xFormers is not available (Block)")
+╭───────────────────── Traceback (most recent call last) ──────────────────────╮
+│ /home/lpassoni/Vggt/SpectraBreast-Vision/.venv/lib/python3.12/site-packages/ │
+│ huggingface_hub/utils/_http.py:761 in hf_raise_for_status                    │
+│                                                                              │
+│    758 │   │   logger.debug("Failed to parse warning headers",               │
+│        exc_info=True)                                                        │
+│    759 │                                                                     │
+│    760 │   try:                                                              │
+│ ❱  761 │   │   response.raise_for_status()                                   │
+│    762 │   except httpx.HTTPStatusError as e:                                │
+│    763 │   │   if response.status_code // 100 == 3:                          │
+│    764 │   │   │   return  # Do not raise on redirects to stay consistent    │
+│        with `requests`                                                       │
+│                                                                              │
+│ /home/lpassoni/Vggt/SpectraBreast-Vision/.venv/lib/python3.12/site-packages/ │
+│ httpx/_models.py:829 in raise_for_status                                     │
+│                                                                              │
+│    826 │   │   }                                                             │
+│    827 │   │   error_type = error_types.get(status_class, "Invalid status    │
+│        code")                                                                │
+│    828 │   │   message = message.format(self, error_type=error_type)         │
+│ ❱  829 │   │   raise HTTPStatusError(message, request=request,               │
+│        response=self)                                                        │
+│    830 │                                                                     │
+│    831 │   def json(self, **kwargs: typing.Any) -> typing.Any:               │
+│    832 │   │   return jsonlib.loads(self.content, **kwargs)                  │
+╰──────────────────────────────────────────────────────────────────────────────╯
+HTTPStatusError: Client error '404 Not Found' for url 
+'https://huggingface.co/Livioni/OmniVGGT/resolve/main/model.safetensors'
+For more information check: 
+https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+
+The above exception was the direct cause of the following exception:
+
+╭───────────────────── Traceback (most recent call last) ──────────────────────╮
+│ /home/lpassoni/Vggt/SpectraBreast-Vision/.venv/lib/python3.12/site-packages/ │
+│ huggingface_hub/hub_mixin.py:782 in _from_pretrained                         │
+│                                                                              │
+│   779 │   │   │   return cls._load_as_safetensor(model, model_file,          │
+│       map_location, strict)                                                  │
+│   780 │   │   else:                                                          │
+│   781 │   │   │   try:                                                       │
+│ ❱ 782 │   │   │   │   model_file = hf_hub_download(                          │
+│   783 │   │   │   │   │   repo_id=model_id,                                  │
+│   784 │   │   │   │   │   filename=constants.SAFETENSORS_SINGLE_FILE,        │
+│   785 │   │   │   │   │   revision=revision,                                 │
+│                                                                              │
+│ /home/lpassoni/Vggt/SpectraBreast-Vision/.venv/lib/python3.12/site-packages/ │
+│ huggingface_hub/utils/_validators.py:88 in _inner_fn                         │
+│                                                                              │
+│    85 │   │                                                                  │
+│    86 │   │   kwargs =                                                       │
+│       smoothly_deprecate_legacy_arguments(fn_name=fn.__name__,               │
+│       kwargs=kwargs)                                                         │
+│    87 │   │                                                                  │
+│ ❱  88 │   │   return fn(*args, **kwargs)                                     │
+│    89 │                                                                      │
+│    90 │   return _inner_fn  # type: ignore                                   │
+│    91                                                                        │
+│                                                                              │
+│ /home/lpassoni/Vggt/SpectraBreast-Vision/.venv/lib/python3.12/site-packages/ │
+│ huggingface_hub/file_download.py:997 in hf_hub_download                      │
+│                                                                              │
+│    994 │   │   │   dry_run=dry_run,                                          │
+│    995 │   │   )                                                             │
+│    996 │   else:                                                             │
+│ ❱  997 │   │   return _hf_hub_download_to_cache_dir(                         │
+│    998 │   │   │   # Destination                                             │
+│    999 │   │   │   cache_dir=cache_dir,                                      │
+│   1000 │   │   │   # File info                                               │
+│                                                                              │
+│ /home/lpassoni/Vggt/SpectraBreast-Vision/.venv/lib/python3.12/site-packages/ │
+│ huggingface_hub/file_download.py:1072 in _hf_hub_download_to_cache_dir       │
+│                                                                              │
+│   1069 │                                                                     │
+│   1070 │   # Try to get metadata (etag, commit_hash, url, size) from the     │
+│        server.                                                               │
+│   1071 │   # If we can't, a HEAD request error is returned.                  │
+│ ❱ 1072 │   (url_to_download, etag, commit_hash, expected_size,               │
+│        xet_file_data, head_call_error) = _get_metadata_or_catch_error(       │
+│   1073 │   │   repo_id=repo_id,                                              │
+│   1074 │   │   filename=filename,                                            │
+│   1075 │   │   repo_type=repo_type,                                          │
+│                                                                              │
+│ /home/lpassoni/Vggt/SpectraBreast-Vision/.venv/lib/python3.12/site-packages/ │
+│ huggingface_hub/file_download.py:1669 in _get_metadata_or_catch_error        │
+│                                                                              │
+│   1666 │   if not local_files_only:                                          │
+│   1667 │   │   try:                                                          │
+│   1668 │   │   │   try:                                                      │
+│ ❱ 1669 │   │   │   │   metadata = get_hf_file_metadata(                      │
+│   1670 │   │   │   │   │   url=url,                                          │
+│   1671 │   │   │   │   │   timeout=etag_timeout,                             │
+│   1672 │   │   │   │   │   headers=headers,                                  │
+│                                                                              │
+│ /home/lpassoni/Vggt/SpectraBreast-Vision/.venv/lib/python3.12/site-packages/ │
+│ huggingface_hub/utils/_validators.py:88 in _inner_fn                         │
+│                                                                              │
+│    85 │   │                                                                  │
+│    86 │   │   kwargs =                                                       │
+│       smoothly_deprecate_legacy_arguments(fn_name=fn.__name__,               │
+│       kwargs=kwargs)                                                         │
+│    87 │   │                                                                  │
+│ ❱  88 │   │   return fn(*args, **kwargs)                                     │
+│    89 │                                                                      │
+│    90 │   return _inner_fn  # type: ignore                                   │
+│    91                                                                        │
+│                                                                              │
+│ /home/lpassoni/Vggt/SpectraBreast-Vision/.venv/lib/python3.12/site-packages/ │
+│ huggingface_hub/file_download.py:1591 in get_hf_file_metadata                │
+│                                                                              │
+│   1588 │   hf_headers["Accept-Encoding"] = "identity"  # prevent any         │
+│        compression => we want to know the real size of the file              │
+│   1589 │                                                                     │
+│   1590 │   # Retrieve metadata                                               │
+│ ❱ 1591 │   response = _httpx_follow_relative_redirects_with_backoff(         │
+│   1592 │   │   method="HEAD", url=url, headers=hf_headers, timeout=timeout,  │
+│        retry_on_errors=retry_on_errors                                       │
+│   1593 │   )                                                                 │
+│   1594 │   hf_raise_for_status(response)                                     │
+│                                                                              │
+│ /home/lpassoni/Vggt/SpectraBreast-Vision/.venv/lib/python3.12/site-packages/ │
+│ huggingface_hub/utils/_http.py:692 in                                        │
+│ _httpx_follow_relative_redirects_with_backoff                                │
+│                                                                              │
+│    689 │   │   │   follow_redirects=False,                                   │
+│    690 │   │   │   **no_retry_kwargs,                                        │
+│    691 │   │   )                                                             │
+│ ❱  692 │   │   hf_raise_for_status(response)                                 │
+│    693 │   │                                                                 │
+│    694 │   │   # Check if response is a relative redirect                    │
+│    695 │   │   if 300 <= response.status_code <= 399:                        │
+│                                                                              │
+│ /home/lpassoni/Vggt/SpectraBreast-Vision/.venv/lib/python3.12/site-packages/ │
+│ huggingface_hub/utils/_http.py:781 in hf_raise_for_status                    │
+│                                                                              │
+│    778 │   │                                                                 │
+│    779 │   │   elif error_code == "EntryNotFound":                           │
+│    780 │   │   │   message = f"{response.status_code} Client Error." +       │
+│        "\n\n" + f"Entry Not Found for url: {response.url}."                  │
+│ ❱  781 │   │   │   raise _format(RemoteEntryNotFoundError, message,          │
+│        response, repo_type=repo_type, repo_id=repo_id) from e                │
+│    782 │   │                                                                 │
+│    783 │   │   elif error_code == "GatedRepo":                               │
+│    784 │   │   │   message = (                                               │
+╰──────────────────────────────────────────────────────────────────────────────╯
+RemoteEntryNotFoundError: 404 Client Error. (Request ID: 
+Root=1-6a5e197f-36fe71af2c5ccce311c170ce;c8b8b74b-3f53-4a29-bee0-600b8ccd885a)
+
+Entry Not Found for url: 
+https://huggingface.co/Livioni/OmniVGGT/resolve/main/model.safetensors.
+
+During handling of the above exception, another exception occurred:
+
+╭───────────────────── Traceback (most recent call last) ──────────────────────╮
+│ /home/lpassoni/Vggt/SpectraBreast-Vision/.venv/lib/python3.12/site-packages/ │
+│ huggingface_hub/utils/_http.py:761 in hf_raise_for_status                    │
+│                                                                              │
+│    758 │   │   logger.debug("Failed to parse warning headers",               │
+│        exc_info=True)                                                        │
+│    759 │                                                                     │
+│    760 │   try:                                                              │
+│ ❱  761 │   │   response.raise_for_status()                                   │
+│    762 │   except httpx.HTTPStatusError as e:                                │
+│    763 │   │   if response.status_code // 100 == 3:                          │
+│    764 │   │   │   return  # Do not raise on redirects to stay consistent    │
+│        with `requests`                                                       │
+│                                                                              │
+│ /home/lpassoni/Vggt/SpectraBreast-Vision/.venv/lib/python3.12/site-packages/ │
+│ httpx/_models.py:829 in raise_for_status                                     │
+│                                                                              │
+│    826 │   │   }                                                             │
+│    827 │   │   error_type = error_types.get(status_class, "Invalid status    │
+│        code")                                                                │
+│    828 │   │   message = message.format(self, error_type=error_type)         │
+│ ❱  829 │   │   raise HTTPStatusError(message, request=request,               │
+│        response=self)                                                        │
+│    830 │                                                                     │
+│    831 │   def json(self, **kwargs: typing.Any) -> typing.Any:               │
+│    832 │   │   return jsonlib.loads(self.content, **kwargs)                  │
+╰──────────────────────────────────────────────────────────────────────────────╯
+HTTPStatusError: Client error '404 Not Found' for url 
+'https://huggingface.co/Livioni/OmniVGGT/resolve/main/pytorch_model.bin'
+For more information check: 
+https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+
+The above exception was the direct cause of the following exception:
+
+╭───────────────────── Traceback (most recent call last) ──────────────────────╮
+│ /home/lpassoni/Vggt/SpectraBreast-Vision/spectra/cli.py:136 in vision_cmd    │
+│                                                                              │
+│   133 │   │   │   │   │   │   │   │     help="Resolve paths and print the    │
+│       config without running."),                                             │
+│   134 ) -> None:                                                             │
+│   135 │   """Run only the VGGT + ArUco vision stage."""                      │
+│ ❱ 136 │   _execute_vision(config, sample, set_override, dry_run)             │
+│   137                                                                        │
+│   138                                                                        │
+│   139 @app.command("recon", hidden=True)                                     │
+│                                                                              │
+│ /home/lpassoni/Vggt/SpectraBreast-Vision/spectra/cli.py:120 in               │
+│ _execute_vision                                                              │
+│                                                                              │
+│   117 │   │   print("[bold]Dry-run — vision config resolved:[/bold]")        │
+│   118 │   │   print(cfg.vision.model_dump(mode="python"))                    │
+│   119 │   │   return                                                         │
+│ ❱ 120 │   result = run_vision_stage(cfg)                                     │
+│   121 │   print(f"[green]Vision finished:[/green] {result['run_dir']}")      │
+│   122                                                                        │
+│   123                                                                        │
+│                                                                              │
+│ /home/lpassoni/Vggt/SpectraBreast-Vision/spectra/orchestrator.py:180 in      │
+│ run_vision_stage                                                             │
+│                                                                              │
+│   177 │   sample = sample_name or cfg.sample_name                            │
+│   178 │   print(f"\n[orchestrator] Vision stage for sample={sample!r}")      │
+│   179 │   t0 = time.time()                                                   │
+│ ❱ 180 │   result = run_reconstruction(cfg.vision)                            │
+│   181 │   dt = time.time() - t0                                              │
+│   182 │   print(f"[orchestrator] Vision finished in {dt:.1f}s —              │
+│       run_dir={result.run_dir}")                                             │
+│   183 │   return {"run_dir": Path(result.run_dir), "skipped": False,         │
+│       "elapsed_s": dt}                                                       │
+│                                                                              │
+│ /home/lpassoni/Vggt/SpectraBreast-Vision/spectra/vision/pipeline.py:424 in   │
+│ run_reconstruction                                                           │
+│                                                                              │
+│    421 │                                                                     │
+│    422 │   _log_step("Step 3/6 - Running VGGT")                              │
+│    423 │   _timer.begin("Step 3/6 - VGGT backend")                           │
+│ ❱  424 │   raw = _run_backend(cfg, backend_inputs)                           │
+│    425 │   print(                                                            │
+│    426 │   │   f"Backend produced                                            │
+│        [green]{raw.fused_points.shape[0]:,}[/green] fused points; "          │
+│    427 │   │   f"frame = [green]{raw.frame_description}[/green]"             │
+│                                                                              │
+│ /home/lpassoni/Vggt/SpectraBreast-Vision/spectra/vision/pipeline.py:228 in   │
+│ _run_backend                                                                 │
+│                                                                              │
+│    225 │   if cfg.vggt.impl == "omni":                                       │
+│    226 │   │   from .backends.omnivggt_backend import run_omnivggt           │
+│    227 │   │                                                                 │
+│ ❱  228 │   │   return run_omnivggt(cfg, inputs)                              │
+│    229 │                                                                     │
+│    230 │   from .backends.vggt_backend import run_vggt                       │
+│    231                                                                       │
+│                                                                              │
+│ /home/lpassoni/Vggt/SpectraBreast-Vision/spectra/vision/backends/omnivggt_ba │
+│ ckend.py:253 in run_omnivggt                                                 │
+│                                                                              │
+│   250 │   ]                                                                  │
+│   251 │                                                                      │
+│   252 │   # --- Load model + preprocess                                      │
+│       -------------------------------------------                            │
+│ ❱ 253 │   model = _load_omnivggt(vcfg, device)                               │
+│   254 │   images = _preprocess_images(orig_rgb).to(device)  # [S,3,H,W] in   │
+│       [0,1]                                                                  │
+│   255 │   network_h, network_w = int(images.shape[-2]),                      │
+│       int(images.shape[-1])                                                  │
+│   256                                                                        │
+│                                                                              │
+│ /home/lpassoni/Vggt/SpectraBreast-Vision/spectra/vision/backends/omnivggt_ba │
+│ ckend.py:98 in _load_omnivggt                                                │
+│                                                                              │
+│    95 │   │   │   │   "OmniVGGT has no from_pretrained; set                  │
+│       vggt.checkpoint_path to a "                                            │
+│    96 │   │   │   │   "local OmniVGGT.safetensors instead."                  │
+│    97 │   │   │   )                                                          │
+│ ❱  98 │   │   model = OmniVGGT.from_pretrained(vcfg.model_name)              │
+│    99 │                                                                      │
+│   100 │   return model.to(device).eval()                                     │
+│   101                                                                        │
+│                                                                              │
+│ /home/lpassoni/Vggt/SpectraBreast-Vision/.venv/lib/python3.12/site-packages/ │
+│ huggingface_hub/utils/_validators.py:88 in _inner_fn                         │
+│                                                                              │
+│    85 │   │                                                                  │
+│    86 │   │   kwargs =                                                       │
+│       smoothly_deprecate_legacy_arguments(fn_name=fn.__name__,               │
+│       kwargs=kwargs)                                                         │
+│    87 │   │                                                                  │
+│ ❱  88 │   │   return fn(*args, **kwargs)                                     │
+│    89 │                                                                      │
+│    90 │   return _inner_fn  # type: ignore                                   │
+│    91                                                                        │
+│                                                                              │
+│ /home/lpassoni/Vggt/SpectraBreast-Vision/.venv/lib/python3.12/site-packages/ │
+│ huggingface_hub/hub_mixin.py:561 in from_pretrained                          │
+│                                                                              │
+│   558 │   │   │   if cls._hub_mixin_inject_config and "config" not in        │
+│       model_kwargs:                                                          │
+│   559 │   │   │   │   model_kwargs["config"] = config                        │
+│   560 │   │                                                                  │
+│ ❱ 561 │   │   instance = cls._from_pretrained(                               │
+│   562 │   │   │   model_id=str(model_id),                                    │
+│   563 │   │   │   revision=revision,                                         │
+│   564 │   │   │   cache_dir=cache_dir,                                       │
+│                                                                              │
+│ /home/lpassoni/Vggt/SpectraBreast-Vision/.venv/lib/python3.12/site-packages/ │
+│ huggingface_hub/hub_mixin.py:793 in _from_pretrained                         │
+│                                                                              │
+│   790 │   │   │   │   )                                                      │
+│   791 │   │   │   │   return cls._load_as_safetensor(model, model_file,      │
+│       map_location, strict)                                                  │
+│   792 │   │   │   except EntryNotFoundError:                                 │
+│ ❱ 793 │   │   │   │   model_file = hf_hub_download(                          │
+│   794 │   │   │   │   │   repo_id=model_id,                                  │
+│   795 │   │   │   │   │   filename=constants.PYTORCH_WEIGHTS_NAME,           │
+│   796 │   │   │   │   │   revision=revision,                                 │
+│                                                                              │
+│ /home/lpassoni/Vggt/SpectraBreast-Vision/.venv/lib/python3.12/site-packages/ │
+│ huggingface_hub/utils/_validators.py:88 in _inner_fn                         │
+│                                                                              │
+│    85 │   │                                                                  │
+│    86 │   │   kwargs =                                                       │
+│       smoothly_deprecate_legacy_arguments(fn_name=fn.__name__,               │
+│       kwargs=kwargs)                                                         │
+│    87 │   │                                                                  │
+│ ❱  88 │   │   return fn(*args, **kwargs)                                     │
+│    89 │                                                                      │
+│    90 │   return _inner_fn  # type: ignore                                   │
+│    91                                                                        │
+│                                                                              │
+│ /home/lpassoni/Vggt/SpectraBreast-Vision/.venv/lib/python3.12/site-packages/ │
+│ huggingface_hub/file_download.py:997 in hf_hub_download                      │
+│                                                                              │
+│    994 │   │   │   dry_run=dry_run,                                          │
+│    995 │   │   )                                                             │
+│    996 │   else:                                                             │
+│ ❱  997 │   │   return _hf_hub_download_to_cache_dir(                         │
+│    998 │   │   │   # Destination                                             │
+│    999 │   │   │   cache_dir=cache_dir,                                      │
+│   1000 │   │   │   # File info                                               │
+│                                                                              │
+│ /home/lpassoni/Vggt/SpectraBreast-Vision/.venv/lib/python3.12/site-packages/ │
+│ huggingface_hub/file_download.py:1072 in _hf_hub_download_to_cache_dir       │
+│                                                                              │
+│   1069 │                                                                     │
+│   1070 │   # Try to get metadata (etag, commit_hash, url, size) from the     │
+│        server.                                                               │
+│   1071 │   # If we can't, a HEAD request error is returned.                  │
+│ ❱ 1072 │   (url_to_download, etag, commit_hash, expected_size,               │
+│        xet_file_data, head_call_error) = _get_metadata_or_catch_error(       │
+│   1073 │   │   repo_id=repo_id,                                              │
+│   1074 │   │   filename=filename,                                            │
+│   1075 │   │   repo_type=repo_type,                                          │
+│                                                                              │
+│ /home/lpassoni/Vggt/SpectraBreast-Vision/.venv/lib/python3.12/site-packages/ │
+│ huggingface_hub/file_download.py:1669 in _get_metadata_or_catch_error        │
+│                                                                              │
+│   1666 │   if not local_files_only:                                          │
+│   1667 │   │   try:                                                          │
+│   1668 │   │   │   try:                                                      │
+│ ❱ 1669 │   │   │   │   metadata = get_hf_file_metadata(                      │
+│   1670 │   │   │   │   │   url=url,                                          │
+│   1671 │   │   │   │   │   timeout=etag_timeout,                             │
+│   1672 │   │   │   │   │   headers=headers,                                  │
+│                                                                              │
+│ /home/lpassoni/Vggt/SpectraBreast-Vision/.venv/lib/python3.12/site-packages/ │
+│ huggingface_hub/utils/_validators.py:88 in _inner_fn                         │
+│                                                                              │
+│    85 │   │                                                                  │
+│    86 │   │   kwargs =                                                       │
+│       smoothly_deprecate_legacy_arguments(fn_name=fn.__name__,               │
+│       kwargs=kwargs)                                                         │
+│    87 │   │                                                                  │
+│ ❱  88 │   │   return fn(*args, **kwargs)                                     │
+│    89 │                                                                      │
+│    90 │   return _inner_fn  # type: ignore                                   │
+│    91                                                                        │
+│                                                                              │
+│ /home/lpassoni/Vggt/SpectraBreast-Vision/.venv/lib/python3.12/site-packages/ │
+│ huggingface_hub/file_download.py:1591 in get_hf_file_metadata                │
+│                                                                              │
+│   1588 │   hf_headers["Accept-Encoding"] = "identity"  # prevent any         │
+│        compression => we want to know the real size of the file              │
+│   1589 │                                                                     │
+│   1590 │   # Retrieve metadata                                               │
+│ ❱ 1591 │   response = _httpx_follow_relative_redirects_with_backoff(         │
+│   1592 │   │   method="HEAD", url=url, headers=hf_headers, timeout=timeout,  │
+│        retry_on_errors=retry_on_errors                                       │
+│   1593 │   )                                                                 │
+│   1594 │   hf_raise_for_status(response)                                     │
+│                                                                              │
+│ /home/lpassoni/Vggt/SpectraBreast-Vision/.venv/lib/python3.12/site-packages/ │
+│ huggingface_hub/utils/_http.py:692 in                                        │
+│ _httpx_follow_relative_redirects_with_backoff                                │
+│                                                                              │
+│    689 │   │   │   follow_redirects=False,                                   │
+│    690 │   │   │   **no_retry_kwargs,                                        │
+│    691 │   │   )                                                             │
+│ ❱  692 │   │   hf_raise_for_status(response)                                 │
+│    693 │   │                                                                 │
+│    694 │   │   # Check if response is a relative redirect                    │
+│    695 │   │   if 300 <= response.status_code <= 399:                        │
+│                                                                              │
+│ /home/lpassoni/Vggt/SpectraBreast-Vision/.venv/lib/python3.12/site-packages/ │
+│ huggingface_hub/utils/_http.py:781 in hf_raise_for_status                    │
+│                                                                              │
+│    778 │   │                                                                 │
+│    779 │   │   elif error_code == "EntryNotFound":                           │
+│    780 │   │   │   message = f"{response.status_code} Client Error." +       │
+│        "\n\n" + f"Entry Not Found for url: {response.url}."                  │
+│ ❱  781 │   │   │   raise _format(RemoteEntryNotFoundError, message,          │
+│        response, repo_type=repo_type, repo_id=repo_id) from e                │
+│    782 │   │                                                                 │
+│    783 │   │   elif error_code == "GatedRepo":                               │
+│    784 │   │   │   message = (                                               │
+╰──────────────────────────────────────────────────────────────────────────────╯
+RemoteEntryNotFoundError: 404 Client Error. (Request ID: 
+Root=1-6a5e1980-4acd52f457780bfc68736338;91c5bfc5-898e-4cd1-bb80-a36e50e4c087)
+
+Entry Not Found for url: 
+https://huggingface.co/Livioni/OmniVGGT/resolve/main/pytorch_model.bin.

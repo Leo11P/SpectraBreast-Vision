@@ -1,0 +1,21 @@
+==============================================
+  Verify env (torch / spectra / omnivggt)
+  Job ID  : 3158
+  Node    : mufasa2.e4-cluster.lan
+  Start   : Mon Jul 20 12:36:02 PM CEST 2026
+==============================================
+  Repo    : /home/lpassoni/Vggt/SpectraBreast-Vision
+--- Smoke test base ---------------------------------------------------
+  torch     : 2.12.0+cu130
+  CUDA avail: True
+  spectra   : 0.2.0
+--- omnivggt ------------------------------------------------------------
+[93mInitialized new /home/lpassoni/.evo/settings.json[39m
+  omnivggt  : importabile, costruisco OmniVGGT() (pre-download DINOv2)...
+Downloading: "https://github.com/facebookresearch/dinov2/zipball/main" to /home/lpassoni/.cache/torch/hub/main.zip
+Downloading: "https://dl.fbaipublicfiles.com/dinov2/dinov2_vitl14/dinov2_vitl14_reg4_pretrain.pth" to /home/lpassoni/.cache/torch/hub/checkpoints/dinov2_vitl14_reg4_pretrain.pth
+  omnivggt  : OK, DINOv2 backbone in cache (vggt.impl=omni disponibile)
+==============================================
+  Verifica completata: Mon Jul 20 12:36:40 PM CEST 2026
+  Ora puoi lanciare: sbatch run_spectra.sh
+==============================================

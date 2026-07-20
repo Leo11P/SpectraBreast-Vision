@@ -1,0 +1,17 @@
+==============================================
+  Verify env (torch / spectra / omnivggt)
+  Job ID  : 3156
+  Node    : mufasa2.e4-cluster.lan
+  Start   : Mon Jul 20 12:32:41 PM CEST 2026
+==============================================
+  Repo    : /home/lpassoni/Vggt/SpectraBreast-Vision
+--- Smoke test base ---------------------------------------------------
+  torch     : 2.12.0+cu130
+  CUDA avail: True
+  spectra   : 0.2.0
+--- omnivggt ------------------------------------------------------------
+  omnivggt  : non installato (vggt.impl=omni non disponibile)
+==============================================
+  Verifica completata: Mon Jul 20 12:32:50 PM CEST 2026
+  Ora puoi lanciare: sbatch run_spectra.sh
+==============================================
