@@ -110,6 +110,8 @@ def run_full_pipeline_roi(
     marker_side_mm           = 9.0,
     use_subpix               = True,
     subpix_winsize           = 5,
+    equalize_method          = 'global',
+    tune_detector            = False,
     # Point cloud
     border_px                = 2,
     reflectance_norm         = True,
@@ -175,6 +177,8 @@ def run_full_pipeline_roi(
             marker_side_mm           = marker_side_mm,
             use_subpix               = use_subpix,
             subpix_winsize           = subpix_winsize,
+            equalize_method          = equalize_method,
+            tune_detector            = tune_detector,
             border_px                = border_px,
             reflectance_norm         = reflectance_norm,
             export_ply_file          = export_ply_file,
@@ -224,7 +228,8 @@ def run_full_pipeline_roi(
     print(f"  Cube shape (ROI): {cube.shape}")
     # Mean del cubo ROI (qualunque method qui produce un'immagine 2D,
     # ma 'mean' e' la piu' robusta per feature matching)
-    roi_2d = extract_2d_from_hsi(cube, meta, method=hsi_extraction_method)
+    roi_2d = extract_2d_from_hsi(cube, meta, method=hsi_extraction_method,
+                                 equalize_method=equalize_method)
 
     # ── Step 1b: Carico PNG LiveView ──────────────────────────────────────────
     print(f"\n[Step 1b] Loading LiveView PNG: {liveview_png_path}")
@@ -307,7 +312,8 @@ def run_full_pipeline_roi(
     print("\n[Step 3] Detecting ArUco on LiveView PNG...")
     data_png, _ = detect_aruco(png_2d, aruco_dict_type=aruco_dict_type,
                                 use_subpix=use_subpix,
-                                subpix_winsize=subpix_winsize)
+                                subpix_winsize=subpix_winsize,
+                                tune_detector=tune_detector)
     print(f"  PNG markers found: {sorted(data_png.keys())}")
     if len(data_png) < 1:
         raise RuntimeError(

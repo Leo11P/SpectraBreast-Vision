@@ -1,556 +1,0 @@
-==============================================
-  Spectra run (uv, no Singularity)
-  Job ID  : 2413
-  Node    : mufasa2.e4-cluster.lan
-  Start   : Tue Jun  9 11:45:46 AM CEST 2026
-==============================================
-  Python  : Python 3.12.3
-  Torch   : 2.12.0+cu130
-  CUDA ok : True
-==============================================
-
-[orchestrator] Registration stage for sample='RUBIK' (mode='sweep')
-
-====================================================================
-SPECTRA REGISTRATION — SUMMARY
-====================================================================
-  Mode          : SWEEP
-  Sample        : RUBIK
-  HSI           : DATA/input_registration/RUBIK/RUBIK_raw.hdr
-  Mesh          : RESULTS/RUBIK/vision/surface_mesh.ply
-  ArUco JSON    : RESULTS/RUBIK/vision/aruco_markers_3d.json
-  LiveView PNG  : DATA/input_registration/RUBIK/RUBIK_raw.png
-  Marker side   : 6.8 mm
-  Render        : sweep over 4 pairs
-  ROI sweep     : YES
-  Save PC       : NO
-  Save images   : NO
-  Output        : RESULTS/RUBIK/registration
-====================================================================
-
-====================================================================
-  SWEEP — 4 (reg, pc) pairs   ROI=YES
-====================================================================
-  [ 1/4]  res_reg= 5.000  res_pc= 0.500
-  [ 2/4]  res_reg= 2.000  res_pc= 0.500
-  [ 3/4]  res_reg= 1.000  res_pc= 0.500
-  [ 4/4]  res_reg= 0.500  res_pc= 0.500
-[sweep] Temp subdirs in: RESULTS/RUBIK/registration/_sweep_tmp
-[Mesh] Loaded : RESULTS/RUBIK/vision/surface_mesh.ply
-       Vertices: 419027   Faces: 690630
-       Bounds  : [[-0.91928601 -1.08896697 -1.01890898]
- [ 1.35530198  1.18347299  0.286607  ]]
-[Mesh] Scaled x1000 (m -> mm). New bounds: [[ -919.28601265 -1088.96696568 -1018.90897751]
- [ 1355.3019762   1183.47299099   286.60699725]]
-
-[sweep] Unique resolutions: ['5.0', '2.0', '1.0', '0.5']
-
-[sweep][cache] Pre-computing 4 unique renders...
-[sweep][cache] Render 1/4: res=5.0 mm/px on cuda
-[render_gpu] Grid  : 459 x 459 px  (5.0 mm/px)
-             Rays  : 210,681
-[render_gpu] Backend: PyTorch  (cuda)
-[render_torch] Split 8x8 tiles  (device=cuda, chunk_rays=4000)
-  Tile 1/64  hits=0  Tile 2/64  hits=0  Tile 3/64  hits=96  Tile 4/64  hits=74  Tile 5/64  hits=0  Tile 6/64  hits=0  Tile 7/64  hits=0  Tile 8/64  hits=0  Tile 9/64  hits=6  Tile 10/64  hits=100  Tile 11/64  hits=1,740  Tile 12/64  hits=2,002  Tile 13/64  hits=1,427  Tile 14/64  hits=798  Tile 15/64  hits=163  Tile 16/64  hits=20  Tile 17/64  hits=4  Tile 18/64  hits=323  Tile 19/64  hits=3,186  Tile 20/64  hits=3,248  Tile 21/64  hits=3,188  Tile 22/64  hits=3,091  Tile 23/64  hits=1,344  Tile 24/64  hits=79  Tile 25/64  hits=0  Tile 26/64  hits=543  Tile 27/64  hits=3,216  Tile 28/64  hits=3,245  Tile 29/64  hits=3,146  Tile 30/64  hits=3,115  Tile 31/64  hits=1,545  Tile 32/64  hits=260  Tile 33/64  hits=0  Tile 34/64  hits=424  Tile 35/64  hits=2,580  Tile 36/64  hits=3,191  Tile 37/64  hits=3,126  Tile 38/64  hits=2,732  Tile 39/64  hits=1,122  Tile 40/64  hits=200  Tile 41/64  hits=0  Tile 42/64  hits=585  Tile 43/64  hits=1,567  Tile 44/64  hits=2,082  Tile 45/64  hits=2,502  Tile 46/64  hits=2,186  Tile 47/64  hits=653  Tile 48/64  hits=13  Tile 49/64  hits=0  Tile 50/64  hits=4  Tile 51/64  hits=730  Tile 52/64  hits=1,702  Tile 53/64  hits=1,425  Tile 54/64  hits=603  Tile 55/64  hits=49  Tile 56/64  hits=0  Tile 57/64  hits=0  Tile 58/64  hits=0  Tile 59/64  hits=23  Tile 60/64  hits=67  Tile 61/64  hits=275  Tile 62/64  hits=14  Tile 63/64  hits=0  Tile 64/64  hits=0
-[render_torch] Hits totali: 63,814 / 210,681
-[render_gpu] Done. origin_xy=(-929.29, -1098.97) mm
-[sweep][cache]   done in 1.3s
-[sweep][cache] Render 2/4: res=2.0 mm/px on cuda
-[render_gpu] Grid  : 1148 x 1147 px  (2.0 mm/px)
-             Rays  : 1,316,756
-[render_gpu] Backend: PyTorch  (cuda)
-[render_torch] Split 8x8 tiles  (device=cuda, chunk_rays=4000)
-  Tile 1/64  hits=0  Tile 2/64  hits=0  Tile 3/64  hits=588  Tile 4/64  hits=437  Tile 5/64  hits=0  Tile 6/64  hits=0  Tile 7/64  hits=0  Tile 8/64  hits=0  Tile 9/64  hits=36  Tile 10/64  hits=583  Tile 11/64  hits=10,905  Tile 12/64  hits=12,581  Tile 13/64  hits=9,066  Tile 14/64  hits=5,017  Tile 15/64  hits=1,137  Tile 16/64  hits=121  Tile 17/64  hits=16  Tile 18/64  hits=2,025  Tile 19/64  hits=19,830  Tile 20/64  hits=20,153  Tile 21/64  hits=19,999  Tile 22/64  hits=19,204  Tile 23/64  hits=8,556  Tile 24/64  hits=491  Tile 25/64  hits=6  Tile 26/64  hits=3,500  Tile 27/64  hits=20,052  Tile 28/64  hits=20,152  Tile 29/64  hits=19,806  Tile 30/64  hits=19,397  Tile 31/64  hits=9,680  Tile 32/64  hits=1,527  Tile 33/64  hits=0  Tile 34/64  hits=2,572  Tile 35/64  hits=16,117  Tile 36/64  hits=19,824  Tile 37/64  hits=19,632  Tile 38/64  hits=16,906  Tile 39/64  hits=6,754  Tile 40/64  hits=1,218  Tile 41/64  hits=0  Tile 42/64  hits=3,557  Tile 43/64  hits=9,750  Tile 44/64  hits=12,851  Tile 45/64  hits=15,703  Tile 46/64  hits=13,310  Tile 47/64  hits=4,145  Tile 48/64  hits=118  Tile 49/64  hits=0  Tile 50/64  hits=44  Tile 51/64  hits=4,682  Tile 52/64  hits=10,831  Tile 53/64  hits=8,952  Tile 54/64  hits=3,865  Tile 55/64  hits=363  Tile 56/64  hits=0  Tile 57/64  hits=0  Tile 58/64  hits=0  Tile 59/64  hits=113  Tile 60/64  hits=461  Tile 61/64  hits=1,614  Tile 62/64  hits=104  Tile 63/64  hits=0  Tile 64/64  hits=0
-[render_torch] Hits totali: 398,351 / 1,316,756
-[render_gpu] Done. origin_xy=(-929.29, -1098.97) mm
-[sweep][cache]   done in 3.2s
-[sweep][cache] Render 3/4: res=1.0 mm/px on cuda
-[render_gpu] Grid  : 2295 x 2293 px  (1.0 mm/px)
-             Rays  : 5,262,435
-[render_gpu] Backend: PyTorch  (cuda)
-[render_torch] Split 8x8 tiles  (device=cuda, chunk_rays=4000)
-  Tile 1/64  hits=0  Tile 2/64  hits=0  Tile 3/64  hits=2,310  Tile 4/64  hits=1,729  Tile 5/64  hits=0  Tile 6/64  hits=0  Tile 7/64  hits=0  Tile 8/64  hits=0  Tile 9/64  hits=125  Tile 10/64  hits=2,366  Tile 11/64  hits=43,692  Tile 12/64  hits=50,511  Tile 13/64  hits=36,537  Tile 14/64  hits=20,186  Tile 15/64  hits=4,590  Tile 16/64  hits=504  Tile 17/64  hits=65  Tile 18/64  hits=8,012  Tile 19/64  hits=78,903  Tile 20/64  hits=80,328  Tile 21/64  hits=79,996  Tile 22/64  hits=76,424  Tile 23/64  hits=34,004  Tile 24/64  hits=2,018  Tile 25/64  hits=17  Tile 26/64  hits=14,012  Tile 27/64  hits=80,144  Tile 28/64  hits=80,743  Tile 29/64  hits=79,649  Tile 30/64  hits=77,525  Tile 31/64  hits=38,774  Tile 32/64  hits=6,141  Tile 33/64  hits=0  Tile 34/64  hits=10,331  Tile 35/64  hits=64,337  Tile 36/64  hits=79,438  Tile 37/64  hits=78,938  Tile 38/64  hits=67,577  Tile 39/64  hits=27,086  Tile 40/64  hits=4,859  Tile 41/64  hits=0  Tile 42/64  hits=14,232  Tile 43/64  hits=38,956  Tile 44/64  hits=51,488  Tile 45/64  hits=62,939  Tile 46/64  hits=53,070  Tile 47/64  hits=16,524  Tile 48/64  hits=453  Tile 49/64  hits=0  Tile 50/64  hits=179  Tile 51/64  hits=18,634  Tile 52/64  hits=43,234  Tile 53/64  hits=35,890  Tile 54/64  hits=15,401  Tile 55/64  hits=1,462  Tile 56/64  hits=0  Tile 57/64  hits=0  Tile 58/64  hits=0  Tile 59/64  hits=458  Tile 60/64  hits=1,822  Tile 61/64  hits=6,531  Tile 62/64  hits=427  Tile 63/64  hits=0  Tile 64/64  hits=0
-[render_torch] Hits totali: 1,593,571 / 5,262,435
-[render_gpu] Done. origin_xy=(-929.29, -1098.97) mm
-[sweep][cache]   done in 11.4s
-[sweep][cache] Render 4/4: res=0.5 mm/px on cuda
-[render_gpu] Grid  : 4590 x 4585 px  (0.5 mm/px)
-             Rays  : 21,045,150
-[render_gpu] Backend: PyTorch  (cuda)
-[render_torch] Split 8x8 tiles  (device=cuda, chunk_rays=4000)
-  Tile 1/64  hits=0  Tile 2/64  hits=0  Tile 3/64  hits=9,276  Tile 4/64  hits=6,809  Tile 5/64  hits=0  Tile 6/64  hits=0  Tile 7/64  hits=0  Tile 8/64  hits=0  Tile 9/64  hits=483  Tile 10/64  hits=9,479  Tile 11/64  hits=174,581  Tile 12/64  hits=201,533  Tile 13/64  hits=146,090  Tile 14/64  hits=80,325  Tile 15/64  hits=18,418  Tile 16/64  hits=1,994  Tile 17/64  hits=262  Tile 18/64  hits=31,989  Tile 19/64  hits=316,343  Tile 20/64  hits=321,329  Tile 21/64  hits=321,110  Tile 22/64  hits=305,832  Tile 23/64  hits=136,169  Tile 24/64  hits=8,004  Tile 25/64  hits=61  Tile 26/64  hits=55,892  Tile 27/64  hits=320,372  Tile 28/64  hits=321,993  Tile 29/64  hits=318,765  Tile 30/64  hits=309,190  Tile 31/64  hits=154,397  Tile 32/64  hits=24,593  Tile 33/64  hits=0  Tile 34/64  hits=41,428  Tile 35/64  hits=257,445  Tile 36/64  hits=317,330  Tile 37/64  hits=316,526  Tile 38/64  hits=269,884  Tile 39/64  hits=108,338  Tile 40/64  hits=19,283  Tile 41/64  hits=0  Tile 42/64  hits=56,892  Tile 43/64  hits=155,945  Tile 44/64  hits=205,065  Tile 45/64  hits=251,836  Tile 46/64  hits=211,825  Tile 47/64  hits=66,000  Tile 48/64  hits=1,774  Tile 49/64  hits=0  Tile 50/64  hits=721  Tile 51/64  hits=74,809  Tile 52/64  hits=172,715  Tile 53/64  hits=144,105  Tile 54/64  hits=61,368  Tile 55/64  hits=5,946  Tile 56/64  hits=0  Tile 57/64  hits=0  Tile 58/64  hits=0  Tile 59/64  hits=1,820  Tile 60/64  hits=7,261  Tile 61/64  hits=26,265  Tile 62/64  hits=1,724  Tile 63/64  hits=0  Tile 64/64  hits=0
-[render_torch] Hits totali: 6,371,594 / 21,045,150
-[render_gpu] Done. origin_xy=(-929.29, -1098.97) mm
-[sweep][cache]   done in 44.6s
-[sweep][cache] All 4 renders ready in 60.5s
-
-====================================================================
-  SWEEP RUN — res_reg=5.0  res_pc=0.5  ROI=YES
-====================================================================
-====================================================================
-FULL PIPELINE — ROI MODE
-  Sample           : RUBIK
-  Cubo ROI (.hdr)  : DATA/input_registration/RUBIK/RUBIK_raw.hdr
-  LiveView PNG     : DATA/input_registration/RUBIK/RUBIK_raw.png
-  Res registro     : 5.0 mm/px
-  Res point cloud  : 0.5 mm/px
-  SubPix refine    : ON
-  ROI match method : sift
-  Output dir       : RESULTS/RUBIK/registration/_sweep_tmp/run01_reg5p0_pc0p5
-====================================================================
-
-[Step 0] Loading ArUco 3D from JSON...
-[ArUco3D] Loaded 4 markers (mm): [0, 2, 7, 12]
-  ID=0: center=(-234.7,-82.5,-0.2) mm  mean_side=67.70 mm
-  ID=2: center=(-191.3,93.5,0.2) mm  mean_side=67.74 mm
-  ID=7: center=(217.6,83.8,-0.2) mm  mean_side=68.71 mm
-  ID=12: center=(208.4,-94.8,0.2) mm  mean_side=68.66 mm
-
-[Step 1] Loading ROI HSI cube...
-[HSI] Loaded: 808x652x290 (BSQ), offset=72
-  Cube shape (ROI): (808, 652, 290)
-[HSI] Mean of 290 bands
-
-[Step 1b] Loading LiveView PNG: DATA/input_registration/RUBIK/RUBIK_raw.png
-  PNG shape       : (1024, 1280)
-
-[Step 1c] Stima omografia ROI -> PNG (feature matching)...
-[ROI align] Method: SIFT  keypoints: ROI=1399  PNG=5000
-[ROI align] Good matches (ratio<0.75): 285
-[ROI align] RANSAC inliers: 243/285 (85.3%)
-[ROI align] Reproj error (inliers): 0.396 px
-
-[Step 2a] Render registrazione pre-calcolato (GPU).
-
-[Step 2b] Render point cloud pre-calcolato (GPU).
-
-[Step 3] Detecting ArUco on LiveView PNG...
-  [SubPix] shift medio=0.9178 px  max=1.8775 px  (finestra 11×11)
-  PNG markers found: [0, 2, 7]
-
-[Step 3b] Projecting JSON ArUco corners -> render pixels (reg)...
-[Project3D->render] 4 markers projected.
-
-[Step 4] Computing homography PNG -> render_reg...
-[match] WARNING: only 3 markers — proceeding with 12 corner pairs.
-[match] Common: [0, 2, 7]  (12 pairs)
-[Homography PNG->render_reg] Inliers: 12/12
-[Homography PNG->render_reg] H =
-[[-1.73626926e-02  9.31885362e-02  1.45909166e+02]
- [-9.80913645e-02 -1.99954356e-02  2.90819091e+02]
- [-6.71669708e-06 -1.73492853e-05  1.00000000e+00]]
-
-[Step 6] Computing registration errors...
-
-[2D Reprojection — PNG->render_reg]
-  Mean: 0.1410 px   Max: 0.2739 px   Min: 0.0227 px
-  Corner 0: 0.0436 px
-  Corner 1: 0.1855 px
-  Corner 2: 0.0925 px
-  Corner 3: 0.1499 px
-  Corner 4: 0.0227 px
-  Corner 5: 0.2739 px
-  Corner 6: 0.1024 px
-  Corner 7: 0.1496 px
-  Corner 8: 0.0860 px
-  Corner 9: 0.1691 px
-  Corner 10: 0.1746 px
-  Corner 11: 0.2418 px
-  [Lookup3D] bilinear=12/12  bicubic_pure=12/12  bicubic+fallback=12/12
-
-[3D Error — REG]
-  Bilinear (12 valid): mean=1.0108  median=0.8756  max=2.2065  min=0.1462 mm
-  Bicubic  (12 valid): mean=1.0205  median=0.8596  max=2.3959  min=0.2004 mm
-
-[Step 6b] Computing 3D errors on PC grid...
-  [Lookup3D] bilinear=12/12  bicubic_pure=12/12  bicubic+fallback=12/12
-
-[3D Error — PC]
-  Bilinear (12 valid): mean=0.9771  median=0.8501  max=2.2785  min=0.2612 mm
-  Bicubic  (12 valid): mean=0.9761  median=0.8481  max=2.2824  min=0.2601 mm
-
-[Method] Best 3D lookup: BILINEAR  (bilinear=1.0108 mm, bicubic=1.0205 mm)
-
-[Step 7] Saving Excel error report -> RESULTS/RUBIK/registration/_sweep_tmp/run01_reg5p0_pc0p5/RUBIK_registration_errors.xlsx
-[Excel] Saved: RESULTS/RUBIK/registration/_sweep_tmp/run01_reg5p0_pc0p5/RUBIK_registration_errors.xlsx
-
-[Step 8] Skipped (save_images=False).
-  Wavelengths: 400.0 ... 1700.0 nm (290 bands)
-
-[Step 9+10] Point cloud skipped (save_pointcloud=False).
-
-[Step 11] Skipped (save_images=False).
-
-====================================================================
-PIPELINE COMPLETED (ROI MODE)
-====================================================================
-  Res. registrazione : 5.0 mm/px
-  Res. point cloud   : 0.5 mm/px
-  ROI->PNG inliers   : 243/285  reproj=0.396 px
-  2D error mean      : 0.1410 px  = 0.0069 mm
-  2D error max       : 0.2739 px  = 0.0133 mm
-  3D REG bilinear mean: 1.0108 mm  median: 0.8756 mm <-- best
-  3D REG bicubic  mean: 1.0205 mm  median: 0.8596 mm
-  3D PC  bilinear mean: 0.9771 mm  median: 0.8501 mm
-  3D PC  bicubic  mean: 0.9761 mm  median: 0.8481 mm
-  Point cloud        : 6,371,594 points  x 290 bands
-  Output dir         : RESULTS/RUBIK/registration/_sweep_tmp/run01_reg5p0_pc0p5
-
-[sweep] Progress: 1/4 done.
-
-
-====================================================================
-  SWEEP RUN — res_reg=2.0  res_pc=0.5  ROI=YES
-====================================================================
-====================================================================
-FULL PIPELINE — ROI MODE
-  Sample           : RUBIK
-  Cubo ROI (.hdr)  : DATA/input_registration/RUBIK/RUBIK_raw.hdr
-  LiveView PNG     : DATA/input_registration/RUBIK/RUBIK_raw.png
-  Res registro     : 2.0 mm/px
-  Res point cloud  : 0.5 mm/px
-  SubPix refine    : ON
-  ROI match method : sift
-  Output dir       : RESULTS/RUBIK/registration/_sweep_tmp/run02_reg2p0_pc0p5
-====================================================================
-
-[Step 0] Loading ArUco 3D from JSON...
-[ArUco3D] Loaded 4 markers (mm): [0, 2, 7, 12]
-  ID=0: center=(-234.7,-82.5,-0.2) mm  mean_side=67.70 mm
-  ID=2: center=(-191.3,93.5,0.2) mm  mean_side=67.74 mm
-  ID=7: center=(217.6,83.8,-0.2) mm  mean_side=68.71 mm
-  ID=12: center=(208.4,-94.8,0.2) mm  mean_side=68.66 mm
-
-[Step 1] Loading ROI HSI cube...
-[HSI] Loaded: 808x652x290 (BSQ), offset=72
-  Cube shape (ROI): (808, 652, 290)
-[HSI] Mean of 290 bands
-
-[Step 1b] Loading LiveView PNG: DATA/input_registration/RUBIK/RUBIK_raw.png
-  PNG shape       : (1024, 1280)
-
-[Step 1c] Stima omografia ROI -> PNG (feature matching)...
-[ROI align] Method: SIFT  keypoints: ROI=1399  PNG=5000
-[ROI align] Good matches (ratio<0.75): 284
-[ROI align] RANSAC inliers: 243/284 (85.6%)
-[ROI align] Reproj error (inliers): 0.464 px
-
-[Step 2a] Render registrazione pre-calcolato (GPU).
-
-[Step 2b] Render point cloud pre-calcolato (GPU).
-
-[Step 3] Detecting ArUco on LiveView PNG...
-  [SubPix] shift medio=0.9178 px  max=1.8775 px  (finestra 11×11)
-  PNG markers found: [0, 2, 7]
-
-[Step 3b] Projecting JSON ArUco corners -> render pixels (reg)...
-[Project3D->render] 4 markers projected.
-
-[Step 4] Computing homography PNG -> render_reg...
-[match] WARNING: only 3 markers — proceeding with 12 corner pairs.
-[match] Common: [0, 2, 7]  (12 pairs)
-[Homography PNG->render_reg] Inliers: 12/12
-[Homography PNG->render_reg] H =
-[[-4.34068406e-02  2.32971132e-01  3.64772931e+02]
- [-2.45228475e-01 -4.99887811e-02  7.27047648e+02]
- [-6.71700564e-06 -1.73496269e-05  1.00000000e+00]]
-
-[Step 6] Computing registration errors...
-
-[2D Reprojection — PNG->render_reg]
-  Mean: 0.3524 px   Max: 0.6846 px   Min: 0.0568 px
-  Corner 0: 0.1091 px
-  Corner 1: 0.4637 px
-  Corner 2: 0.2314 px
-  Corner 3: 0.3747 px
-  Corner 4: 0.0568 px
-  Corner 5: 0.6846 px
-  Corner 6: 0.2560 px
-  Corner 7: 0.3741 px
-  Corner 8: 0.2150 px
-  Corner 9: 0.4227 px
-  Corner 10: 0.4366 px
-  Corner 11: 0.6044 px
-  [Lookup3D] bilinear=12/12  bicubic_pure=12/12  bicubic+fallback=12/12
-
-[3D Error — REG]
-  Bilinear (12 valid): mean=0.9823  median=0.8702  max=2.2626  min=0.2593 mm
-  Bicubic  (12 valid): mean=0.9781  median=0.8641  max=2.2537  min=0.3033 mm
-
-[Step 6b] Computing 3D errors on PC grid...
-  [Lookup3D] bilinear=12/12  bicubic_pure=12/12  bicubic+fallback=12/12
-
-[3D Error — PC]
-  Bilinear (12 valid): mean=0.9771  median=0.8501  max=2.2785  min=0.2612 mm
-  Bicubic  (12 valid): mean=0.9761  median=0.8481  max=2.2824  min=0.2601 mm
-
-[Method] Best 3D lookup: BICUBIC  (bilinear=0.9823 mm, bicubic=0.9781 mm)
-
-[Step 7] Saving Excel error report -> RESULTS/RUBIK/registration/_sweep_tmp/run02_reg2p0_pc0p5/RUBIK_registration_errors.xlsx
-[Excel] Saved: RESULTS/RUBIK/registration/_sweep_tmp/run02_reg2p0_pc0p5/RUBIK_registration_errors.xlsx
-
-[Step 8] Skipped (save_images=False).
-  Wavelengths: 400.0 ... 1700.0 nm (290 bands)
-
-[Step 9+10] Point cloud skipped (save_pointcloud=False).
-
-[Step 11] Skipped (save_images=False).
-
-====================================================================
-PIPELINE COMPLETED (ROI MODE)
-====================================================================
-  Res. registrazione : 2.0 mm/px
-  Res. point cloud   : 0.5 mm/px
-  ROI->PNG inliers   : 243/284  reproj=0.464 px
-  2D error mean      : 0.3524 px  = 0.0172 mm
-  2D error max       : 0.6846 px  = 0.0333 mm
-  3D REG bilinear mean: 0.9823 mm  median: 0.8702 mm
-  3D REG bicubic  mean: 0.9781 mm  median: 0.8641 mm <-- best
-  3D PC  bilinear mean: 0.9771 mm  median: 0.8501 mm
-  3D PC  bicubic  mean: 0.9761 mm  median: 0.8481 mm
-  Point cloud        : 6,371,594 points  x 290 bands
-  Output dir         : RESULTS/RUBIK/registration/_sweep_tmp/run02_reg2p0_pc0p5
-
-[sweep] Progress: 2/4 done.
-
-
-====================================================================
-  SWEEP RUN — res_reg=1.0  res_pc=0.5  ROI=YES
-====================================================================
-====================================================================
-FULL PIPELINE — ROI MODE
-  Sample           : RUBIK
-  Cubo ROI (.hdr)  : DATA/input_registration/RUBIK/RUBIK_raw.hdr
-  LiveView PNG     : DATA/input_registration/RUBIK/RUBIK_raw.png
-  Res registro     : 1.0 mm/px
-  Res point cloud  : 0.5 mm/px
-  SubPix refine    : ON
-  ROI match method : sift
-  Output dir       : RESULTS/RUBIK/registration/_sweep_tmp/run03_reg1p0_pc0p5
-====================================================================
-
-[Step 0] Loading ArUco 3D from JSON...
-[ArUco3D] Loaded 4 markers (mm): [0, 2, 7, 12]
-  ID=0: center=(-234.7,-82.5,-0.2) mm  mean_side=67.70 mm
-  ID=2: center=(-191.3,93.5,0.2) mm  mean_side=67.74 mm
-  ID=7: center=(217.6,83.8,-0.2) mm  mean_side=68.71 mm
-  ID=12: center=(208.4,-94.8,0.2) mm  mean_side=68.66 mm
-
-[Step 1] Loading ROI HSI cube...
-[HSI] Loaded: 808x652x290 (BSQ), offset=72
-  Cube shape (ROI): (808, 652, 290)
-[HSI] Mean of 290 bands
-
-[Step 1b] Loading LiveView PNG: DATA/input_registration/RUBIK/RUBIK_raw.png
-  PNG shape       : (1024, 1280)
-
-[Step 1c] Stima omografia ROI -> PNG (feature matching)...
-[ROI align] Method: SIFT  keypoints: ROI=1399  PNG=5000
-[ROI align] Good matches (ratio<0.75): 282
-[ROI align] RANSAC inliers: 239/282 (84.8%)
-[ROI align] Reproj error (inliers): 0.365 px
-
-[Step 2a] Render registrazione pre-calcolato (GPU).
-
-[Step 2b] Render point cloud pre-calcolato (GPU).
-
-[Step 3] Detecting ArUco on LiveView PNG...
-  [SubPix] shift medio=0.9178 px  max=1.8775 px  (finestra 11×11)
-  PNG markers found: [0, 2, 7]
-
-[Step 3b] Projecting JSON ArUco corners -> render pixels (reg)...
-[Project3D->render] 4 markers projected.
-
-[Step 4] Computing homography PNG -> render_reg...
-[match] WARNING: only 3 markers — proceeding with 12 corner pairs.
-[match] Common: [0, 2, 7]  (12 pairs)
-[Homography PNG->render_reg] Inliers: 12/12
-[Homography PNG->render_reg] H =
-[[-8.68136812e-02  4.65942264e-01  7.29545861e+02]
- [-4.90456949e-01 -9.99775621e-02  1.45409530e+03]
- [-6.71700564e-06 -1.73496269e-05  1.00000000e+00]]
-
-[Step 6] Computing registration errors...
-
-[2D Reprojection — PNG->render_reg]
-  Mean: 0.7049 px   Max: 1.3692 px   Min: 0.1137 px
-  Corner 0: 0.2181 px
-  Corner 1: 0.9275 px
-  Corner 2: 0.4627 px
-  Corner 3: 0.7495 px
-  Corner 4: 0.1137 px
-  Corner 5: 1.3692 px
-  Corner 6: 0.5120 px
-  Corner 7: 0.7482 px
-  Corner 8: 0.4301 px
-  Corner 9: 0.8455 px
-  Corner 10: 0.8731 px
-  Corner 11: 1.2089 px
-  [Lookup3D] bilinear=12/12  bicubic_pure=12/12  bicubic+fallback=12/12
-
-[3D Error — REG]
-  Bilinear (12 valid): mean=0.9748  median=0.8526  max=2.2498  min=0.2636 mm
-  Bicubic  (12 valid): mean=0.9712  median=0.8484  max=2.2199  min=0.2686 mm
-
-[Step 6b] Computing 3D errors on PC grid...
-  [Lookup3D] bilinear=12/12  bicubic_pure=12/12  bicubic+fallback=12/12
-
-[3D Error — PC]
-  Bilinear (12 valid): mean=0.9771  median=0.8501  max=2.2785  min=0.2612 mm
-  Bicubic  (12 valid): mean=0.9761  median=0.8481  max=2.2824  min=0.2601 mm
-
-[Method] Best 3D lookup: BICUBIC  (bilinear=0.9748 mm, bicubic=0.9712 mm)
-
-[Step 7] Saving Excel error report -> RESULTS/RUBIK/registration/_sweep_tmp/run03_reg1p0_pc0p5/RUBIK_registration_errors.xlsx
-[Excel] Saved: RESULTS/RUBIK/registration/_sweep_tmp/run03_reg1p0_pc0p5/RUBIK_registration_errors.xlsx
-
-[Step 8] Skipped (save_images=False).
-  Wavelengths: 400.0 ... 1700.0 nm (290 bands)
-
-[Step 9+10] Point cloud skipped (save_pointcloud=False).
-
-[Step 11] Skipped (save_images=False).
-
-====================================================================
-PIPELINE COMPLETED (ROI MODE)
-====================================================================
-  Res. registrazione : 1.0 mm/px
-  Res. point cloud   : 0.5 mm/px
-  ROI->PNG inliers   : 239/282  reproj=0.365 px
-  2D error mean      : 0.7049 px  = 0.0343 mm
-  2D error max       : 1.3692 px  = 0.0667 mm
-  3D REG bilinear mean: 0.9748 mm  median: 0.8526 mm
-  3D REG bicubic  mean: 0.9712 mm  median: 0.8484 mm <-- best
-  3D PC  bilinear mean: 0.9771 mm  median: 0.8501 mm
-  3D PC  bicubic  mean: 0.9761 mm  median: 0.8481 mm
-  Point cloud        : 6,371,594 points  x 290 bands
-  Output dir         : RESULTS/RUBIK/registration/_sweep_tmp/run03_reg1p0_pc0p5
-
-[sweep] Progress: 3/4 done.
-
-
-====================================================================
-  SWEEP RUN — res_reg=0.5  res_pc=0.5  ROI=YES
-====================================================================
-====================================================================
-FULL PIPELINE — ROI MODE
-  Sample           : RUBIK
-  Cubo ROI (.hdr)  : DATA/input_registration/RUBIK/RUBIK_raw.hdr
-  LiveView PNG     : DATA/input_registration/RUBIK/RUBIK_raw.png
-  Res registro     : 0.5 mm/px
-  Res point cloud  : 0.5 mm/px
-  SubPix refine    : ON
-  ROI match method : sift
-  Output dir       : RESULTS/RUBIK/registration/_sweep_tmp/run04_reg0p5_pc0p5
-====================================================================
-
-[Step 0] Loading ArUco 3D from JSON...
-[ArUco3D] Loaded 4 markers (mm): [0, 2, 7, 12]
-  ID=0: center=(-234.7,-82.5,-0.2) mm  mean_side=67.70 mm
-  ID=2: center=(-191.3,93.5,0.2) mm  mean_side=67.74 mm
-  ID=7: center=(217.6,83.8,-0.2) mm  mean_side=68.71 mm
-  ID=12: center=(208.4,-94.8,0.2) mm  mean_side=68.66 mm
-
-[Step 1] Loading ROI HSI cube...
-[HSI] Loaded: 808x652x290 (BSQ), offset=72
-  Cube shape (ROI): (808, 652, 290)
-[HSI] Mean of 290 bands
-
-[Step 1b] Loading LiveView PNG: DATA/input_registration/RUBIK/RUBIK_raw.png
-  PNG shape       : (1024, 1280)
-
-[Step 1c] Stima omografia ROI -> PNG (feature matching)...
-[ROI align] Method: SIFT  keypoints: ROI=1399  PNG=5000
-[ROI align] Good matches (ratio<0.75): 280
-[ROI align] RANSAC inliers: 240/280 (85.7%)
-[ROI align] Reproj error (inliers): 0.357 px
-
-[Step 2a] Render registrazione pre-calcolato (GPU).
-[Step 2b] Risoluzione reg = pc (0.5 mm/px) — render condiviso.
-
-[Step 3] Detecting ArUco on LiveView PNG...
-  [SubPix] shift medio=0.9178 px  max=1.8775 px  (finestra 11×11)
-  PNG markers found: [0, 2, 7]
-
-[Step 3b] Projecting JSON ArUco corners -> render pixels (reg)...
-[Project3D->render] 4 markers projected.
-
-[Step 4] Computing homography PNG -> render_reg...
-[match] WARNING: only 3 markers — proceeding with 12 corner pairs.
-[match] Common: [0, 2, 7]  (12 pairs)
-[Homography PNG->render_reg] Inliers: 10/12
-[Homography PNG->render_reg] H =
-[[-1.64463291e-01  9.33886908e-01  1.46006562e+03]
- [-9.69215438e-01 -2.00916740e-01  2.91103861e+03]
- [ 6.85335935e-07 -1.72719346e-05  1.00000000e+00]]
-
-[Step 6] Computing registration errors...
-
-[2D Reprojection — PNG->render_reg]
-  Mean: 1.4335 px   Max: 3.6061 px   Min: 0.2889 px
-  Corner 0: 0.2889 px
-  Corner 1: 1.5494 px
-  Corner 2: 0.4016 px
-  Corner 3: 1.0432 px
-  Corner 4: 0.6413 px
-  Corner 5: 3.1144 px
-  Corner 6: 1.3537 px
-  Corner 7: 1.0347 px
-  Corner 8: 1.2106 px
-  Corner 9: 1.3902 px
-  Corner 10: 1.5675 px
-  Corner 11: 3.6061 px
-  [Lookup3D] bilinear=12/12  bicubic_pure=12/12  bicubic+fallback=12/12
-
-[3D Error — REG]
-  Bilinear (12 valid): mean=0.9788  median=0.7232  max=2.3125  min=0.3052 mm
-  Bicubic  (12 valid): mean=0.9771  median=0.7237  max=2.3016  min=0.2961 mm
-
-[Method] Best 3D lookup: BICUBIC  (bilinear=0.9788 mm, bicubic=0.9771 mm)
-
-[Step 7] Saving Excel error report -> RESULTS/RUBIK/registration/_sweep_tmp/run04_reg0p5_pc0p5/RUBIK_registration_errors.xlsx
-[Excel] Saved: RESULTS/RUBIK/registration/_sweep_tmp/run04_reg0p5_pc0p5/RUBIK_registration_errors.xlsx
-
-[Step 8] Skipped (save_images=False).
-  Wavelengths: 400.0 ... 1700.0 nm (290 bands)
-
-[Step 9+10] Point cloud skipped (save_pointcloud=False).
-
-[Step 11] Skipped (save_images=False).
-
-====================================================================
-PIPELINE COMPLETED (ROI MODE)
-====================================================================
-  Res. registrazione : 0.5 mm/px
-  Res. point cloud   : 0.5 mm/px
-  ROI->PNG inliers   : 240/280  reproj=0.357 px
-  2D error mean      : 1.4335 px  = 0.0698 mm
-  2D error max       : 3.6061 px  = 0.1756 mm
-  3D REG bilinear mean: 0.9788 mm  median: 0.7232 mm
-  3D REG bicubic  mean: 0.9771 mm  median: 0.7237 mm <-- best
-  Point cloud        : 6,371,594 points  x 290 bands
-  Output dir         : RESULTS/RUBIK/registration/_sweep_tmp/run04_reg0p5_pc0p5
-
-[sweep] Progress: 4/4 done.
-
-
-[sweep] ★ Best pair (row 3): res_reg=1.0  res_pc=0.5  → 3D error min = 0.9712 mm
-[sweep] Removed temp dir: RESULTS/RUBIK/registration/_sweep_tmp
-
-[sweep] Excel summary saved → RESULTS/RUBIK/registration/RUBIK_sweep_resolution_summary.xlsx
-[sweep] Timings sheet added → RESULTS/RUBIK/registration/RUBIK_sweep_resolution_summary.xlsx
-
-====================================================================
-SWEEP COMPLETED
-====================================================================
-  Pairs run    : 4
-  OK / Failed  : 4 / 0
-  Excel summary: RESULTS/RUBIK/registration/RUBIK_sweep_resolution_summary.xlsx
-====================================================================
-[orchestrator] Registration finished in 68.0s
-  Pulizia cache SfM intermedia...
-  Cache SfM rimossa.
-==============================================
-  Run finished : Tue Jun  9 11:47:01 AM CEST 2026
-  Spazio home  : 156G liberi
-==============================================

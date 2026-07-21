@@ -1,523 +1,0 @@
-==============================================
-  Spectra run (uv, no Singularity)
-  Job ID  : 2989
-  Node    : mufasa2.e4-cluster.lan
-  Start   : Mon Jul 13 02:49:50 PM CEST 2026
-==============================================
-  Python  : Python 3.12.3
-  Torch   : 2.12.0+cu130
-  CUDA ok : True
-==============================================
-
-====================================================================
-  SPECTRA FULL — sample='SAMPLE2'
-  data_root    : DATA
-  results_root : RESULTS
-  stages       : ['vision', 'registration']
-  reg mode     : sweep
-====================================================================
-
-[orchestrator] Vision outputs already exist at RESULTS/SAMPLE2/vision — skipping vision stage.
-  (use --force-vision to re-run vision anyway)
-
-[orchestrator] Registration stage for sample='SAMPLE2' (mode='sweep')
-
-====================================================================
-SPECTRA REGISTRATION — SUMMARY
-====================================================================
-  Mode          : SWEEP
-  Sample        : SAMPLE2
-  HSI           : DATA/input_registration/SAMPLE2/SAMPLE2_raw.hdr
-  Mesh          : RESULTS/SAMPLE2/vision/surface_mesh.ply
-  ArUco JSON    : RESULTS/SAMPLE2/vision/aruco_markers_3d.json
-  Marker side   : 6.8 mm
-  Render        : sweep over 4 pairs
-  ROI sweep     : NO
-  Save PC       : NO
-  Save images   : NO
-  Output        : RESULTS/SAMPLE2_visible_band/registration
-====================================================================
-
-====================================================================
-  SWEEP — 4 (reg, pc) pairs   ROI=NO
-====================================================================
-  [ 1/4]  res_reg= 5.000  res_pc= 0.500
-  [ 2/4]  res_reg= 2.000  res_pc= 0.500
-  [ 3/4]  res_reg= 1.000  res_pc= 0.500
-  [ 4/4]  res_reg= 0.500  res_pc= 0.500
-[sweep] Temp subdirs in: RESULTS/SAMPLE2_visible_band/registration/_sweep_tmp
-[Mesh] Loaded : RESULTS/SAMPLE2/vision/surface_mesh.ply
-       Vertices: 485433   Faces: 820113
-       Bounds  : [[-1.22196698 -0.91695797 -1.24760699]
- [ 1.46906197  1.15053999  0.178829  ]]
-[Mesh] Scaled x1000 (m -> mm). New bounds: [[-1221.96698189  -916.95797443 -1247.60699272]
- [ 1469.06197071  1150.53999424   178.8289994 ]]
-
-[sweep] Unique resolutions: ['5.0', '2.0', '1.0', '0.5']
-
-[sweep][cache] Pre-computing 4 unique renders...
-[sweep][cache] Render 1/4: res=5.0 mm/px on cuda
-[render_gpu] Grid  : 543 x 418 px  (5.0 mm/px)
-             Rays  : 226,974
-[render_gpu] Backend: PyTorch  (cuda)
-[render_torch] Split 8x8 tiles  (device=cuda, chunk_rays=4000)
-  Tile 1/64  hits=0  Tile 2/64  hits=0  Tile 3/64  hits=0  Tile 4/64  hits=0  Tile 5/64  hits=0  Tile 6/64  hits=0  Tile 7/64  hits=0  Tile 8/64  hits=0  Tile 9/64  hits=0  Tile 10/64  hits=0  Tile 11/64  hits=0  Tile 12/64  hits=2  Tile 13/64  hits=2  Tile 14/64  hits=28  Tile 15/64  hits=0  Tile 16/64  hits=0  Tile 17/64  hits=43  Tile 18/64  hits=1,915  Tile 19/64  hits=2,373  Tile 20/64  hits=2,414  Tile 21/64  hits=3,072  Tile 22/64  hits=2,774  Tile 23/64  hits=989  Tile 24/64  hits=18  Tile 25/64  hits=530  Tile 26/64  hits=3,354  Tile 27/64  hits=3,503  Tile 28/64  hits=3,491  Tile 29/64  hits=3,532  Tile 30/64  hits=3,536  Tile 31/64  hits=2,123  Tile 32/64  hits=77  Tile 33/64  hits=840  Tile 34/64  hits=2,968  Tile 35/64  hits=3,382  Tile 36/64  hits=3,432  Tile 37/64  hits=3,388  Tile 38/64  hits=3,155  Tile 39/64  hits=1,922  Tile 40/64  hits=80  Tile 41/64  hits=6  Tile 42/64  hits=519  Tile 43/64  hits=537  Tile 44/64  hits=969  Tile 45/64  hits=1,780  Tile 46/64  hits=1,817  Tile 47/64  hits=406  Tile 48/64  hits=0  Tile 49/64  hits=89  Tile 50/64  hits=510  Tile 51/64  hits=606  Tile 52/64  hits=312  Tile 53/64  hits=35  Tile 54/64  hits=105  Tile 55/64  hits=15  Tile 56/64  hits=0  Tile 57/64  hits=39  Tile 58/64  hits=189  Tile 59/64  hits=234  Tile 60/64  hits=5  Tile 61/64  hits=0  Tile 62/64  hits=0  Tile 63/64  hits=0  Tile 64/64  hits=0
-[render_torch] Hits totali: 61,116 / 226,974
-[render_gpu] Done. origin_xy=(-1231.97, -926.96) mm
-[sweep][cache]   done in 2.0s
-[sweep][cache] Render 2/4: res=2.0 mm/px on cuda
-[render_gpu] Grid  : 1356 x 1044 px  (2.0 mm/px)
-             Rays  : 1,415,664
-[render_gpu] Backend: PyTorch  (cuda)
-[render_torch] Split 8x8 tiles  (device=cuda, chunk_rays=4000)
-  Tile 1/64  hits=0  Tile 2/64  hits=1  Tile 3/64  hits=0  Tile 4/64  hits=0  Tile 5/64  hits=0  Tile 6/64  hits=0  Tile 7/64  hits=0  Tile 8/64  hits=0  Tile 9/64  hits=0  Tile 10/64  hits=0  Tile 11/64  hits=0  Tile 12/64  hits=12  Tile 13/64  hits=22  Tile 14/64  hits=146  Tile 15/64  hits=0  Tile 16/64  hits=0  Tile 17/64  hits=291  Tile 18/64  hits=12,053  Tile 19/64  hits=14,952  Tile 20/64  hits=15,221  Tile 21/64  hits=19,142  Tile 22/64  hits=17,272  Tile 23/64  hits=6,360  Tile 24/64  hits=100  Tile 25/64  hits=3,334  Tile 26/64  hits=20,653  Tile 27/64  hits=21,673  Tile 28/64  hits=21,648  Tile 29/64  hits=21,704  Tile 30/64  hits=21,718  Tile 31/64  hits=13,181  Tile 32/64  hits=446  Tile 33/64  hits=5,366  Tile 34/64  hits=18,660  Tile 35/64  hits=21,197  Tile 36/64  hits=21,609  Tile 37/64  hits=21,166  Tile 38/64  hits=19,768  Tile 39/64  hits=12,293  Tile 40/64  hits=422  Tile 41/64  hits=68  Tile 42/64  hits=3,369  Tile 43/64  hits=3,334  Tile 44/64  hits=6,230  Tile 45/64  hits=11,204  Tile 46/64  hits=11,468  Tile 47/64  hits=2,604  Tile 48/64  hits=0  Tile 49/64  hits=605  Tile 50/64  hits=3,311  Tile 51/64  hits=3,671  Tile 52/64  hits=1,975  Tile 53/64  hits=226  Tile 54/64  hits=654  Tile 55/64  hits=95  Tile 56/64  hits=0  Tile 57/64  hits=237  Tile 58/64  hits=1,150  Tile 59/64  hits=1,482  Tile 60/64  hits=21  Tile 61/64  hits=0  Tile 62/64  hits=0  Tile 63/64  hits=0  Tile 64/64  hits=0
-[render_torch] Hits totali: 382,114 / 1,415,664
-[render_gpu] Done. origin_xy=(-1231.97, -926.96) mm
-[sweep][cache]   done in 7.3s
-[sweep][cache] Render 3/4: res=1.0 mm/px on cuda
-[render_gpu] Grid  : 2712 x 2088 px  (1.0 mm/px)
-             Rays  : 5,662,656
-[render_gpu] Backend: PyTorch  (cuda)
-[render_torch] Split 8x8 tiles  (device=cuda, chunk_rays=4000)
-  Tile 1/64  hits=0  Tile 2/64  hits=4  Tile 3/64  hits=1  Tile 4/64  hits=0  Tile 5/64  hits=0  Tile 6/64  hits=0  Tile 7/64  hits=0  Tile 8/64  hits=0  Tile 9/64  hits=0  Tile 10/64  hits=0  Tile 11/64  hits=0  Tile 12/64  hits=42  Tile 13/64  hits=73  Tile 14/64  hits=606  Tile 15/64  hits=0  Tile 16/64  hits=0  Tile 17/64  hits=1,198  Tile 18/64  hits=48,475  Tile 19/64  hits=59,834  Tile 20/64  hits=61,019  Tile 21/64  hits=76,660  Tile 22/64  hits=69,137  Tile 23/64  hits=25,580  Tile 24/64  hits=395  Tile 25/64  hits=13,201  Tile 26/64  hits=82,926  Tile 27/64  hits=86,532  Tile 28/64  hits=86,565  Tile 29/64  hits=86,804  Tile 30/64  hits=86,710  Tile 31/64  hits=52,896  Tile 32/64  hits=1,764  Tile 33/64  hits=21,307  Tile 34/64  hits=74,757  Tile 35/64  hits=84,592  Tile 36/64  hits=86,427  Tile 37/64  hits=84,655  Tile 38/64  hits=78,824  Tile 39/64  hits=49,157  Tile 40/64  hits=1,750  Tile 41/64  hits=260  Tile 42/64  hits=13,466  Tile 43/64  hits=13,192  Tile 44/64  hits=24,801  Tile 45/64  hits=44,706  Tile 46/64  hits=45,692  Tile 47/64  hits=10,408  Tile 48/64  hits=0  Tile 49/64  hits=2,453  Tile 50/64  hits=13,233  Tile 51/64  hits=14,661  Tile 52/64  hits=8,013  Tile 53/64  hits=952  Tile 54/64  hits=2,603  Tile 55/64  hits=377  Tile 56/64  hits=0  Tile 57/64  hits=959  Tile 58/64  hits=4,636  Tile 59/64  hits=5,832  Tile 60/64  hits=98  Tile 61/64  hits=0  Tile 62/64  hits=0  Tile 63/64  hits=0  Tile 64/64  hits=0
-[render_torch] Hits totali: 1,528,233 / 5,662,656
-[render_gpu] Done. origin_xy=(-1231.97, -926.96) mm
-[sweep][cache]   done in 27.0s
-[sweep][cache] Render 4/4: res=0.5 mm/px on cuda
-[render_gpu] Grid  : 5423 x 4175 px  (0.5 mm/px)
-             Rays  : 22,641,025
-[render_gpu] Backend: PyTorch  (cuda)
-[render_torch] Split 8x8 tiles  (device=cuda, chunk_rays=4000)
-  Tile 1/64  hits=0  Tile 2/64  hits=16  Tile 3/64  hits=6  Tile 4/64  hits=0  Tile 5/64  hits=0  Tile 6/64  hits=0  Tile 7/64  hits=0  Tile 8/64  hits=0  Tile 9/64  hits=0  Tile 10/64  hits=0  Tile 11/64  hits=0  Tile 12/64  hits=184  Tile 13/64  hits=277  Tile 14/64  hits=2,444  Tile 15/64  hits=0  Tile 16/64  hits=0  Tile 17/64  hits=4,828  Tile 18/64  hits=193,901  Tile 19/64  hits=239,827  Tile 20/64  hits=244,121  Tile 21/64  hits=306,619  Tile 22/64  hits=276,245  Tile 23/64  hits=102,596  Tile 24/64  hits=1,582  Tile 25/64  hits=53,146  Tile 26/64  hits=331,102  Tile 27/64  hits=346,464  Tile 28/64  hits=346,018  Tile 29/64  hits=347,035  Tile 30/64  hits=346,478  Tile 31/64  hits=211,968  Tile 32/64  hits=6,999  Tile 33/64  hits=85,282  Tile 34/64  hits=298,159  Tile 35/64  hits=338,263  Tile 36/64  hits=344,978  Tile 37/64  hits=337,836  Tile 38/64  hits=314,564  Tile 39/64  hits=196,308  Tile 40/64  hits=6,981  Tile 41/64  hits=1,032  Tile 42/64  hits=53,804  Tile 43/64  hits=52,840  Tile 44/64  hits=99,507  Tile 45/64  hits=179,161  Tile 46/64  hits=182,943  Tile 47/64  hits=41,787  Tile 48/64  hits=0  Tile 49/64  hits=9,902  Tile 50/64  hits=52,840  Tile 51/64  hits=58,674  Tile 52/64  hits=32,086  Tile 53/64  hits=3,831  Tile 54/64  hits=10,397  Tile 55/64  hits=1,515  Tile 56/64  hits=0  Tile 57/64  hits=3,862  Tile 58/64  hits=18,595  Tile 59/64  hits=23,295  Tile 60/64  hits=410  Tile 61/64  hits=0  Tile 62/64  hits=0  Tile 63/64  hits=0  Tile 64/64  hits=0
-[render_torch] Hits totali: 6,110,704 / 22,641,025
-[render_gpu] Done. origin_xy=(-1231.97, -926.96) mm
-[sweep][cache]   done in 105.5s
-[sweep][cache] All 4 renders ready in 141.9s
-
-====================================================================
-  SWEEP RUN — res_reg=5.0  res_pc=0.5  ROI=NO
-====================================================================
-====================================================================
-FULL PIPELINE: 3D REGISTRATION + SPECTRAL POINT CLOUD
-  Sample         : SAMPLE2
-  Res. registro  : 5.0 mm/px
-  Res. point cloud: 0.5 mm/px
-  SubPix refine  : ON
-  Output dir     : RESULTS/SAMPLE2_visible_band/registration/_sweep_tmp/run01_reg5p0_pc0p5
-====================================================================
-
-[Step 0] Loading ArUco 3D from JSON...
-[ArUco3D] Loaded 4 markers (mm): [0, 2, 7, 12]
-  ID=0: center=(-230.9,-81.9,-0.3) mm  mean_side=67.52 mm
-  ID=2: center=(-189.5,92.8,0.3) mm  mean_side=68.57 mm
-  ID=7: center=(215.7,82.5,-0.3) mm  mean_side=68.69 mm
-  ID=12: center=(204.6,-93.4,0.3) mm  mean_side=67.56 mm
-
-[Step 1] Loading HSI...
-[HSI] Loaded: 1024x1280x290 (BSQ), offset=72
-[HSI] Selected band: idx=33, lambda=548.4nm
-  Cube shape: (1024, 1280, 290)
-
-[Step 2a] Render registrazione pre-calcolato (GPU).
-
-[Step 2b] Render point cloud pre-calcolato (GPU).
-
-[Step 3] Detecting ArUco on HSI...
-  [SubPix] shift medio=0.8506 px  max=1.6017 px  (finestra 11×11)
-  HSI markers found: [2, 7, 12]
-
-[Step 3b] Projecting JSON ArUco corners -> render pixels (reg)...
-[Project3D->render] 4 markers projected.
-
-[Step 4] Computing homography HSI -> render_reg...
-[match] WARNING: only 3 markers — proceeding with 12 corner pairs.
-[match] Common: [2, 7, 12]  (12 pairs)
-[Homography HSI->render_reg] Inliers: 12/12
-[Homography HSI->render_reg] H =
-[[-1.29087752e-02  1.01880953e-01  2.06324562e+02]
- [-9.79692858e-02 -1.78975010e-02  2.68457934e+02]
- [ 2.08417470e-05  4.90502640e-07  1.00000000e+00]]
-
-[Step 6] Computing registration errors...
-
-[2D Reprojection — Homography]
-  Mean: 0.1318 px   Max: 0.1885 px   Min: 0.0734 px
-  Corner 0: 0.0823 px
-  Corner 1: 0.1211 px
-  Corner 2: 0.1436 px
-  Corner 3: 0.1096 px
-  Corner 4: 0.1885 px
-  Corner 5: 0.0734 px
-  Corner 6: 0.1366 px
-  Corner 7: 0.1783 px
-  Corner 8: 0.1670 px
-  Corner 9: 0.1179 px
-  Corner 10: 0.1050 px
-  Corner 11: 0.1585 px
-  [Lookup3D] bilinear=12/12  bicubic_pure=12/12  bicubic+fallback=12/12
-
-[3D Error — REG]
-  Bilinear (12 valid): mean=0.7582  median=0.7434  max=1.0527  min=0.4647 mm
-  Bicubic  (12 valid): mean=0.7621  median=0.7476  max=1.0668  min=0.4696 mm
-
-[Step 6b] Computing 3D errors on PC grid...
-  [Lookup3D] bilinear=12/12  bicubic_pure=12/12  bicubic+fallback=12/12
-
-[3D Error — PC]
-  Bilinear (12 valid): mean=0.7442  median=0.7361  max=1.0743  min=0.3817 mm
-  Bicubic  (12 valid): mean=0.7434  median=0.7355  max=1.0762  min=0.3801 mm
-
-[Method] Best 3D lookup: BILINEAR  (bilinear=0.7582 mm, bicubic=0.7621 mm)
-
-[Step 7] Saving Excel error report -> RESULTS/SAMPLE2_visible_band/registration/_sweep_tmp/run01_reg5p0_pc0p5/SAMPLE2_registration_errors.xlsx
-[Excel] Saved: RESULTS/SAMPLE2_visible_band/registration/_sweep_tmp/run01_reg5p0_pc0p5/SAMPLE2_registration_errors.xlsx
-
-[Step 8] Skipped (save_images=False).
-  Wavelengths: 400.0 ... 1700.0 nm (290 bands)
-
-[Step 9+10] Point cloud skipped (save_pointcloud=False).
-
-[Step 11] Skipped (save_images=False).
-
-====================================================================
-PIPELINE COMPLETED
-====================================================================
-  Res. registrazione : 5.0 mm/px
-  Res. point cloud   : 0.5 mm/px
-  2D error mean  : 0.1318 px  = 0.0066 mm
-  2D error max   : 0.1885 px  = 0.0095 mm
-  3D REG bilinear mean: 0.7582 mm  median: 0.7434 mm <-- best
-  3D REG bicubic  mean: 0.7621 mm  median: 0.7476 mm
-  3D PC  bilinear mean: 0.7442 mm  median: 0.7361 mm
-  3D PC  bicubic  mean: 0.7434 mm  median: 0.7355 mm
-  Point cloud    : 6,110,704 points  x 290 bands
-  Output dir     : RESULTS/SAMPLE2_visible_band/registration/_sweep_tmp/run01_reg5p0_pc0p5
-
-[sweep] Progress: 1/4 done.
-
-
-====================================================================
-  SWEEP RUN — res_reg=2.0  res_pc=0.5  ROI=NO
-====================================================================
-====================================================================
-FULL PIPELINE: 3D REGISTRATION + SPECTRAL POINT CLOUD
-  Sample         : SAMPLE2
-  Res. registro  : 2.0 mm/px
-  Res. point cloud: 0.5 mm/px
-  SubPix refine  : ON
-  Output dir     : RESULTS/SAMPLE2_visible_band/registration/_sweep_tmp/run02_reg2p0_pc0p5
-====================================================================
-
-[Step 0] Loading ArUco 3D from JSON...
-[ArUco3D] Loaded 4 markers (mm): [0, 2, 7, 12]
-  ID=0: center=(-230.9,-81.9,-0.3) mm  mean_side=67.52 mm
-  ID=2: center=(-189.5,92.8,0.3) mm  mean_side=68.57 mm
-  ID=7: center=(215.7,82.5,-0.3) mm  mean_side=68.69 mm
-  ID=12: center=(204.6,-93.4,0.3) mm  mean_side=67.56 mm
-
-[Step 1] Loading HSI...
-[HSI] Loaded: 1024x1280x290 (BSQ), offset=72
-[HSI] Selected band: idx=33, lambda=548.4nm
-  Cube shape: (1024, 1280, 290)
-
-[Step 2a] Render registrazione pre-calcolato (GPU).
-
-[Step 2b] Render point cloud pre-calcolato (GPU).
-
-[Step 3] Detecting ArUco on HSI...
-  [SubPix] shift medio=0.8506 px  max=1.6017 px  (finestra 11×11)
-  HSI markers found: [2, 7, 12]
-
-[Step 3b] Projecting JSON ArUco corners -> render pixels (reg)...
-[Project3D->render] 4 markers projected.
-
-[Step 4] Computing homography HSI -> render_reg...
-[match] WARNING: only 3 markers — proceeding with 12 corner pairs.
-[match] Common: [2, 7, 12]  (12 pairs)
-[Homography HSI->render_reg] Inliers: 12/12
-[Homography HSI->render_reg] H =
-[[-3.22720823e-02  2.54702647e-01  5.15811424e+02]
- [-2.44923314e-01 -4.47435664e-02  6.71144831e+02]
- [ 2.08415092e-05  4.90917994e-07  1.00000000e+00]]
-
-[Step 6] Computing registration errors...
-
-[2D Reprojection — Homography]
-  Mean: 0.3296 px   Max: 0.4713 px   Min: 0.1833 px
-  Corner 0: 0.2059 px
-  Corner 1: 0.3028 px
-  Corner 2: 0.3590 px
-  Corner 3: 0.2740 px
-  Corner 4: 0.4713 px
-  Corner 5: 0.1833 px
-  Corner 6: 0.3415 px
-  Corner 7: 0.4459 px
-  Corner 8: 0.4174 px
-  Corner 9: 0.2947 px
-  Corner 10: 0.2626 px
-  Corner 11: 0.3962 px
-  [Lookup3D] bilinear=12/12  bicubic_pure=12/12  bicubic+fallback=12/12
-
-[3D Error — REG]
-  Bilinear (12 valid): mean=0.7442  median=0.7389  max=1.0550  min=0.3831 mm
-  Bicubic  (12 valid): mean=0.7429  median=0.7382  max=1.0581  min=0.3779 mm
-
-[Step 6b] Computing 3D errors on PC grid...
-  [Lookup3D] bilinear=12/12  bicubic_pure=12/12  bicubic+fallback=12/12
-
-[3D Error — PC]
-  Bilinear (12 valid): mean=0.7442  median=0.7361  max=1.0743  min=0.3816 mm
-  Bicubic  (12 valid): mean=0.7434  median=0.7355  max=1.0762  min=0.3800 mm
-
-[Method] Best 3D lookup: BICUBIC  (bilinear=0.7442 mm, bicubic=0.7429 mm)
-
-[Step 7] Saving Excel error report -> RESULTS/SAMPLE2_visible_band/registration/_sweep_tmp/run02_reg2p0_pc0p5/SAMPLE2_registration_errors.xlsx
-[Excel] Saved: RESULTS/SAMPLE2_visible_band/registration/_sweep_tmp/run02_reg2p0_pc0p5/SAMPLE2_registration_errors.xlsx
-
-[Step 8] Skipped (save_images=False).
-  Wavelengths: 400.0 ... 1700.0 nm (290 bands)
-
-[Step 9+10] Point cloud skipped (save_pointcloud=False).
-
-[Step 11] Skipped (save_images=False).
-
-====================================================================
-PIPELINE COMPLETED
-====================================================================
-  Res. registrazione : 2.0 mm/px
-  Res. point cloud   : 0.5 mm/px
-  2D error mean  : 0.3296 px  = 0.0165 mm
-  2D error max   : 0.4713 px  = 0.0237 mm
-  3D REG bilinear mean: 0.7442 mm  median: 0.7389 mm
-  3D REG bicubic  mean: 0.7429 mm  median: 0.7382 mm <-- best
-  3D PC  bilinear mean: 0.7442 mm  median: 0.7361 mm
-  3D PC  bicubic  mean: 0.7434 mm  median: 0.7355 mm
-  Point cloud    : 6,110,704 points  x 290 bands
-  Output dir     : RESULTS/SAMPLE2_visible_band/registration/_sweep_tmp/run02_reg2p0_pc0p5
-
-[sweep] Progress: 2/4 done.
-
-
-====================================================================
-  SWEEP RUN — res_reg=1.0  res_pc=0.5  ROI=NO
-====================================================================
-====================================================================
-FULL PIPELINE: 3D REGISTRATION + SPECTRAL POINT CLOUD
-  Sample         : SAMPLE2
-  Res. registro  : 1.0 mm/px
-  Res. point cloud: 0.5 mm/px
-  SubPix refine  : ON
-  Output dir     : RESULTS/SAMPLE2_visible_band/registration/_sweep_tmp/run03_reg1p0_pc0p5
-====================================================================
-
-[Step 0] Loading ArUco 3D from JSON...
-[ArUco3D] Loaded 4 markers (mm): [0, 2, 7, 12]
-  ID=0: center=(-230.9,-81.9,-0.3) mm  mean_side=67.52 mm
-  ID=2: center=(-189.5,92.8,0.3) mm  mean_side=68.57 mm
-  ID=7: center=(215.7,82.5,-0.3) mm  mean_side=68.69 mm
-  ID=12: center=(204.6,-93.4,0.3) mm  mean_side=67.56 mm
-
-[Step 1] Loading HSI...
-[HSI] Loaded: 1024x1280x290 (BSQ), offset=72
-[HSI] Selected band: idx=33, lambda=548.4nm
-  Cube shape: (1024, 1280, 290)
-
-[Step 2a] Render registrazione pre-calcolato (GPU).
-
-[Step 2b] Render point cloud pre-calcolato (GPU).
-
-[Step 3] Detecting ArUco on HSI...
-  [SubPix] shift medio=0.8506 px  max=1.6017 px  (finestra 11×11)
-  HSI markers found: [2, 7, 12]
-
-[Step 3b] Projecting JSON ArUco corners -> render pixels (reg)...
-[Project3D->render] 4 markers projected.
-
-[Step 4] Computing homography HSI -> render_reg...
-[match] WARNING: only 3 markers — proceeding with 12 corner pairs.
-[match] Common: [2, 7, 12]  (12 pairs)
-[Homography HSI->render_reg] Inliers: 12/12
-[Homography HSI->render_reg] H =
-[[-6.45441644e-02  5.09405289e-01  1.03162285e+03]
- [-4.89846626e-01 -8.94871359e-02  1.34228966e+03]
- [ 2.08415092e-05  4.90914522e-07  1.00000000e+00]]
-
-[Step 6] Computing registration errors...
-
-[2D Reprojection — Homography]
-  Mean: 0.6591 px   Max: 0.9427 px   Min: 0.3667 px
-  Corner 0: 0.4118 px
-  Corner 1: 0.6056 px
-  Corner 2: 0.7180 px
-  Corner 3: 0.5480 px
-  Corner 4: 0.9427 px
-  Corner 5: 0.3667 px
-  Corner 6: 0.6830 px
-  Corner 7: 0.8918 px
-  Corner 8: 0.8348 px
-  Corner 9: 0.5893 px
-  Corner 10: 0.5252 px
-  Corner 11: 0.7924 px
-  [Lookup3D] bilinear=12/12  bicubic_pure=12/12  bicubic+fallback=12/12
-
-[3D Error — REG]
-  Bilinear (12 valid): mean=0.7450  median=0.7369  max=1.0702  min=0.3856 mm
-  Bicubic  (12 valid): mean=0.7439  median=0.7364  max=1.0744  min=0.3827 mm
-
-[Step 6b] Computing 3D errors on PC grid...
-  [Lookup3D] bilinear=12/12  bicubic_pure=12/12  bicubic+fallback=12/12
-
-[3D Error — PC]
-  Bilinear (12 valid): mean=0.7442  median=0.7361  max=1.0743  min=0.3816 mm
-  Bicubic  (12 valid): mean=0.7434  median=0.7355  max=1.0762  min=0.3800 mm
-
-[Method] Best 3D lookup: BICUBIC  (bilinear=0.7450 mm, bicubic=0.7439 mm)
-
-[Step 7] Saving Excel error report -> RESULTS/SAMPLE2_visible_band/registration/_sweep_tmp/run03_reg1p0_pc0p5/SAMPLE2_registration_errors.xlsx
-[Excel] Saved: RESULTS/SAMPLE2_visible_band/registration/_sweep_tmp/run03_reg1p0_pc0p5/SAMPLE2_registration_errors.xlsx
-
-[Step 8] Skipped (save_images=False).
-  Wavelengths: 400.0 ... 1700.0 nm (290 bands)
-
-[Step 9+10] Point cloud skipped (save_pointcloud=False).
-
-[Step 11] Skipped (save_images=False).
-
-====================================================================
-PIPELINE COMPLETED
-====================================================================
-  Res. registrazione : 1.0 mm/px
-  Res. point cloud   : 0.5 mm/px
-  2D error mean  : 0.6591 px  = 0.0331 mm
-  2D error max   : 0.9427 px  = 0.0473 mm
-  3D REG bilinear mean: 0.7450 mm  median: 0.7369 mm
-  3D REG bicubic  mean: 0.7439 mm  median: 0.7364 mm <-- best
-  3D PC  bilinear mean: 0.7442 mm  median: 0.7361 mm
-  3D PC  bicubic  mean: 0.7434 mm  median: 0.7355 mm
-  Point cloud    : 6,110,704 points  x 290 bands
-  Output dir     : RESULTS/SAMPLE2_visible_band/registration/_sweep_tmp/run03_reg1p0_pc0p5
-
-[sweep] Progress: 3/4 done.
-
-
-====================================================================
-  SWEEP RUN — res_reg=0.5  res_pc=0.5  ROI=NO
-====================================================================
-====================================================================
-FULL PIPELINE: 3D REGISTRATION + SPECTRAL POINT CLOUD
-  Sample         : SAMPLE2
-  Res. registro  : 0.5 mm/px
-  Res. point cloud: 0.5 mm/px
-  SubPix refine  : ON
-  Output dir     : RESULTS/SAMPLE2_visible_band/registration/_sweep_tmp/run04_reg0p5_pc0p5
-====================================================================
-
-[Step 0] Loading ArUco 3D from JSON...
-[ArUco3D] Loaded 4 markers (mm): [0, 2, 7, 12]
-  ID=0: center=(-230.9,-81.9,-0.3) mm  mean_side=67.52 mm
-  ID=2: center=(-189.5,92.8,0.3) mm  mean_side=68.57 mm
-  ID=7: center=(215.7,82.5,-0.3) mm  mean_side=68.69 mm
-  ID=12: center=(204.6,-93.4,0.3) mm  mean_side=67.56 mm
-
-[Step 1] Loading HSI...
-[HSI] Loaded: 1024x1280x290 (BSQ), offset=72
-[HSI] Selected band: idx=33, lambda=548.4nm
-  Cube shape: (1024, 1280, 290)
-
-[Step 2a] Render registrazione pre-calcolato (GPU).
-[Step 2b] Risoluzione registrazione = point cloud (0.5 mm/px) — render condiviso.
-
-[Step 3] Detecting ArUco on HSI...
-  [SubPix] shift medio=0.8506 px  max=1.6017 px  (finestra 11×11)
-  HSI markers found: [2, 7, 12]
-
-[Step 3b] Projecting JSON ArUco corners -> render pixels (reg)...
-[Project3D->render] 4 markers projected.
-
-[Step 4] Computing homography HSI -> render_reg...
-[match] WARNING: only 3 markers — proceeding with 12 corner pairs.
-[match] Common: [2, 7, 12]  (12 pairs)
-[Homography HSI->render_reg] Inliers: 11/12
-[Homography HSI->render_reg] H =
-[[-1.10587169e-01  1.01087690e+00  2.06147329e+03]
- [-9.64871671e-01 -1.89124896e-01  2.68520826e+03]
- [ 2.85110532e-05 -3.98927789e-06  1.00000000e+00]]
-
-[Step 6] Computing registration errors...
-
-[2D Reprojection — Homography]
-  Mean: 1.4101 px   Max: 3.0354 px   Min: 0.3741 px
-  Corner 0: 0.3741 px
-  Corner 1: 1.0451 px
-  Corner 2: 1.0367 px
-  Corner 3: 1.0526 px
-  Corner 4: 3.0354 px
-  Corner 5: 2.4546 px
-  Corner 6: 0.5955 px
-  Corner 7: 2.0875 px
-  Corner 8: 1.3502 px
-  Corner 9: 1.4642 px
-  Corner 10: 1.0216 px
-  Corner 11: 1.4044 px
-  [Lookup3D] bilinear=12/12  bicubic_pure=12/12  bicubic+fallback=12/12
-
-[3D Error — REG]
-  Bilinear (12 valid): mean=0.7965  median=0.7609  max=1.6037  min=0.2929 mm
-  Bicubic  (12 valid): mean=0.7959  median=0.7611  max=1.6043  min=0.2940 mm
-
-[Method] Best 3D lookup: BICUBIC  (bilinear=0.7965 mm, bicubic=0.7959 mm)
-
-[Step 7] Saving Excel error report -> RESULTS/SAMPLE2_visible_band/registration/_sweep_tmp/run04_reg0p5_pc0p5/SAMPLE2_registration_errors.xlsx
-[Excel] Saved: RESULTS/SAMPLE2_visible_band/registration/_sweep_tmp/run04_reg0p5_pc0p5/SAMPLE2_registration_errors.xlsx
-
-[Step 8] Skipped (save_images=False).
-  Wavelengths: 400.0 ... 1700.0 nm (290 bands)
-
-[Step 9+10] Point cloud skipped (save_pointcloud=False).
-
-[Step 11] Skipped (save_images=False).
-
-====================================================================
-PIPELINE COMPLETED
-====================================================================
-  Res. registrazione : 0.5 mm/px
-  Res. point cloud   : 0.5 mm/px
-  2D error mean  : 1.4101 px  = 0.0708 mm
-  2D error max   : 3.0354 px  = 0.1523 mm
-  3D REG bilinear mean: 0.7965 mm  median: 0.7609 mm
-  3D REG bicubic  mean: 0.7959 mm  median: 0.7611 mm <-- best
-  Point cloud    : 6,110,704 points  x 290 bands
-  Output dir     : RESULTS/SAMPLE2_visible_band/registration/_sweep_tmp/run04_reg0p5_pc0p5
-
-[sweep] Progress: 4/4 done.
-
-
-[sweep] ★ Best pair (row 2): res_reg=2.0  res_pc=0.5  → 3D error min = 0.7429 mm
-[sweep] Removed temp dir: RESULTS/SAMPLE2_visible_band/registration/_sweep_tmp
-
-[sweep] Excel summary saved → RESULTS/SAMPLE2_visible_band/registration/SAMPLE2_sweep_resolution_summary.xlsx
-[sweep] Timings sheet added → RESULTS/SAMPLE2_visible_band/registration/SAMPLE2_sweep_resolution_summary.xlsx
-
-====================================================================
-SWEEP COMPLETED
-====================================================================
-  Pairs run    : 4
-  OK / Failed  : 4 / 0
-  Excel summary: RESULTS/SAMPLE2_visible_band/registration/SAMPLE2_sweep_resolution_summary.xlsx
-====================================================================
-[orchestrator] Registration finished in 150.9s
-
-====================================================================
-SPECTRA FULL COMPLETED
-====================================================================
-  Sample        : SAMPLE2
-  Vision skipped: True
-  Vision output : RESULTS/SAMPLE2/vision
-  Reg. output   : RESULTS/SAMPLE2_visible_band/registration
-====================================================================
-  Pulizia cache SfM intermedia...
-  Cache SfM rimossa.
-==============================================
-  Run finished : Mon Jul 13 02:52:29 PM CEST 2026
-  Spazio home  : 30G liberi
-==============================================

@@ -87,6 +87,11 @@ class RegistrationDetection(BaseModel):
     marker_side_mm: float = Field(default=6.8, gt=0.0)
     use_subpix: bool = True
     subpix_winsize: int = Field(default=5, ge=1)
+    # Contrast equalization for the 2D image fed to ArUco detection.
+    # 'global' = cv2.equalizeHist (previous behavior), 'clahe' = local, 'none'.
+    equalize_method: Literal["global", "clahe", "none"] = "global"
+    # More permissive ArUco DetectorParameters for low-contrast/low-res images.
+    tune_detector: bool = False
 
     @field_validator("aruco_dict")
     @classmethod

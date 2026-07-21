@@ -47,7 +47,7 @@ echo "  Torch   : $(uv run python -c 'import torch; print(torch.__version__)')"
 echo "  CUDA ok : $(uv run python -c 'import torch; print(torch.cuda.is_available())')"
 echo "=============================================="
 
-uv run spectra full --config configs/default.yaml
+uv run spectra vision --config configs/default.yaml 
 #uv run spectra registration --config configs/default.yaml
 
 echo "  Pulizia cache SfM intermedia..."

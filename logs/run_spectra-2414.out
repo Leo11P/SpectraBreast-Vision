@@ -1,271 +1,0 @@
-==============================================
-  Spectra run (uv, no Singularity)
-  Job ID  : 2414
-  Node    : mufasa2.e4-cluster.lan
-  Start   : Tue Jun  9 12:07:42 PM CEST 2026
-==============================================
-  Python  : Python 3.12.3
-  Torch   : 2.12.0+cu130
-  CUDA ok : True
-==============================================
-
-====================================================================
-  SPECTRA FULL — sample='RUBIK'
-  data_root    : DATA
-  results_root : RESULTS
-  stages       : ['vision', 'registration']
-  reg mode     : roi
-====================================================================
-
-[orchestrator] Vision stage for sample='RUBIK'
-Step 1/6 - Preparing run folder and loading inputs
-Run directory: RESULTS/RUBIK/vision
-Loaded 24 images (no GT poses) (no GT intrinsics)
-Step 2/6 - Detecting ArUco markers
-Detected 46 markers across 24 views.
-Step 3/6 - Running MASt3R-SfM
->> Loading a list of 24 images
- - adding RESULTS/RUBIK/vision/inputs_exif_canonical/IMG_20260520_170043.png with resolution 3000x4000 --> 384x512
- - adding RESULTS/RUBIK/vision/inputs_exif_canonical/IMG_20260520_170047.png with resolution 3000x4000 --> 384x512
- - adding RESULTS/RUBIK/vision/inputs_exif_canonical/IMG_20260520_170051.png with resolution 3000x4000 --> 384x512
- - adding RESULTS/RUBIK/vision/inputs_exif_canonical/IMG_20260520_170109.png with resolution 3000x4000 --> 384x512
- - adding RESULTS/RUBIK/vision/inputs_exif_canonical/IMG_20260520_170125.png with resolution 4000x3000 --> 512x384
- - adding RESULTS/RUBIK/vision/inputs_exif_canonical/IMG_20260520_170145.png with resolution 3000x4000 --> 384x512
- - adding RESULTS/RUBIK/vision/inputs_exif_canonical/IMG_20260520_170159.png with resolution 3000x4000 --> 384x512
- - adding RESULTS/RUBIK/vision/inputs_exif_canonical/IMG_20260520_170206.png with resolution 3000x4000 --> 384x512
- - adding RESULTS/RUBIK/vision/inputs_exif_canonical/IMG_20260520_170210.png with resolution 3000x4000 --> 384x512
- - adding RESULTS/RUBIK/vision/inputs_exif_canonical/IMG_20260520_170212.png with resolution 3000x4000 --> 384x512
- - adding RESULTS/RUBIK/vision/inputs_exif_canonical/IMG_20260520_170217.png with resolution 3000x4000 --> 384x512
- - adding RESULTS/RUBIK/vision/inputs_exif_canonical/IMG_20260520_170229.png with resolution 4000x3000 --> 512x384
- - adding RESULTS/RUBIK/vision/inputs_exif_canonical/IMG_20260520_170238.png with resolution 4000x3000 --> 512x384
- - adding RESULTS/RUBIK/vision/inputs_exif_canonical/IMG_20260520_170248.png with resolution 3000x4000 --> 384x512
- - adding RESULTS/RUBIK/vision/inputs_exif_canonical/IMG_20260520_170258.png with resolution 3000x4000 --> 384x512
- - adding RESULTS/RUBIK/vision/inputs_exif_canonical/IMG_20260520_170301.png with resolution 3000x4000 --> 384x512
- - adding RESULTS/RUBIK/vision/inputs_exif_canonical/IMG_20260520_170303.png with resolution 3000x4000 --> 384x512
- - adding RESULTS/RUBIK/vision/inputs_exif_canonical/IMG_20260520_170305.png with resolution 4000x3000 --> 512x384
- - adding RESULTS/RUBIK/vision/inputs_exif_canonical/IMG_20260520_170308.png with resolution 4000x3000 --> 512x384
- - adding RESULTS/RUBIK/vision/inputs_exif_canonical/IMG_20260520_170316.png with resolution 3000x4000 --> 384x512
- - adding RESULTS/RUBIK/vision/inputs_exif_canonical/IMG_20260520_170320.png with resolution 3000x4000 --> 384x512
- - adding RESULTS/RUBIK/vision/inputs_exif_canonical/IMG_20260520_170322.png with resolution 3000x4000 --> 384x512
- - adding RESULTS/RUBIK/vision/inputs_exif_canonical/IMG_20260520_170323.png with resolution 3000x4000 --> 384x512
- - adding RESULTS/RUBIK/vision/inputs_exif_canonical/IMG_20260520_170328.png with resolution 3000x4000 --> 384x512
- (Found 24 images)
-init focal (shared) =  379.82
->> final loss = 0.06261269748210907
->> final loss = 0.5585774183273315
-Final focal (shared) =  419.74
-Backend produced 929,795 fused points; frame = sfm
-Step 4/6 - Triangulating ArUco markers and building Sim3
-ArUco geometric QC: best-fit plane RMS 0.52 mm; corners reprojected with output 
-cameras → RMSE 4.816 px (max 16.548, p95 8.773, n=184)
-ArUco alignment applied: markers=4, scale=0.587655 (applied=0.587655), 
-MAD=0.002893
-Step 5/6 - Reconstructing single-surface height field
-Surface: 441,926 vertices, 575,583 triangles, grid 1389x1557 @ step 0.002211
-Output frame: world +Z points down (Z negated).
-Step 6/6 - Writing outputs and logging to Rerun
-Checking if we should log the surface cloud to Open3D
-Vision timings saved → RESULTS/RUBIK/vision/timings.json
-Done in 563.4 s. Outputs: RESULTS/RUBIK/vision
-[orchestrator] Vision finished in 563.4s — run_dir=RESULTS/RUBIK/vision
-
-[orchestrator] Registration stage for sample='RUBIK' (mode='roi')
-
-====================================================================
-SPECTRA REGISTRATION — SUMMARY
-====================================================================
-  Mode          : ROI
-  Sample        : RUBIK
-  HSI           : DATA/input_registration/RUBIK/RUBIK_raw.hdr
-  Mesh          : RESULTS/RUBIK/vision/surface_mesh.ply
-  ArUco JSON    : RESULTS/RUBIK/vision/aruco_markers_3d.json
-  LiveView PNG  : DATA/input_registration/RUBIK/RUBIK_raw.png
-  Marker side   : 6.8 mm
-  Render        : reg=1.0 pc=0.5 mm/px
-  Save PC       : YES
-  Save images   : YES
-  Output        : RESULTS/RUBIK/registration
-====================================================================
-[Mesh] Loaded : RESULTS/RUBIK/vision/surface_mesh.ply
-       Vertices: 359101   Faces: 575583
-       Bounds  : [[-1.62929296 -1.00808299 -0.201355  ]
- [ 0.921866    1.42590702  0.73719698]]
-[Mesh] Scaled x1000 (m -> mm). New bounds: [[-1629.29296494 -1008.08298588  -201.35499537]
- [  921.8659997   1425.9070158    737.19698191]]
-
-[Render PC] 0.5 mm/px on cuda...
-[render_gpu] Grid  : 5143 x 4908 px  (0.5 mm/px)
-             Rays  : 25,241,844
-[render_gpu] Backend: PyTorch  (cuda)
-[render_torch] Split 8x8 tiles  (device=cuda, chunk_rays=4000)
-  Tile 1/64  hits=0  Tile 2/64  hits=0  Tile 3/64  hits=1,930  Tile 4/64  hits=65  Tile 5/64  hits=204  Tile 6/64  hits=0  Tile 7/64  hits=0  Tile 8/64  hits=0  Tile 9/64  hits=0  Tile 10/64  hits=0  Tile 11/64  hits=9,547  Tile 12/64  hits=22,022  Tile 13/64  hits=19,977  Tile 14/64  hits=6,184  Tile 15/64  hits=0  Tile 16/64  hits=0  Tile 17/64  hits=0  Tile 18/64  hits=23,419  Tile 19/64  hits=163,578  Tile 20/64  hits=231,349  Tile 21/64  hits=88,188  Tile 22/64  hits=26,129  Tile 23/64  hits=5,719  Tile 24/64  hits=0  Tile 25/64  hits=788  Tile 26/64  hits=96,067  Tile 27/64  hits=226,913  Tile 28/64  hits=264,016  Tile 29/64  hits=307,205  Tile 30/64  hits=56,631  Tile 31/64  hits=31,177  Tile 32/64  hits=1,520  Tile 33/64  hits=4,416  Tile 34/64  hits=195,781  Tile 35/64  hits=388,233  Tile 36/64  hits=383,606  Tile 37/64  hits=369,878  Tile 38/64  hits=76,921  Tile 39/64  hits=114,123  Tile 40/64  hits=9,446  Tile 41/64  hits=245  Tile 42/64  hits=208,164  Tile 43/64  hits=390,061  Tile 44/64  hits=384,946  Tile 45/64  hits=382,707  Tile 46/64  hits=176,048  Tile 47/64  hits=48,767  Tile 48/64  hits=1,371  Tile 49/64  hits=631  Tile 50/64  hits=99,618  Tile 51/64  hits=301,681  Tile 52/64  hits=257,431  Tile 53/64  hits=186,157  Tile 54/64  hits=38,236  Tile 55/64  hits=5,946  Tile 56/64  hits=121  Tile 57/64  hits=0  Tile 58/64  hits=1,894  Tile 59/64  hits=14,525  Tile 60/64  hits=1,240  Tile 61/64  hits=0  Tile 62/64  hits=0  Tile 63/64  hits=0  Tile 64/64  hits=0
-[render_torch] Hits totali: 5,624,817 / 25,241,844
-[render_gpu] Done. origin_xy=(-1639.29, -1018.08) mm
-[Render PC] Completed in 45.8s
-[Render] Saved: RESULTS/RUBIK/registration/RUBIK_render_pc_topview.png
-[Render TURBO] Saved: RESULTS/RUBIK/registration/RUBIK_render_pc_turbo.png
-
-[Render REG] 1.0 mm/px on cuda...
-[render_gpu] Grid  : 2572 x 2454 px  (1.0 mm/px)
-             Rays  : 6,311,688
-[render_gpu] Backend: PyTorch  (cuda)
-[render_torch] Split 8x8 tiles  (device=cuda, chunk_rays=4000)
-  Tile 1/64  hits=0  Tile 2/64  hits=0  Tile 3/64  hits=473  Tile 4/64  hits=17  Tile 5/64  hits=47  Tile 6/64  hits=0  Tile 7/64  hits=0  Tile 8/64  hits=0  Tile 9/64  hits=0  Tile 10/64  hits=0  Tile 11/64  hits=2,432  Tile 12/64  hits=5,477  Tile 13/64  hits=4,984  Tile 14/64  hits=1,534  Tile 15/64  hits=0  Tile 16/64  hits=0  Tile 17/64  hits=0  Tile 18/64  hits=5,848  Tile 19/64  hits=40,928  Tile 20/64  hits=57,916  Tile 21/64  hits=22,111  Tile 22/64  hits=6,510  Tile 23/64  hits=1,428  Tile 24/64  hits=0  Tile 25/64  hits=202  Tile 26/64  hits=23,901  Tile 27/64  hits=56,766  Tile 28/64  hits=65,897  Tile 29/64  hits=76,678  Tile 30/64  hits=14,269  Tile 31/64  hits=7,741  Tile 32/64  hits=382  Tile 33/64  hits=1,097  Tile 34/64  hits=48,784  Tile 35/64  hits=97,223  Tile 36/64  hits=95,844  Tile 37/64  hits=92,463  Tile 38/64  hits=19,341  Tile 39/64  hits=28,461  Tile 40/64  hits=2,368  Tile 41/64  hits=67  Tile 42/64  hits=52,004  Tile 43/64  hits=97,782  Tile 44/64  hits=96,315  Tile 45/64  hits=95,698  Tile 46/64  hits=44,099  Tile 47/64  hits=12,245  Tile 48/64  hits=338  Tile 49/64  hits=158  Tile 50/64  hits=24,840  Tile 51/64  hits=75,538  Tile 52/64  hits=64,333  Tile 53/64  hits=46,528  Tile 54/64  hits=9,640  Tile 55/64  hits=1,501  Tile 56/64  hits=30  Tile 57/64  hits=0  Tile 58/64  hits=469  Tile 59/64  hits=3,615  Tile 60/64  hits=311  Tile 61/64  hits=0  Tile 62/64  hits=0  Tile 63/64  hits=0  Tile 64/64  hits=0
-[render_torch] Hits totali: 1,406,629 / 6,311,688
-[render_gpu] Done. origin_xy=(-1639.29, -1018.08) mm
-[Render REG] Completed in 11.8s
-[Render] Saved: RESULTS/RUBIK/registration/RUBIK_render_reg_topview.png
-[Render TURBO] Saved: RESULTS/RUBIK/registration/RUBIK_render_reg_turbo.png
-====================================================================
-FULL PIPELINE — ROI MODE
-  Sample           : RUBIK
-  Cubo ROI (.hdr)  : DATA/input_registration/RUBIK/RUBIK_raw.hdr
-  LiveView PNG     : DATA/input_registration/RUBIK/RUBIK_raw.png
-  Res registro     : 1.0 mm/px
-  Res point cloud  : 0.5 mm/px
-  SubPix refine    : ON
-  ROI match method : sift
-  Output dir       : RESULTS/RUBIK/registration
-====================================================================
-
-[Step 0] Loading ArUco 3D from JSON...
-[ArUco3D] Loaded 4 markers (mm): [0, 2, 7, 12]
-  ID=0: center=(233.9,-82.3,-0.1) mm  mean_side=67.65 mm
-  ID=2: center=(190.6,93.2,0.2) mm  mean_side=67.45 mm
-  ID=7: center=(-216.7,83.4,-0.2) mm  mean_side=68.24 mm
-  ID=12: center=(-207.7,-94.3,0.1) mm  mean_side=68.80 mm
-
-[Step 1] Loading ROI HSI cube...
-[HSI] Loaded: 808x652x290 (BSQ), offset=72
-  Cube shape (ROI): (808, 652, 290)
-[HSI] Mean of 290 bands
-
-[Step 1b] Loading LiveView PNG: DATA/input_registration/RUBIK/RUBIK_raw.png
-  PNG shape       : (1024, 1280)
-
-[Step 1c] Stima omografia ROI -> PNG (feature matching)...
-[ROI align] Method: SIFT  keypoints: ROI=1399  PNG=5000
-[ROI align] Good matches (ratio<0.75): 285
-[ROI align] RANSAC inliers: 243/285 (85.3%)
-[ROI align] Reproj error (inliers): 0.396 px
-[ROI align] Diagnostica match  -> RESULTS/RUBIK/registration/RUBIK_roi_alignment_matches.png
-[ROI align] Diagnostica overlay -> RESULTS/RUBIK/registration/RUBIK_roi_alignment_overlay.png
-
-[Step 2a] Render registrazione pre-calcolato (GPU).
-
-[Step 2b] Render point cloud pre-calcolato (GPU).
-
-[Step 3] Detecting ArUco on LiveView PNG...
-  [SubPix] shift medio=0.9178 px  max=1.8775 px  (finestra 11×11)
-  PNG markers found: [0, 2, 7]
-
-[Step 3b] Projecting JSON ArUco corners -> render pixels (reg)...
-[Project3D->render] 4 markers projected.
-
-[Step 4] Computing homography PNG -> render_reg...
-[match] WARNING: only 3 markers — proceeding with 12 corner pairs.
-[match] Common: [0, 2, 7]  (12 pairs)
-[Homography PNG->render_reg] Inliers: 12/12
-[Homography PNG->render_reg] H =
-[[ 6.45611748e-02 -5.04141602e-01  1.83814834e+03]
- [-4.90374415e-01 -9.53165631e-02  1.37157773e+03]
- [-9.38858724e-06 -1.46175761e-05  1.00000000e+00]]
-
-[Step 6] Computing registration errors...
-
-[2D Reprojection — PNG->render_reg]
-  Mean: 0.7256 px   Max: 1.5406 px   Min: 0.1507 px
-  Corner 0: 0.2024 px
-  Corner 1: 0.7745 px
-  Corner 2: 0.5169 px
-  Corner 3: 0.7353 px
-  Corner 4: 0.1507 px
-  Corner 5: 1.5406 px
-  Corner 6: 0.4711 px
-  Corner 7: 0.8432 px
-  Corner 8: 0.4862 px
-  Corner 9: 0.9197 px
-  Corner 10: 0.7880 px
-  Corner 11: 1.2784 px
-  [Lookup3D] bilinear=12/12  bicubic_pure=12/12  bicubic+fallback=12/12
-
-[3D Error — REG]
-  Bilinear (12 valid): mean=1.2834  median=1.2195  max=2.0250  min=0.7743 mm
-  Bicubic  (12 valid): mean=1.2856  median=1.2194  max=2.0111  min=0.7888 mm
-
-[Step 6b] Computing 3D errors on PC grid...
-  [Lookup3D] bilinear=12/12  bicubic_pure=12/12  bicubic+fallback=12/12
-
-[3D Error — PC]
-  Bilinear (12 valid): mean=1.3047  median=1.2194  max=2.2451  min=0.7885 mm
-  Bicubic  (12 valid): mean=1.3081  median=1.2197  max=2.2695  min=0.7885 mm
-
-[Method] Best 3D lookup: BILINEAR  (bilinear=1.2834 mm, bicubic=1.2856 mm)
-
-[Step 7] Saving Excel error report -> RESULTS/RUBIK/registration/RUBIK_registration_errors.xlsx
-[Excel] Saved: RESULTS/RUBIK/registration/RUBIK_registration_errors.xlsx
-
-[Step 8] Saving registration visualisation...
-[Viz] Saved: RESULTS/RUBIK/registration/RUBIK_registration.png
-[Viz] Saved: RESULTS/RUBIK/registration/RUBIK_registration_png.png
-  Wavelengths: 400.0 ... 1700.0 nm (290 bands)
-
-[Step 9] Building spectral point cloud (ROI cube)...
-
-[BuildPC streaming] Render grid : 5143×4908  (25,241,844 px)
-[BuildPC streaming] HSI image   : 652×808  x 290 bands
-[BuildPC streaming] Chunk size  : 100,000 punti
-[BuildPC streaming] Pass 1: rilevamento punti validi...
-  scansionato 9,000,000/25,241,844  mesh_hit=1,878,167  in_fov=9,156  scansionato 9,500,000/25,241,844  mesh_hit=2,127,492  in_fov=68,373  scansionato 10,000,000/25,241,844  mesh_hit=2,382,131  in_fov=145,509  scansionato 10,500,000/25,241,844  mesh_hit=2,633,126  in_fov=223,206  scansionato 11,000,000/25,241,844  mesh_hit=2,882,278  in_fov=301,652  scansionato 11,500,000/25,241,844  mesh_hit=3,129,834  in_fov=379,193  scansionato 12,000,000/25,241,844  mesh_hit=3,369,056  in_fov=453,438  scansionato 12,500,000/25,241,844  mesh_hit=3,612,389  in_fov=498,247  scansionato 13,000,000/25,241,844  mesh_hit=3,850,770  in_fov=500,146
-[BuildPC streaming] Pixels con hit mesh: 5,624,817
-[BuildPC streaming] Pixels in HSI FOV  : 500,146
-[BuildPC streaming] Scrittura PLY in 6 chunk -> RESULTS/RUBIK/registration/spectral_pointcloud_RUBIK.ply
-  PLY chunk 1/6  [100,000/500,146]  PLY chunk 2/6  [200,000/500,146]  PLY chunk 3/6  [300,000/500,146]  PLY chunk 4/6  [400,000/500,146]  PLY chunk 5/6  [500,000/500,146]  PLY chunk 6/6  [500,146/500,146]
-[BuildPC streaming] PLY salvato  (0.59 GB)
-[BuildPC streaming] Scrittura memmap NPZ in 6 chunk...
-  NPZ chunk 1/6  [100,000/500,146]  NPZ chunk 2/6  [200,000/500,146]  NPZ chunk 3/6  [300,000/500,146]  NPZ chunk 4/6  [400,000/500,146]  NPZ chunk 5/6  [500,000/500,146]  NPZ chunk 6/6  [500,146/500,146]
-[BuildPC streaming] Memmap salvati in RESULTS/RUBIK/registration/spectral_pointcloud_RUBIK*.bin
-  Caricamento:  np.memmap('RESULTS/RUBIK/registration/spectral_pointcloud_RUBIK_xyz.bin', dtype='float32', mode='r', shape=(500146, 3))
-[BuildPC streaming] Completato: 500,146 punti  x 290 bande
-
-[Step 11] Saving coverage map (ROI)...
-[Coverage] Saved: RESULTS/RUBIK/registration/RUBIK_coverage.png
-
-====================================================================
-PIPELINE COMPLETED (ROI MODE)
-====================================================================
-  Res. registrazione : 1.0 mm/px
-  Res. point cloud   : 0.5 mm/px
-  ROI->PNG inliers   : 243/285  reproj=0.396 px
-  2D error mean      : 0.7256 px  = 0.0353 mm
-  2D error max       : 1.5406 px  = 0.0750 mm
-  3D REG bilinear mean: 1.2834 mm  median: 1.2195 mm <-- best
-  3D REG bicubic  mean: 1.2856 mm  median: 1.2194 mm
-  3D PC  bilinear mean: 1.3047 mm  median: 1.2194 mm
-  3D PC  bicubic  mean: 1.3081 mm  median: 1.2197 mm
-  Point cloud        : 500,146 points  x 290 bands
-  Output dir         : RESULTS/RUBIK/registration
-
-====================================================================
-REGISTRATION COMPLETED
-====================================================================
-  Total time     : 5.3s  (0.1 min)
-  Output         : RESULTS/RUBIK/registration
-====================================================================
-[dim]Timings sheet added → RESULTS/RUBIK/registration/RUBIK_registration_errors.xlsx[/dim]
-[orchestrator] Registration finished in 68.7s
-
-====================================================================
-SPECTRA FULL COMPLETED
-====================================================================
-  Sample        : RUBIK
-  Vision skipped: False
-  Vision output : RESULTS/RUBIK/vision
-  Reg. output   : RESULTS/RUBIK/registration
-====================================================================
-  Pulizia cache SfM intermedia...
-  Cache SfM rimossa.
-==============================================
-  Run finished : Tue Jun  9 12:18:21 PM CEST 2026
-  Spazio home  : 155G liberi
-==============================================

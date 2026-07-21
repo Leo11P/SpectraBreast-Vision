@@ -194,6 +194,8 @@ def _run_single_pair(
         marker_side_mm           = cfg.detection.marker_side_mm,
         use_subpix               = cfg.detection.use_subpix,
         subpix_winsize           = cfg.detection.subpix_winsize,
+        equalize_method          = cfg.detection.equalize_method,
+        tune_detector            = cfg.detection.tune_detector,
         border_px                = cfg.pointcloud.border_px,
         reflectance_norm         = cfg.pointcloud.reflectance_norm,
         pc_chunk_size            = cfg.pointcloud.pc_chunk_size,

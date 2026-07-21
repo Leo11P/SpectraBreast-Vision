@@ -18,7 +18,7 @@
 # =============================================================================
 
 # Sample being processed. Used to build default input/output paths.
-sample_name: "SAMPLE2"
+sample_name: "TETTA"
 
 # Roots that drive default path resolution for `spectra full`.
 # Both can be relative (resolved from cwd) or absolute.
@@ -40,20 +40,20 @@ vision:
     #   pose_dir         = DATA/input_vision/<sample>/poses          (if it exists)
     #   camera_params_dir= DATA/input_vision/<sample>/camera_parameters (if it exists)
     # Override here when running `spectra vision` standalone.
-    rgb_dir:           DATA/input_vision/SAMPLE2_iphone
-    pose_dir:          DATA/input_vision/SAMPLE2_iphone
-    camera_params_dir: DATA/input_vision/SAMPLE2_iphone
+    rgb_dir:           DATA/input_vision/TETTA_iphone3/rgb
+    pose_dir:          DATA/input_vision/TETTA_iphone3/poses
+    camera_params_dir: DATA/input_vision/TETTA_iphone3/camera_parameters
 
   output:
     # When `null`, derived to:  RESULTS/<sample>/vision
-    root:                        RESULTS/SAMPLE2/vision_PCA
+    root:                        RESULTS/TETTA3
     run_name:                    null
     update_most_recent_symlink:  false
     z_axis_points_down:          true
 
   aruco:
     dictionary:             4x4_50
-    marker_edge_length_m:   0.068
+    marker_edge_length_m:   0.156
     origin_marker_id:       null
     min_views_per_marker:   2
     align_to_aruco:         true
@@ -157,11 +157,11 @@ registration:
   #
   # Override here when running `spectra registration` standalone with custom inputs.
   paths:
-    hsi_hdr:      DATA/input_registration/SAMPLE2/SAMPLE2_raw.hdr
-    mesh:         RESULTS/SAMPLE2/vision/surface_mesh.ply
-    aruco_json:   RESULTS/SAMPLE2/vision/aruco_markers_3d.json
+    hsi_hdr:      DATA/input_registration/RUBIK/RUBIK_raw.hdr
+    mesh:         RESULTS/RUBIK/vision/surface_mesh.ply
+    aruco_json:   RESULTS/RUBIK/vision/aruco_markers_3d.json
     liveview_png: null
-    output_dir:   RESULTS/SAMPLE2_mean/registration
+    output_dir:   RESULTS/RUBIK_mean/registration
 
   detection:
     hsi_extraction_method: "mean"     # "mean" | "visible_band" | "pca"
@@ -169,6 +169,8 @@ registration:
     marker_side_mm:        6.8
     use_subpix:            true
     subpix_winsize:        2
+    equalize_method:       "clahe"  # "global" | "clahe" | "none"
+    tune_detector:         true       # true = DetectorParameters permissivi (basso contrasto/bassa res)
 
   roi:
     method:         "sift"
@@ -214,7 +216,7 @@ registration:
   # mode == "sweep"
   # ------------------------------------------------------------------
   sweep:
-    roi_mode: false
+    roi_mode: true
     resolution_pairs:
       - [5.0, 0.5]
       - [2.0, 0.5]

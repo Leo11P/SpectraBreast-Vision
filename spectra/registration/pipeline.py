@@ -115,7 +115,9 @@ def load_envi(hdr_path):
     return cube, meta
 
 
-def extract_2d_from_hsi(cube, meta, method='visible_band'):
+def extract_2d_from_hsi(cube, meta, method='visible_band',
+                        equalize_method='global',
+                        clahe_clip=2.0, clahe_grid=(8, 8)):
     """
     Extract a single 2D grayscale image from an HSI cube for ArUco detection.
 
@@ -188,7 +190,26 @@ def extract_2d_from_hsi(cube, meta, method='visible_band'):
         img_norm = img_2d / (np.max(img_2d) + 1e-6)
 
     img_8bit = (img_norm * 255).astype(np.uint8)
-    img_8bit = cv2.equalizeHist(img_8bit)
+
+    # Contrast equalization. Selectable so the effect can be A/B-tested without
+    # silently changing every run:
+    #   'global' → cv2.equalizeHist (previous default; global histogram)
+    #   'clahe'  → local contrast equalization; preserves marker edges better
+    #             on scenes with a large low-frequency background (tissue)
+    #   'none'   → keep the percentile-normalized image as-is
+    if equalize_method == 'global':
+        img_8bit = cv2.equalizeHist(img_8bit)
+        print("[HSI] Equalize: global (cv2.equalizeHist)")
+    elif equalize_method == 'clahe':
+        clahe = cv2.createCLAHE(clipLimit=clahe_clip, tileGridSize=clahe_grid)
+        img_8bit = clahe.apply(img_8bit)
+        print(f"[HSI] Equalize: CLAHE (clipLimit={clahe_clip}, "
+              f"tileGridSize={clahe_grid})")
+    elif equalize_method == 'none':
+        print("[HSI] Equalize: none (percentile-normalized only)")
+    else:
+        raise ValueError(f"Invalid equalize_method: {equalize_method!r} "
+                         f"(expected 'global' | 'clahe' | 'none')")
     return img_8bit
 
 
@@ -198,7 +219,8 @@ def extract_2d_from_hsi(cube, meta, method='visible_band'):
 
 def detect_aruco(image_gray, aruco_dict_type=cv2.aruco.DICT_4X4_50,
                  use_subpix=True, subpix_winsize=5,
-                 subpix_maxiter=30, subpix_eps=0.001):
+                 subpix_maxiter=30, subpix_eps=0.001,
+                 tune_detector=False):
     """
     Detect ArUco markers in a grayscale image.
 
@@ -215,6 +237,11 @@ def detect_aruco(image_gray, aruco_dict_type=cv2.aruco.DICT_4X4_50,
     subpix_winsize  : semi-finestra per cornerSubPix (default 5 → finestra 11×11)
     subpix_maxiter  : iterazioni massime per cornerSubPix
     subpix_eps      : epsilon di convergenza per cornerSubPix
+    tune_detector   : se True, usa DetectorParameters più permissivi, pensati
+                      per immagini a basso contrasto / bassa risoluzione
+                      (soglia adattiva su range più ampio, perimetro minimo
+                      più piccolo, approssimazione poligonale più tollerante).
+                      Default False = parametri OpenCV di serie.
 
     Returns
     -------
@@ -223,6 +250,24 @@ def detect_aruco(image_gray, aruco_dict_type=cv2.aruco.DICT_4X4_50,
     """
     aruco_dict   = cv2.aruco.getPredefinedDictionary(aruco_dict_type)
     aruco_params = cv2.aruco.DetectorParameters()
+    if tune_detector:
+        # Wider adaptive-threshold window range: the OpenCV defaults assume a
+        # webcam-resolution marker; HSI/liveview markers can be smaller.
+        aruco_params.adaptiveThreshWinSizeMin = 3
+        aruco_params.adaptiveThreshWinSizeMax = 43
+        aruco_params.adaptiveThreshWinSizeStep = 4
+        # Accept smaller markers (perimeter as a fraction of image size).
+        aruco_params.minMarkerPerimeterRate = 0.01
+        # Tolerate noisier / less-square contours.
+        aruco_params.polygonalApproxAccuracyRate = 0.05
+        print("  [Detector] tune_detector=ON "
+              f"(adaptiveThreshWinSize={aruco_params.adaptiveThreshWinSizeMin}-"
+              f"{aruco_params.adaptiveThreshWinSizeMax} step "
+              f"{aruco_params.adaptiveThreshWinSizeStep}, "
+              f"minMarkerPerimeterRate={aruco_params.minMarkerPerimeterRate}, "
+              f"polygonalApproxAccuracyRate={aruco_params.polygonalApproxAccuracyRate})")
+    else:
+        print("  [Detector] tune_detector=OFF (OpenCV defaults)")
     detector     = cv2.aruco.ArucoDetector(aruco_dict, aruco_params)
 
     corners, ids, _ = detector.detectMarkers(image_gray)
@@ -1670,6 +1715,8 @@ def run_full_pipeline(
     marker_side_mm         = 9.0,
     use_subpix             = True,     # subpixel refinement ArUco (Punto 3)
     subpix_winsize         = 5,
+    equalize_method        = 'global',
+    tune_detector          = False,
     # Point cloud
     border_px              = 2,
     reflectance_norm       = True,
@@ -1772,7 +1819,8 @@ def run_full_pipeline(
     # ── Step 1: Load HSI ──────────────────────────────────────────────────────
     print("\n[Step 1] Loading HSI...")
     cube, meta = load_envi(hsi_hdr_path)
-    hsi_2d     = extract_2d_from_hsi(cube, meta, method=hsi_extraction_method)
+    hsi_2d     = extract_2d_from_hsi(cube, meta, method=hsi_extraction_method,
+                                     equalize_method=equalize_method)
     print(f"  Cube shape: {cube.shape}")
 
     # ── Step 2: Render(s) ─────────────────────────────────────────────────────
@@ -1838,7 +1886,8 @@ def run_full_pipeline(
     print("\n[Step 3] Detecting ArUco on HSI...")
     data_hsi, _ = detect_aruco(hsi_2d, aruco_dict_type=aruco_dict_type,
                                 use_subpix=use_subpix,
-                                subpix_winsize=subpix_winsize)
+                                subpix_winsize=subpix_winsize,
+                                tune_detector=tune_detector)
     print(f"  HSI markers found: {sorted(data_hsi.keys())}")
 
     # ── Step 3b: Project JSON corners -> render REGISTRAZIONE ─────────────────
