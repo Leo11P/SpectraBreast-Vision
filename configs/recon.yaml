@@ -1,9 +1,13 @@
-# MASt3R-SfM + ArUco: load with `spectra run --config configs/default.yaml`
-# Input: folder of images. Optional: `pose_dir`, `camera_params_dir` (or both null for SfM-only).
-# Output: fused `cloud.ply`, ArUco 2D under `aruco_detections/`, 3D in `aruco_markers_3d.json` when aligned.
+# LEGACY vision-only config. Prefer configs/default.yaml (unified).
+# Load with: spectra vision --config configs/recon.yaml
+# Input: folder of images. Optional `pose_dir` / `camera_params_dir` (null = SfM-only).
+# Output: fused `cloud.ply`, ArUco 2D under `aruco_detections/`, 3D in
+# `aruco_markers_3d.json` when alignment succeeds.
+# Note: this file bypasses the DATA/RESULTS layout convention and the
+# dd-mm-yyyy run-date folder — paths are used exactly as written.
 
 input:
-  rgb_dir: DATA/SAMPLE1_iphone/rgb
+  rgb_dir: DATA/input_vision/SAMPLE1_iphone/rgb
   pose_dir: null
   camera_params_dir: null
 
@@ -15,7 +19,7 @@ output:
 
 aruco:
   dictionary: 4x4_50
-  marker_edge_length_m: 0.068
+  # marker_edge_length_mm: NOT set here — read from configs/default.yaml
   origin_marker_id: null
   min_views_per_marker: 2
   align_to_aruco: true

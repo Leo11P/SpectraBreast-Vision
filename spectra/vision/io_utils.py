@@ -157,18 +157,54 @@ def save_mesh_as_ply(
     return path
 
 
-def prepare_run_dir(root: Path, run_name: str | None = None) -> tuple[Path, str]:
-    """Create a timestamped run folder and return (path, run_name)."""
+def prepare_run_dir(
+    root: Path,
+    run_name: str | None = None,
+    overwrite: bool = True,
+) -> tuple[Path, str]:
+    """Create the run folder and return ``(path, run_name)``.
+
+    With ``overwrite=True`` (the default) an existing folder is deleted and
+    rebuilt, so re-running a stage replaces its previous outputs in place.
+    That matters because the next stage looks for the mesh at exactly this
+    path: suffixing to ``<run_name>_01`` would strand the new outputs
+    somewhere registration never reads.
+
+    With ``overwrite=False`` the legacy behaviour applies and a numeric
+    suffix is appended instead.
+    """
     root = Path(root)
     root.mkdir(parents=True, exist_ok=True)
     name = run_name or datetime.now().strftime("%Y%m%d_%H%M%S")
     run_dir = root / name
-    suffix = 1
-    while run_dir.exists():
-        run_dir = root / f"{name}_{suffix:02d}"
-        suffix += 1
+
+    if overwrite:
+        if run_dir.is_symlink() or run_dir.is_file():
+            run_dir.unlink()
+        elif run_dir.is_dir():
+            shutil.rmtree(run_dir)
+    else:
+        suffix = 1
+        while run_dir.exists():
+            run_dir = root / f"{name}_{suffix:02d}"
+            suffix += 1
+
     run_dir.mkdir(parents=True, exist_ok=False)
     return run_dir, run_dir.name
+
+
+def clean_sfm_cache(root: Path) -> bool:
+    """Delete ``<root>/.mast3r_sfm_cache`` if present. True if something went.
+
+    The MASt3R-SfM cache is large intermediate state that is never read after
+    a run completes. Removing it here means local runs behave like the SLURM
+    job, which cleaned it in the wrapper script.
+    """
+    cache_dir = Path(root) / ".mast3r_sfm_cache"
+    if not cache_dir.is_dir():
+        return False
+    shutil.rmtree(cache_dir, ignore_errors=True)
+    return not cache_dir.exists()
 
 
 def update_most_recent_symlink(root: Path, run_dir: Path) -> Path:
@@ -187,6 +223,7 @@ def update_most_recent_symlink(root: Path, run_dir: Path) -> Path:
 
 
 __all__ = [
+    "clean_sfm_cache",
     "prepare_run_dir",
     "save_mesh_as_ply",
     "save_pointcloud_as_ply",

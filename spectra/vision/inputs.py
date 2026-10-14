@@ -20,8 +20,15 @@ from .backends import BackendInputs
 from .transforms import xyzeuler_to_hmat
 
 
-def list_rgb_images(rgb_dir: Path) -> List[Path]:
+def list_rgb_images(rgb_dir: Path | None) -> List[Path]:
     """Return a sorted list of image paths in a folder."""
+    if rgb_dir is None:
+        raise FileNotFoundError(
+            "No RGB folder resolved. Either set `vision.input.rgb_dir` in the "
+            "YAML (relative or absolute), or place the images under "
+            "DATA/input_vision/<sample_name>[_<device>]/rgb so it can be "
+            "derived automatically."
+        )
     rgb_dir = Path(rgb_dir)
     if not rgb_dir.is_dir():
         raise FileNotFoundError(f"RGB folder does not exist: {rgb_dir}")

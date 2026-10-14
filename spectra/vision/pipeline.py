@@ -14,6 +14,7 @@ import importlib
 import json
 
 import os
+import sys
 import time
 from dataclasses import dataclass, field, replace
 from pathlib import Path
@@ -39,7 +40,13 @@ from .aruco import ArucoDetector, MarkerDetection, annotate_image
 from .config import ReconstructionConfig, RerunConfig, save_config, save_config_json
 from .coordinates import apply_output_z_reflection, reflect_z_sim3_matrix
 from .inputs import build_backend_inputs, canonicalize_images_with_exif
-from .io_utils import prepare_run_dir, save_mesh_as_ply, save_pointcloud_as_ply, update_most_recent_symlink
+from .io_utils import (
+    clean_sfm_cache,
+    prepare_run_dir,
+    save_mesh_as_ply,
+    save_pointcloud_as_ply,
+    update_most_recent_symlink,
+)
 from .marker_ba import BundleAdjustmentResult, apply_delta_and_scale_to_points
 from .rerun_logging import (
     HAS_RERUN,
@@ -81,6 +88,13 @@ def _log_surface_cloud_open3d_web(
     """Display the reconstructed surface cloud in Open3D's web viewer."""
     if surface.points.shape[0] == 0:
         print("[yellow]Skipping Open3D web viewer: surface cloud is empty.[/yellow]")
+        return
+    if not sys.stdin.isatty():
+        print(
+            "[yellow]Skipping Open3D web viewer: stdin is not interactive "
+            "(e.g. a batch/SLURM job) — `open3d.visualization.draw()` blocks "
+            "until a window is closed, which never happens here.[/yellow]"
+        )
         return
     try:
         o3d = importlib.import_module("open3d")
@@ -367,7 +381,11 @@ def run_reconstruction(cfg: ReconstructionConfig) -> ReconstructionResult:
 
     _log_step("Step 1/6 - Preparing run folder and loading inputs")
     _timer.begin("Step 1/6 - Preparing run folder and loading inputs")
-    run_dir, run_name = prepare_run_dir(cfg.output.root, cfg.output.run_name)
+    run_dir, run_name = prepare_run_dir(
+        cfg.output.root,
+        cfg.output.run_name,
+        overwrite=cfg.output.overwrite_existing_run,
+    )
     print(f"Run directory: [green]{run_dir}[/green]")
 
     backend_inputs = build_backend_inputs(
@@ -396,6 +414,11 @@ def run_reconstruction(cfg: ReconstructionConfig) -> ReconstructionResult:
     )
     backend_inputs.image_paths = canonical_paths
 
+    if cfg.rerun.enabled and not HAS_RERUN:
+        print(
+            "[yellow]rerun.enabled is true but rerun-sdk failed to import; "
+            "skipping all Rerun logging (no .rrd/.rbl will be written).[/yellow]"
+        )
     if cfg.rerun.enabled and HAS_RERUN:
         rdir = (run_dir / cfg.rerun.rerun_subdir).resolve()
         if cfg.rerun.save_rrd or cfg.rerun.save_rbl:
@@ -741,7 +764,16 @@ def run_reconstruction(cfg: ReconstructionConfig) -> ReconstructionResult:
             rerun_cfg=cfg.rerun,
         )
         if not cfg.rerun.no_wait:
-            input("Data has been logged to Rerun. Open the viewer, then press Enter to exit.")
+            if sys.stdin.isatty():
+                try:
+                    input("Data has been logged to Rerun. Open the viewer, then press Enter to exit.")
+                except EOFError:
+                    pass
+            else:
+                print(
+                    "[yellow]rerun.no_wait is false but stdin is not interactive "
+                    "(e.g. a batch/SLURM job) — skipping the wait-for-Enter prompt.[/yellow]"
+                )
     print("Checking if we should log the surface cloud to Open3D")
     if cfg.rerun.log_surface_cloud_open3d_web:
         print("Logging the surface cloud to Open3D")
@@ -762,6 +794,9 @@ def run_reconstruction(cfg: ReconstructionConfig) -> ReconstructionResult:
         print(f"[dim]Vision timings saved → {run_dir / 'timings.json'}[/dim]")
     except OSError as exc:
         print(f"[yellow]Could not write vision timings.json: {exc}[/yellow]")
+
+    if cfg.output.clean_sfm_cache and clean_sfm_cache(cfg.output.root):
+        print("[dim]Removed intermediate .mast3r_sfm_cache/[/dim]")
 
     print(f"[green]Done in {time.time() - t0:.1f} s. Outputs: {run_dir}[/green]")
 

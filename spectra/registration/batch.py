@@ -1,19 +1,27 @@
-"""Batch registration over multiple samples under the new DATA/<sample>/ layout.
+"""Batch registration over every ready sample under ``DATA/input_registration/``.
 
 Discovery rule
 ==============
-For every subdirectory ``<data_root>/<sample>/`` that satisfies ALL of:
+For every subdirectory ``<data_root>/input_registration/<sample>/`` that
+satisfies ALL of:
 
-1. It contains ``input_registration/<sample>_raw.hdr`` (the HSI cube).
-2. ``<results_root>/<sample>/vision/surface_mesh.ply`` exists.
-3. ``<results_root>/<sample>/vision/aruco_markers_3d.json`` exists.
-4. (When ``cfg.batch.roi_mode`` is true) ``input_registration/<sample>_raw.png``
-   also exists.
+1. ``<sample>_raw.hdr`` exists inside it (the HSI cube).
+2. ``surface_mesh.ply`` exists in the sample's vision run.
+3. ``aruco_markers_3d.json`` exists in the same vision run.
+4. (When ``cfg.batch.roi_mode`` is true) ``<sample>_raw.png`` sits next to
+   the ``.hdr``.
 5. If ``cfg.batch.sample_regex`` is set, ``<sample>`` matches it.
 
-…the batch runs the per-sample registration pipeline and writes outputs to
-``<results_root>/<sample>/registration/``. After every sample, an aggregate
-Excel is written to ``<results_root>/_batch/batch_summary.xlsx``.
+…the batch runs the per-sample registration pipeline. The vision run is the
+one for ``results_date`` (today by default), falling back to the most recent
+dated run that has both handoff files.
+
+This is the same stage-first layout used by ``single`` / ``roi`` / ``sweep``,
+so one dataset feeds every mode.
+
+Outputs go to ``<results_root>/<dd-mm-yyyy>/<sample>/registration/``. After
+every sample an aggregate Excel is written to
+``<results_root>/<dd-mm-yyyy>/_batch/batch_summary.xlsx``.
 
 The structure of the Excel (columns, conditional formatting) is identical to
 the legacy ``SpectraBreast-Registration/batch.py`` so existing analysis
@@ -72,41 +80,72 @@ def discover_samples(
     results_root: Path,
     roi_mode: bool,
     sample_regex: Optional[str] = None,
+    results_date: Optional[str] = None,
+    marker_edge_length_mm: Optional[float] = None,
 ) -> list[dict]:
-    """Walk ``data_root`` and return one dict per ready-to-run sample."""
+    """Return one dict per ready-to-run sample under ``data_root``.
+
+    Uses the same layout as every other registration mode — stage first,
+    sample second::
+
+        DATA/input_registration/<sample>/<sample>_raw.hdr
+        DATA/input_registration/<sample>/<sample>_raw.png   # ROI only
+
+    Mesh and ArUco JSON come from the vision run for ``results_date`` (today
+    by default), falling back to the most recent dated run that has them, so
+    a batch launched the day after a set of vision runs still finds them.
+    With ``marker_edge_length_mm``, a sample whose vision run was built with a
+    different marker edge length is skipped (see ``check_marker_edge``).
+    Outputs go to ``<results_root>/<results_date>/<sample>/registration/``.
+    """
+    from ..orchestrator import check_marker_edge, find_vision_dir, registration_output_dir
+
     data_root = Path(data_root)
     results_root = Path(results_root)
-    if not data_root.is_dir():
-        raise FileNotFoundError(f"[batch] data_root not found: {data_root}")
+    scan_root = data_root / "input_registration"
+    if not scan_root.is_dir():
+        raise FileNotFoundError(
+            f"[batch] input_registration folder not found: {scan_root}. "
+            f"Expected layout: {data_root}/input_registration/<sample>/<sample>_raw.hdr"
+        )
 
     pattern = re.compile(sample_regex) if sample_regex else None
     pairs: list[dict] = []
     skipped: list[tuple[str, str]] = []
 
-    for entry in sorted(data_root.iterdir()):
+    for entry in sorted(scan_root.iterdir()):
         if not entry.is_dir():
             continue
         sample = entry.name
         if pattern is not None and not pattern.search(sample):
             continue
 
-        hdr = entry / "input_registration" / f"{sample}_raw.hdr"
-        png = entry / "input_registration" / f"{sample}_raw.png"
-        mesh = results_root / sample / "vision" / "surface_mesh.ply"
-        aruco = results_root / sample / "vision" / "aruco_markers_3d.json"
+        hdr = entry / f"{sample}_raw.hdr"
+        png = entry / f"{sample}_raw.png"
+        vision_dir, is_fallback = find_vision_dir(results_root, sample, results_date)
+        if is_fallback:
+            print(f"[batch] WARNING {sample}: no vision run for this date, using {vision_dir}")
+        mesh = vision_dir / "surface_mesh.ply"
+        aruco = vision_dir / "aruco_markers_3d.json"
 
         missing = []
         if not hdr.is_file():
-            missing.append(f"input_registration/{sample}_raw.hdr")
+            missing.append(f"{sample}_raw.hdr")
         if not mesh.is_file():
             missing.append("vision/surface_mesh.ply")
         if not aruco.is_file():
             missing.append("vision/aruco_markers_3d.json")
         if roi_mode and not png.is_file():
-            missing.append(f"input_registration/{sample}_raw.png")
+            missing.append(f"{sample}_raw.png")
         if missing:
             skipped.append((sample, "missing: " + ", ".join(missing)))
             continue
+        if marker_edge_length_mm is not None:
+            try:
+                check_marker_edge(aruco, marker_edge_length_mm)
+            except ValueError as exc:
+                skipped.append((sample, str(exc)))
+                continue
 
         pairs.append({
             "sample_name":       sample,
@@ -114,7 +153,7 @@ def discover_samples(
             "mesh_path":         str(mesh),
             "aruco_path":        str(aruco),
             "liveview_png_path": str(png) if roi_mode else None,
-            "output_dir":        str(results_root / sample / "registration"),
+            "output_dir":        str(registration_output_dir(results_root, sample, results_date)),
         })
 
     print(f"\n[batch] Scanned: {data_root}")
@@ -205,7 +244,7 @@ def _run_single_sample(
         render_resolution_mm     = res_pc,
         render_resolution_reg_mm = res_reg,
         render_margin_mm         = cfg.render.margin_mm,
-        marker_side_mm           = cfg.detection.marker_side_mm,
+        marker_side_mm           = cfg.detection.marker_edge_length_mm,
         use_subpix               = cfg.detection.use_subpix,
         subpix_winsize           = cfg.detection.subpix_winsize,
         equalize_method          = cfg.detection.equalize_method,
@@ -234,7 +273,7 @@ def _run_single_sample(
     roi_info = result.get("roi_align_info")
 
     px_per_mm = (
-        _px_per_mm_from_data(data_hsi, cfg.detection.marker_side_mm)
+        _px_per_mm_from_data(data_hsi, cfg.detection.marker_edge_length_mm)
         if data_hsi else float("nan")
     )
 
@@ -303,7 +342,7 @@ def _run_single_sample(
 
 
 def _empty_row(sample: str, res_reg: float, res_pc: float,
-               status: str, roi_mode: bool = False, "vision_total_s": nan, "grand_total_s": nan,) -> dict:
+               status: str, roi_mode: bool = False) -> dict:
     nan = float("nan")
     return {
         "sample": sample, "roi_mode": "yes" if roi_mode else "no",
@@ -316,6 +355,7 @@ def _empty_row(sample: str, res_reg: float, res_pc: float,
         "n_corners_2D": 0, "n_points_cloud": 0, "n_bands": 0,
         "roi_inliers": 0, "roi_matches": 0, "roi_reproj_px": nan,
         "elapsed_render_s": 0.0, "elapsed_pipeline_s": 0.0, "elapsed_total_s": 0.0,
+        "vision_total_s": nan, "grand_total_s": nan,
         "status": status,
     }
 
@@ -479,19 +519,26 @@ def run_batch(
     use_torch_render: bool,
     data_root: Path,
     results_root: Path,
+    results_date: Optional[str] = None,
     render_fn=None,
 ) -> str:
     """Discover every ready sample under ``data_root`` and run them all.
 
-    Per-sample outputs go to ``<results_root>/<sample>/registration/``. The
-    aggregate Excel goes to ``<results_root>/_batch/batch_summary.xlsx``.
+    Per-sample outputs go to
+    ``<results_root>/<results_date>/<sample>/registration/``; the aggregate
+    Excel goes to ``<results_root>/<results_date>/_batch/batch_summary.xlsx``.
+    ``results_date`` defaults to today.
     """
+    from ..orchestrator import batch_summary_dir, today_folder
+
+    results_date = results_date or today_folder()
     roi_mode = bool(cfg.batch.roi_mode)
     print("\n" + "=" * 68)
     print("  BATCH MODE")
     print("=" * 68)
     print(f"  data_root    : {data_root}")
     print(f"  results_root : {results_root}")
+    print(f"  run date     : {results_date}")
     print(f"  ROI mode     : {'YES' if roi_mode else 'NO'}")
 
     pairs = discover_samples(
@@ -499,6 +546,8 @@ def run_batch(
         results_root=results_root,
         roi_mode=roi_mode,
         sample_regex=cfg.batch.sample_regex,
+        results_date=results_date,
+        marker_edge_length_mm=cfg.detection.marker_edge_length_mm,
     )
     if not pairs:
         print("\n[batch] No ready samples found. Exiting.")
@@ -529,7 +578,7 @@ def run_batch(
             )
         rows.append(row)
 
-    out_path = str(results_root / "_batch" / "batch_summary.xlsx")
+    out_path = str(batch_summary_dir(results_root, results_date) / "batch_summary.xlsx")
     _write_batch_summary_xlsx(rows, out_path)
 
     n_ok = sum(1 for r in rows if r["status"] == "ok")

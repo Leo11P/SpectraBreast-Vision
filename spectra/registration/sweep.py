@@ -191,7 +191,7 @@ def _run_single_pair(
         render_resolution_mm     = res_pc,
         render_resolution_reg_mm = res_reg,
         render_margin_mm         = cfg.render.margin_mm,
-        marker_side_mm           = cfg.detection.marker_side_mm,
+        marker_side_mm           = cfg.detection.marker_edge_length_mm,
         use_subpix               = cfg.detection.use_subpix,
         subpix_winsize           = cfg.detection.subpix_winsize,
         equalize_method          = cfg.detection.equalize_method,
@@ -217,7 +217,7 @@ def _run_single_pair(
     data_hsi = result.get("data_hsi")
     roi_info = result.get("roi_align_info")
 
-    pxpermm = _px_per_mm(data_hsi, cfg.detection.marker_side_mm) if data_hsi else float("nan")
+    pxpermm = _px_per_mm(data_hsi, cfg.detection.marker_edge_length_mm) if data_hsi else float("nan")
     if err2d_px is not None:
         e = np.asarray(err2d_px, dtype=np.float64)
         m2px, med2px, _ = _stats(e)

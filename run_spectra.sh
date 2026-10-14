@@ -47,12 +47,19 @@ echo "  Torch   : $(uv run python -c 'import torch; print(torch.__version__)')"
 echo "  CUDA ok : $(uv run python -c 'import torch; print(torch.cuda.is_available())')"
 echo "=============================================="
 
-uv run spectra vision --config configs/default.yaml 
+# Scegli lo stage da lanciare (uno solo, decommenta quello che serve).
+# Gli output finiscono in RESULTS/<gg-mm-aaaa>/<sample>/<stage>/ e
+# sovrascrivono la cartella dello stesso giorno se esiste gia'.
+#uv run spectra full --config configs/default.yaml
 #uv run spectra registration --config configs/default.yaml
+uv run spectra vision --config configs/default.yamls
 
-echo "  Pulizia cache SfM intermedia..."
+# La pipeline cancella .mast3r_sfm_cache/ da sola alla fine di ogni run
+# (vision.output.clean_sfm_cache). Questa passata resta come rete di sicurezza
+# per i job interrotti, dove la pulizia in-process non arriva a girare.
+echo "  Pulizia cache SfM residua (job interrotti)..."
 find RESULTS -name ".mast3r_sfm_cache" -type d -exec rm -rf {} + 2>/dev/null || true
-echo "  Cache SfM rimossa."
+echo "  Fatto."
 
 echo "=============================================="
 echo "  Run finished : $(date)"

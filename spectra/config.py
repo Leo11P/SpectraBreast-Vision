@@ -7,7 +7,8 @@ This module exposes three top-level dataclasses:
                                  backward compatibility).
 - :class:`RegistrationConfig`  — HSI→mesh registration + spectral point cloud.
 - :class:`UnifiedConfig`       — wraps both, plus ``sample_name`` / ``data_root``
-                                 / ``results_root`` / ``stages``.
+                                 / ``results_root`` / ``results_date`` /
+                                 ``stages``.
 
 The unified config drives all three CLI sub-commands::
 
@@ -21,14 +22,23 @@ For ``spectra full`` (and for ``spectra registration`` after a successful
 :func:`spectra.orchestrator.resolve_unified_paths`.
 
 All loaders accept the same dotted-path override syntax as the legacy config
-(e.g. ``--set vision.aruco.marker_edge_length_m=0.03``,
+(e.g. ``--set vision.aruco.min_views_per_marker=3``,
 ``--set registration.render.resolution_mm_per_px=1.0``).
+
+Marker geometry: the edge length is set ONLY in ``configs/default.yaml``
+(``vision.aruco.marker_edge_length_mm``). Any other YAML that sets it — under
+``vision.aruco`` or ``registration.detection`` — is rejected, as is ``--set``;
+other configs get the value from ``configs/default.yaml``. Registration always
+inherits it (see :func:`spectra.orchestrator.resolve_unified_paths`), and
+``vision.aruco.dictionary`` too unless ``registration.detection.aruco_dict``
+overrides it. Every marker length in the config is in **millimetres**.
 """
 
 from __future__ import annotations
 
 import copy
 import json
+from datetime import datetime
 from pathlib import Path
 from typing import Any, List, Literal, Mapping, MutableMapping, Optional
 
@@ -36,6 +46,9 @@ import yaml
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 from .vision.aruco import ARUCO_DICTIONARIES as _ARUCO_VISION_DICTS
+
+#: The one registration key that must never be user-set (single marker source).
+REGISTRATION_MARKER_EDGE_KEY = "registration.detection.marker_edge_length_mm"
 
 
 # =============================================================================
@@ -52,6 +65,7 @@ from .vision.config import (
     RerunConfig,
     SurfaceConfig,
 )
+from .vision.config import DEFAULT_CONFIG_PATH, with_default_marker_edge
 
 
 # =============================================================================
@@ -66,8 +80,10 @@ _REG_TO_VISION_DICT = {k.upper(): k for k in _ARUCO_VISION_DICTS.keys()}
 class RegistrationPaths(BaseModel):
     """Per-sample paths used by the registration pipeline.
 
-    Any field left `None` will be auto-derived by the orchestrator from
-    ``sample_name`` + ``data_root`` + ``results_root`` (see module docstring).
+    Any field left `None` is auto-derived by the orchestrator from
+    ``sample_name`` + ``data_root`` + ``results_root`` + ``results_date``
+    (see module docstring). Any field you DO set — relative or absolute — is
+    used verbatim and never rewritten.
     """
 
     model_config = ConfigDict(extra="forbid")
@@ -83,8 +99,13 @@ class RegistrationDetection(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     hsi_extraction_method: Literal["mean", "visible_band", "pca"] = "mean"
-    aruco_dict: str = "4X4_50"
-    marker_side_mm: float = Field(default=6.8, gt=0.0)
+    # The HSI cube and the 3D reconstruction see the SAME physical markers —
+    # see `spectra.orchestrator.resolve_unified_paths`.
+    # aruco_dict: inherited from `vision.aruco.dictionary` when None.
+    aruco_dict: Optional[str] = None
+    # Internal: ALWAYS copied from `vision.aruco.marker_edge_length_mm`, which
+    # is set only in configs/default.yaml; setting it here or with --set is rejected.
+    marker_edge_length_mm: Optional[float] = Field(default=None, gt=0.0)
     use_subpix: bool = True
     subpix_winsize: int = Field(default=5, ge=1)
     # Contrast equalization for the 2D image fed to ArUco detection.
@@ -95,13 +116,17 @@ class RegistrationDetection(BaseModel):
 
     @field_validator("aruco_dict")
     @classmethod
-    def _validate_dict(cls, value: str) -> str:
-        if value.upper() not in _REG_TO_VISION_DICT:
+    def _validate_dict(cls, value: Optional[str]) -> Optional[str]:
+        """Accept any capitalization; normalize to the canonical lowercase name."""
+        if value is None:
+            return None
+        canonical = _REG_TO_VISION_DICT.get(value.upper())
+        if canonical is None:
             raise ValueError(
                 f"Unknown ArUco dictionary {value!r}; "
-                f"valid options: {sorted(_REG_TO_VISION_DICT.keys())}"
+                f"valid options: {sorted(_ARUCO_VISION_DICTS.keys())}"
             )
-        return value
+        return canonical
 
 
 class RegistrationRoiAlign(BaseModel):
@@ -148,11 +173,13 @@ class RegistrationExport(BaseModel):
 class RegistrationBatch(BaseModel):
     """Batch mode parameters.
 
-    With the new layout, batch discovery scans ``data_root`` for every
-    ``<sample>/input_registration/<sample>_raw.hdr``. Mesh and ArUco JSON for
-    each sample are taken from ``results_root/<sample>/vision/``. Per-sample
-    output goes to ``results_root/<sample>/registration/``; the aggregate
-    Excel goes to ``results_root/_batch/batch_summary.xlsx``.
+    Batch discovery scans ``data_root/input_registration/`` for every
+    ``<sample>/<sample>_raw.hdr`` — the same stage-first layout used by
+    ``single`` / ``roi`` / ``sweep``. Mesh and ArUco JSON come from that
+    sample's vision run under ``results_root/<dd-mm-yyyy>/<sample>/vision/``.
+    Per-sample output goes to
+    ``results_root/<dd-mm-yyyy>/<sample>/registration/``; the aggregate Excel
+    goes to ``results_root/<dd-mm-yyyy>/_batch/batch_summary.xlsx``.
     """
 
     model_config = ConfigDict(extra="forbid")
@@ -224,12 +251,31 @@ class UnifiedConfig(BaseModel):
     sample_name: str = "SAMPLE1"
     data_root: Path = Path("DATA")
     results_root: Path = Path("RESULTS")
+    #: Run-date folder inserted between ``results_root`` and ``sample_name``:
+    #: ``RESULTS/<dd-mm-yyyy>/<sample>/{vision,registration}``. ``None`` means
+    #: today. Pin an older date to re-run registration against that day's
+    #: vision outputs.
+    results_date: Optional[str] = None
     stages: List[Literal["vision", "registration"]] = Field(
         default_factory=lambda: ["vision", "registration"],
     )
 
     vision:       VisionConfig       = Field(...)
     registration: RegistrationConfig = Field(default_factory=RegistrationConfig)
+
+    @field_validator("results_date")
+    @classmethod
+    def _validate_results_date(cls, value: Optional[str]) -> Optional[str]:
+        if value is None or str(value).strip() == "":
+            return None
+        value = str(value).strip()
+        try:
+            datetime.strptime(value, "%d-%m-%Y")
+        except ValueError as exc:
+            raise ValueError(
+                f"results_date must be formatted dd-mm-yyyy, got {value!r}"
+            ) from exc
+        return value
 
     @model_validator(mode="after")
     def _resolve_roots(self) -> "UnifiedConfig":
@@ -289,6 +335,15 @@ def load_unified_config(path: str | Path) -> UnifiedConfig:
         raise ValueError(
             f"Config {path} is missing a top-level `vision:` section. "
             "If you have a legacy vision-only config, wrap it under `vision:`."
+        )
+    if path.resolve() != DEFAULT_CONFIG_PATH:
+        data["vision"] = with_default_marker_edge(data["vision"], f"{path} (vision)")
+    reg_detection = (data.get("registration") or {}).get("detection") or {}
+    if reg_detection.get("marker_edge_length_mm") is not None:
+        raise ValueError(
+            f"Config {path}: {REGISTRATION_MARKER_EDGE_KEY} cannot be set. The marker "
+            f"edge length is set only in {DEFAULT_CONFIG_PATH} "
+            "(vision.aruco.marker_edge_length_mm); remove it from `registration.detection`."
         )
     return UnifiedConfig.model_validate(data)
 

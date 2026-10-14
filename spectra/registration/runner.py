@@ -41,7 +41,7 @@ from typing import Dict
 def read_vision_timings(vision_dir: Path) -> Optional[Dict[str, Any]]:
     """Rilegge <vision_dir>/timings.json. None se assente/illeggibile.
 
-    vision_dir = RESULTS/<sample>/vision
+    vision_dir = RESULTS/<dd-mm-yyyy>/<sample>/vision
     """
     path = Path(vision_dir) / "timings.json"
     if not path.is_file():
@@ -53,8 +53,22 @@ def read_vision_timings(vision_dir: Path) -> Optional[Dict[str, Any]]:
     return data if isinstance(data, dict) else None
 
 
-def _vision_dir_for(results_root, sample_name) -> Path:
-    return Path(results_root) / str(sample_name) / "vision"
+def _vision_dir_for(results_root, sample_name, results_date=None) -> Path:
+    """Vision output folder under the dated RESULTS layout.
+
+    Prefer :func:`_vision_dir_from_mesh` when a resolved mesh path is at hand:
+    it needs no date and always matches the run actually being consumed.
+    """
+    from ..orchestrator import vision_output_dir
+
+    return vision_output_dir(Path(results_root), str(sample_name), results_date)
+
+
+def _vision_dir_from_mesh(mesh_path) -> Optional[Path]:
+    """``.../<sample>/vision/surface_mesh.ply`` -> ``.../<sample>/vision``."""
+    if mesh_path is None:
+        return None
+    return Path(mesh_path).parent
 
 # Render GPU is optional (torch / cupy may be absent).
 try:
@@ -87,23 +101,25 @@ def _missing_paths(cfg: RegistrationConfig) -> list[str]:
     """Return human-readable names of registration paths that are still ``None``."""
     p = cfg.paths
     missing: list[str] = []
-    # Always required:
+
+    # Batch discovers EVERY per-sample path itself (hsi_hdr, mesh, aruco_json,
+    # liveview_png and output_dir), from data_root + results_root. The
+    # config-level values describe `sample_name`, which batch ignores, so
+    # requiring them here would block a batch on a placeholder sample name.
+    if cfg.mode == "batch":
+        return missing
+
     if p.hsi_hdr is None:
         missing.append("paths.hsi_hdr")
-    if cfg.mode != "batch":
-        # batch discovers per-sample paths itself
-        if p.mesh is None:
-            missing.append("paths.mesh")
-        if p.aruco_json is None:
-            missing.append("paths.aruco_json")
+    if p.mesh is None:
+        missing.append("paths.mesh")
+    if p.aruco_json is None:
+        missing.append("paths.aruco_json")
     if p.output_dir is None:
         missing.append("paths.output_dir")
-    needs_liveview = (
-        cfg.mode == "roi"
-        or (cfg.mode == "sweep" and cfg.sweep.roi_mode)
-    )
-    if needs_liveview and p.liveview_png is None:
-        missing.append("paths.liveview_png")
+    if cfg.mode == "roi" or (cfg.mode == "sweep" and cfg.sweep.roi_mode):
+        if p.liveview_png is None:
+            missing.append("paths.liveview_png")
     return missing
 
 
@@ -111,9 +127,12 @@ def _validate_inputs_exist(cfg: RegistrationConfig) -> list[str]:
     """Return human-readable error messages for missing files on disk."""
     p = cfg.paths
     errors: list[str] = []
-    checks = [(p.hsi_hdr, "HSI .hdr")]
-    if cfg.mode in ("single", "roi", "sweep"):
-        checks += [(p.mesh, "Mesh"), (p.aruco_json, "ArUco JSON")]
+    if cfg.mode == "batch":
+        # Nothing to check up front: `discover_samples` validates each sample
+        # on disk and reports (then skips) the ones that are not ready.
+        return errors
+
+    checks = [(p.hsi_hdr, "HSI .hdr"), (p.mesh, "Mesh"), (p.aruco_json, "ArUco JSON")]
     if cfg.mode == "roi" or (cfg.mode == "sweep" and cfg.sweep.roi_mode):
         checks += [(p.liveview_png, "LiveView PNG")]
     for path, label in checks:
@@ -139,14 +158,14 @@ def _print_summary(cfg: RegistrationConfig, sample_name: str) -> None:
     print("SPECTRA REGISTRATION — SUMMARY")
     print("=" * 68)
     print(f"  Mode          : {cfg.mode.upper()}")
-    print(f"  Sample        : {sample_name}")
-    print(f"  HSI           : {cfg.paths.hsi_hdr}")
+    print(f"  Sample        : {sample_name if cfg.mode != 'batch' else '(all discovered)'}")
     if cfg.mode != "batch":
+        print(f"  HSI           : {cfg.paths.hsi_hdr}")
         print(f"  Mesh          : {cfg.paths.mesh}")
         print(f"  ArUco JSON    : {cfg.paths.aruco_json}")
         if cfg.mode == "roi" or (cfg.mode == "sweep" and cfg.sweep.roi_mode):
             print(f"  LiveView PNG  : {cfg.paths.liveview_png}")
-    print(f"  Marker side   : {cfg.detection.marker_side_mm} mm")
+    print(f"  Marker edge   : {cfg.detection.marker_edge_length_mm} mm")
 
     if cfg.mode == "sweep":
         print(f"  Render        : sweep over {len(cfg.sweep.resolution_pairs)} pairs")
@@ -157,7 +176,10 @@ def _print_summary(cfg: RegistrationConfig, sample_name: str) -> None:
 
     print(f"  Save PC       : {'YES' if cfg.export.save_pointcloud else 'NO'}")
     print(f"  Save images   : {'YES' if cfg.export.save_images else 'NO'}")
-    print(f"  Output        : {cfg.paths.output_dir}")
+    if cfg.mode == "batch":
+        print("  Output        : per-sample, resolved by batch discovery")
+    else:
+        print(f"  Output        : {cfg.paths.output_dir}")
     print("=" * 68)
 
 
@@ -171,6 +193,7 @@ def run_registration(
     sample_name: str = "sample",
     data_root: Optional[Path] = None,
     results_root: Optional[Path] = None,
+    results_date: Optional[str] = None,
     force_cpu: bool = False,
     dry_run: bool = False,
 ) -> dict[str, Any]:
@@ -185,10 +208,11 @@ def run_registration(
     sample_name :
         Used as the filename prefix for outputs (Excel report, point cloud,
         registration PNGs).
-    data_root, results_root :
+    data_root, results_root, results_date :
         Required only for ``mode == "batch"`` (the batch discoverer scans
-        ``data_root`` and writes per-sample outputs under
-        ``results_root/<sample>/registration``).
+        ``data_root/input_registration/`` and writes per-sample outputs under
+        ``results_root/<results_date>/<sample>/registration``). ``results_date``
+        defaults to today.
     force_cpu :
         If true, disables GPU raycasting even if torch/cupy are available.
     dry_run :
@@ -221,14 +245,26 @@ def run_registration(
     _print_summary(cfg, sample_name)
 
     if dry_run:
+        if cfg.mode == "batch" and data_root is not None and results_root is not None:
+            from .batch import discover_samples
+            discover_samples(
+                data_root=Path(data_root),
+                results_root=Path(results_root),
+                roi_mode=bool(cfg.batch.roi_mode),
+                sample_regex=cfg.batch.sample_regex,
+                results_date=results_date,
+                marker_edge_length_mm=cfg.detection.marker_edge_length_mm,
+            )
         print("\n[Dry-run] Configuration valid; pipeline NOT executed.")
         return {"dry_run": True}
 
-    aruco_dict_cv = _ARUCO_DICT_MAP.get(cfg.detection.aruco_dict.upper(), cv2.aruco.DICT_4X4_50)
+    aruco_dict_name = (cfg.detection.aruco_dict or "4x4_50").upper()
+    aruco_dict_cv = _ARUCO_DICT_MAP.get(aruco_dict_name, cv2.aruco.DICT_4X4_50)
     device_str = _device_string(force_cpu=force_cpu)
     use_gpu_render = _TORCH_AVAILABLE and (render_orthographic_topview_gpu is not None)
 
-    os.makedirs(cfg.paths.output_dir, exist_ok=True)  # type: ignore[arg-type]
+    if cfg.mode != "batch" and cfg.paths.output_dir is not None:
+        os.makedirs(cfg.paths.output_dir, exist_ok=True)
 
     # ----- mode == "batch" --------------------------------------------------
     if cfg.mode == "batch":
@@ -245,6 +281,7 @@ def run_registration(
             use_torch_render=use_gpu_render,
             data_root=Path(data_root),
             results_root=Path(results_root),
+            results_date=results_date,
             render_fn=render_orthographic_topview_gpu if use_gpu_render else None,
         )
         return {"summary_xlsx": xlsx_path}
@@ -363,7 +400,7 @@ def _run_single_or_roi(
         render_resolution_mm     = res_pc,
         render_resolution_reg_mm = res_reg,
         render_margin_mm         = cfg.render.margin_mm,
-        marker_side_mm           = cfg.detection.marker_side_mm,
+        marker_side_mm           = cfg.detection.marker_edge_length_mm,
         use_subpix               = cfg.detection.use_subpix,
         subpix_winsize           = cfg.detection.subpix_winsize,
         equalize_method          = cfg.detection.equalize_method,
@@ -407,7 +444,7 @@ def _run_single_or_roi(
             excel_path=excel_path,
             sample_name=sample_name,
             timings=timings,
-            vision_dir = _vision_dir_for(results_root, sample_name) if results_root else None
+            vision_dir = _vision_dir_from_mesh(cfg.paths.mesh)
         )
     except Exception as exc:
         print(f"[yellow]Could not append Timings sheet: {exc}[/yellow]")

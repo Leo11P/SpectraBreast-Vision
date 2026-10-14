@@ -13,6 +13,11 @@ Top-level commands::
 repo (top-level fields without a `vision:` wrapper) are still accepted by
 the `vision` and `recon` commands; the unified loader is only used when the
 YAML has a `vision:` sub-section (which is the new default).
+
+Outputs are grouped by run date: `RESULTS/<dd-mm-yyyy>/<sample>/<stage>/`.
+`--date dd-mm-yyyy` targets a different day (useful to run registration
+against an earlier vision run); re-running on the same day overwrites that
+day's stage folder rather than creating a sibling.
 """
 
 from __future__ import annotations
@@ -32,7 +37,7 @@ from .config import (
 )
 from .vision.aruco import ARUCO_DICTIONARIES, detect_folder
 from .vision.calibration import calibrate_intrinsics
-from .vision.config import load_config as load_vision_only_config
+from .vision.config import DEFAULT_CONFIG_PATH, load_config as load_vision_only_config
 
 app = typer.Typer(
     add_completion=False,
@@ -91,6 +96,11 @@ def _apply_cli_overrides(cfg: UnifiedConfig, overrides: List[str]) -> UnifiedCon
     merged: dict[str, object] = {}
     for ov in overrides:
         key, value = _parse_override(ov)
+        if key.endswith("marker_edge_length_mm"):
+            raise typer.BadParameter(
+                f"--set {key} is not allowed: the marker edge length is set only in "
+                f"{DEFAULT_CONFIG_PATH} (vision.aruco.marker_edge_length_mm)."
+            )
         merged[key] = value
     return cfg.with_overrides(merged)
 
@@ -102,17 +112,20 @@ def _apply_cli_overrides(cfg: UnifiedConfig, overrides: List[str]) -> UnifiedCon
 def _execute_vision(
     config: Path,
     sample: Optional[str],
+    date: Optional[str],
     overrides: List[str],
     dry_run: bool,
 ) -> None:
     cfg = _load_for_vision_command(config)
     if sample:
         cfg = cfg.with_overrides({"sample_name": sample})
+    if date:
+        cfg = cfg.with_overrides({"results_date": date})
     cfg = _apply_cli_overrides(cfg, overrides)
 
     from .orchestrator import run_vision_stage, resolve_unified_paths
 
-    cfg = resolve_unified_paths(cfg)
+    cfg = resolve_unified_paths(cfg, resolve_vision_handoff=False)
     if dry_run:
         print("[bold]Dry-run — vision config resolved:[/bold]")
         print(cfg.vision.model_dump(mode="python"))
@@ -127,24 +140,27 @@ def vision_cmd(
                                 help="YAML config (unified or vision-only)."),
     sample: Optional[str] = typer.Option(None, "--sample",
                                           help="Override sample_name for this run."),
+    date: Optional[str] = typer.Option(None, "--date",
+                                        help="Run-date folder dd-mm-yyyy under results_root (default: today)."),
     set_override: List[str] = typer.Option([], "--set", "-s",
-                                            help="Dotted override: --set vision.aruco.marker_edge_length_m=0.03"),
+                                            help="Dotted override: --set vision.aruco.min_views_per_marker=3"),
     dry_run: bool = typer.Option(False, "--dry-run",
                                   help="Resolve paths and print the config without running."),
 ) -> None:
     """Run only the MASt3R-SfM + ArUco vision stage."""
-    _execute_vision(config, sample, set_override, dry_run)
+    _execute_vision(config, sample, date, set_override, dry_run)
 
 
 @app.command("recon", hidden=True)
 def recon_cmd(
     config: Path = typer.Option(..., "--config", "-c", exists=True, readable=True),
     sample: Optional[str] = typer.Option(None, "--sample"),
+    date: Optional[str] = typer.Option(None, "--date"),
     set_override: List[str] = typer.Option([], "--set", "-s"),
     dry_run: bool = typer.Option(False, "--dry-run"),
 ) -> None:
     """Deprecated alias for `spectra vision`."""
-    _execute_vision(config, sample, set_override, dry_run)
+    _execute_vision(config, sample, date, set_override, dry_run)
 
 
 # =============================================================================
@@ -157,6 +173,8 @@ def registration_cmd(
                                 help="Unified YAML config (must have a `registration:` section)."),
     sample: Optional[str] = typer.Option(None, "--sample",
                                           help="Override sample_name (also used as output filename prefix)."),
+    date: Optional[str] = typer.Option(None, "--date",
+                                        help="Run-date folder dd-mm-yyyy under results_root (default: today)."),
     mode: Optional[str] = typer.Option(None, "--mode",
                                         help="Override registration.mode (single|roi|batch|sweep)."),
     set_override: List[str] = typer.Option([], "--set", "-s",
@@ -171,6 +189,8 @@ def registration_cmd(
 
     if sample:
         cfg = cfg.with_overrides({"sample_name": sample})
+    if date:
+        cfg = cfg.with_overrides({"results_date": date})
     if mode:
         if mode not in ("single", "roi", "batch", "sweep"):
             raise typer.BadParameter(f"Invalid --mode {mode!r}; use single|roi|batch|sweep.")
@@ -192,6 +212,8 @@ def full_cmd(
                                 help="Unified YAML config with both `vision:` and `registration:`."),
     sample: Optional[str] = typer.Option(None, "--sample",
                                           help="Override sample_name. Required if YAML uses placeholder."),
+    date: Optional[str] = typer.Option(None, "--date",
+                                        help="Run-date folder dd-mm-yyyy under results_root (default: today)."),
     set_override: List[str] = typer.Option([], "--set", "-s",
                                             help="Dotted override (e.g. --set registration.mode=roi)"),
     force_cpu: bool = typer.Option(False, "--cpu", help="Force CPU raycasting in registration."),
@@ -204,6 +226,8 @@ def full_cmd(
     cfg = load_unified_config(config)
     if sample:
         cfg = cfg.with_overrides({"sample_name": sample})
+    if date:
+        cfg = cfg.with_overrides({"results_date": date})
     cfg = _apply_cli_overrides(cfg, set_override)
 
     from .orchestrator import run_full

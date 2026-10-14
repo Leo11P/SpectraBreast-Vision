@@ -9,12 +9,19 @@ Typical usage::
     from spectra.config import load_config, ReconstructionConfig
 
     cfg = load_config("configs/default.yaml")
-    cfg = cfg.with_overrides({"aruco.marker_edge_length_m": 0.03})
+    cfg = cfg.with_overrides({"aruco.min_views_per_marker": 3})
 
 The pipeline is **MASt3R-SfM** only (images → dense cloud + ArUco 2D/3D). Optional
 ``pose_dir`` and ``camera_params_dir`` are supported when available.
 
-CLI overrides use dotted paths, e.g. ``--set aruco.marker_edge_length_m=0.03``.
+CLI overrides use dotted paths, e.g. ``--set aruco.min_views_per_marker=3``.
+Marker lengths are in **millimetres**; ``ArucoConfig.marker_edge_length_m``
+remains available as a read-only property for the metric internals.
+
+The marker edge length is set in ONE place only: ``vision.aruco.marker_edge_length_mm``
+in ``configs/default.yaml`` (:data:`DEFAULT_CONFIG_PATH`). Every other YAML
+(legacy vision-only configs, the TUI, other unified configs) must not set it and
+gets it from there; the CLI rejects it in ``--set``.
 """
 
 from __future__ import annotations
@@ -29,11 +36,50 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator, model_valida
 
 from .aruco import ARUCO_DICTIONARIES
 
+#: The ONLY file the ArUco marker edge length is read from
+#: (``vision.aruco.marker_edge_length_mm``).
+DEFAULT_CONFIG_PATH = Path(__file__).resolve().parents[2] / "configs" / "default.yaml"
+
+
+def marker_edge_length_mm_from_default_config() -> float:
+    """``vision.aruco.marker_edge_length_mm`` from :data:`DEFAULT_CONFIG_PATH`."""
+    data = yaml.safe_load(DEFAULT_CONFIG_PATH.read_text(encoding="utf-8")) or {}
+    value = ((data.get("vision") or {}).get("aruco") or {}).get("marker_edge_length_mm")
+    if value is None:
+        raise ValueError(
+            f"{DEFAULT_CONFIG_PATH} must set vision.aruco.marker_edge_length_mm "
+            "(the single source of the ArUco marker edge length, in mm)."
+        )
+    return float(value)
+
+
+def with_default_marker_edge(vision_data: dict, source: str) -> dict:
+    """Fill ``aruco.marker_edge_length_mm`` of a vision config dict from
+    :data:`DEFAULT_CONFIG_PATH`; a value already present is rejected."""
+    vision_data = dict(vision_data or {})
+    aruco = dict(vision_data.get("aruco") or {})
+    if aruco.get("marker_edge_length_mm") is not None:
+        raise ValueError(
+            f"{source}: aruco.marker_edge_length_mm cannot be set here. It is set only "
+            f"in {DEFAULT_CONFIG_PATH} (vision.aruco.marker_edge_length_mm)."
+        )
+    aruco["marker_edge_length_mm"] = marker_edge_length_mm_from_default_config()
+    vision_data["aruco"] = aruco
+    return vision_data
+
 
 class InputConfig(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
-    rgb_dir: Path = Field(..., description="Folder containing input images (jpg/png).")
+    rgb_dir: Optional[Path] = Field(
+        default=None,
+        description=(
+            "Folder containing input images (jpg/png). When None, the "
+            "orchestrator derives it from sample_name: "
+            "DATA/input_vision/<sample>[_<device>]/rgb — falling back to the "
+            "sample folder itself if it holds the images directly."
+        ),
+    )
     pose_dir: Path | None = Field(
         default=None,
         description=(
@@ -69,16 +115,45 @@ class OutputConfig(BaseModel):
             "(Z toward the ground) instead of a typical ENU/graphics +Z up convention."
         ),
     )
+    overwrite_existing_run: bool = Field(
+        default=True,
+        description=(
+            "If true, an existing `root/run_name` folder is deleted and rebuilt "
+            "instead of being suffixed `_01`, `_02`, ... Keeps a second run on "
+            "the same day from stranding its outputs where the next stage "
+            "will not look for them."
+        ),
+    )
+    clean_sfm_cache: bool = Field(
+        default=True,
+        description=(
+            "Delete the intermediate `.mast3r_sfm_cache/` folder under `root` "
+            "once the run finishes. It is large and never read again."
+        ),
+    )
 
 
 class ArucoConfig(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
-    dictionary: str = Field(default="4x4_50", description="OpenCV ArUco dictionary name.")
-    marker_edge_length_m: float = Field(
-        default=0.025,
+    dictionary: str = Field(
+        default="4x4_50",
+        description=(
+            "OpenCV ArUco dictionary name. Case-insensitive on input "
+            "('4X4_50' and '4x4_50' both work) and normalized to lowercase. "
+            "Registration inherits this value."
+        ),
+    )
+    marker_edge_length_mm: float = Field(
+        ...,
         gt=0.0,
-        description="Physical edge length of a single ArUco marker, in meters.",
+        description=(
+            "Physical edge length of a single ArUco marker, in MILLIMETRES. "
+            "No default: set ONLY in configs/default.yaml "
+            "(vision.aruco.marker_edge_length_mm); every other config gets it "
+            "from there and registration always uses it. This value sets the "
+            "metric scale of the entire reconstruction, so measure it carefully."
+        ),
     )
     origin_marker_id: int | None = Field(
         default=None,
@@ -197,12 +272,19 @@ class ArucoConfig(BaseModel):
     @field_validator("dictionary")
     @classmethod
     def _validate_dictionary(cls, value: str) -> str:
-        if value not in ARUCO_DICTIONARIES:
+        """Accept any capitalization; normalize to the canonical lowercase name."""
+        normalized = str(value).strip().lower()
+        if normalized not in ARUCO_DICTIONARIES:
             raise ValueError(
                 f"Unknown ArUco dictionary {value!r}; "
                 f"valid options: {sorted(ARUCO_DICTIONARIES.keys())}"
             )
-        return value
+        return normalized
+
+    @property
+    def marker_edge_length_m(self) -> float:
+        """Marker edge length in metres — the unit the 3D pipeline works in."""
+        return self.marker_edge_length_mm / 1000.0
 
 
 class SurfaceConfig(BaseModel):
@@ -373,7 +455,8 @@ class ReconstructionConfig(BaseModel):
     @model_validator(mode="after")
     def _resolve_paths(self) -> "ReconstructionConfig":
         """Resolve any relative paths to absolute, anchored at cwd."""
-        self.input.rgb_dir = Path(self.input.rgb_dir).expanduser()
+        if self.input.rgb_dir is not None:
+            self.input.rgb_dir = Path(self.input.rgb_dir).expanduser()
         if self.input.pose_dir is not None:
             self.input.pose_dir = Path(self.input.pose_dir).expanduser()
         if self.input.camera_params_dir is not None:
@@ -392,7 +475,7 @@ class ReconstructionConfig(BaseModel):
         Example::
 
             cfg.with_overrides({
-                "aruco.marker_edge_length_m": 0.03,
+                "aruco.min_views_per_marker": 3,
                 "mast3r.voxel_size": 0.002,
             })
         """
@@ -434,7 +517,7 @@ def load_config(path: str | Path) -> ReconstructionConfig:
         data = yaml.safe_load(f) or {}
     if not isinstance(data, dict):
         raise ValueError(f"Top-level YAML in {path} must be a mapping, got {type(data).__name__}")
-    return ReconstructionConfig.model_validate(data)
+    return ReconstructionConfig.model_validate(with_default_marker_edge(data, str(path)))
 
 
 def save_config(cfg: ReconstructionConfig, path: str | Path) -> Path:

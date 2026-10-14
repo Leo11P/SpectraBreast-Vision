@@ -44,6 +44,12 @@ def init_rerun(
         pass
     rr.init(app_name)
     port = int(grpc_port)
+    # Start the local proxy *before* wiring any GrpcSink below: a GrpcSink
+    # connects out to this URL as a client, and with nothing serving it yet,
+    # flush()/rerun_flush() (default timeout 1e38s) would block ~forever
+    # waiting for a connection that never completes — hanging batch/SLURM
+    # jobs indefinitely with no viewer attached.
+    rr.serve_grpc(grpc_port=port)
     rrd = Path(rrd_path) if rrd_path is not None else None
     if rrd is not None:
         rrd.parent.mkdir(parents=True, exist_ok=True)
@@ -73,7 +79,6 @@ def init_rerun(
             rprint(
                 f"[yellow]Rerun: set_sinks / FileSink / GrpcSink missing; gRPC only (no {p}).[/yellow]"
             )
-    rr.serve_grpc(grpc_port=port)
 
 
 def _save_blueprint_file(
@@ -167,6 +172,12 @@ def send_blueprint(
         layout_children.append(rrb.Spatial2DView(name="Camera images", origin="/cameras"))
 
     if not layout_children:
+        from rich import print as rprint  # type: ignore[import-not-found]
+
+        rprint(
+            "[yellow]Rerun: no views enabled (all log_*/include_* flags false); "
+            "skipping blueprint send and .rbl save.[/yellow]"
+        )
         return
     if len(layout_children) == 1:
         blueprint = rrb.Blueprint(layout_children[0])
@@ -177,13 +188,23 @@ def send_blueprint(
         _save_blueprint_file(blueprint, application_id, rbl_path)
 
 
-def rerun_flush() -> None:
+def rerun_flush(timeout_sec: float = 60.0) -> None:
+    """Flush pending Rerun data, capped at ``timeout_sec``.
+
+    ``RecordingStream.flush()`` defaults to a ``timeout_sec`` of ``1e38`` (i.e.
+    unbounded) — if a sink can't make progress (e.g. a gRPC sink with no
+    reachable server/viewer), that default would hang a batch/SLURM job
+    indefinitely. We always pass an explicit, finite timeout instead.
+    """
     if not HAS_RERUN:
         return
     try:
         flush_fn = getattr(rr, "flush", None)
         if callable(flush_fn):
-            flush_fn()
+            try:
+                flush_fn(timeout_sec=timeout_sec)
+            except TypeError:
+                flush_fn()
             return
         for getter_name in ("get_data_recording", "get_global_data_recording"):
             getter = getattr(rr, getter_name, None)
@@ -191,10 +212,15 @@ def rerun_flush() -> None:
                 continue
             rec = getter()
             if rec is not None and hasattr(rec, "flush"):
-                rec.flush()
+                try:
+                    rec.flush(timeout_sec=timeout_sec)
+                except TypeError:
+                    rec.flush()
                 return
-    except Exception:
-        pass
+    except Exception as e:
+        from rich import print as rprint  # type: ignore[import-not-found]
+
+        rprint(f"[yellow]Rerun: flush did not complete cleanly ({e!r}).[/yellow]")
 
 
 def log_camera(
